@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserModel extends Model
 {
-    protected $table = 'user_crud';
+    protected $connection = 'nk_DB';
+    protected $table = 'user';
 
-    protected $fillable = ['name' , 'age'];
+    protected $fillable = ['name' , 'email' , 'password' , 'role'];
 }

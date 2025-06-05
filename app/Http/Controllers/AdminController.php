@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\RoleModel;
+use App\Models\UserModel;
 use Artisan;
 use Config;
 use DB;
@@ -10,6 +12,32 @@ use Illuminate\Http\Request;
 class AdminController extends Controller
 {
 
+    public function __construct()
+    {
+
+        if (!empty(session('email'))) {
+
+            $emailArray = explode('@', session('email'));
+            $db_prefix = $emailArray[0];
+            $databasename = $db_prefix . '_DB';
+            DB::statement('CREATE DATABASE IF NOT EXISTS ' . $databasename);
+            Config::set('database.connections.' . $databasename, [
+                'driver' => 'mysql',
+                'host' => config('database.connections.mysql.host'),
+                'port' => config('database.connections.mysql.port'),
+                'database' => $databasename,
+                'username' => config('database.connections.mysql.username'),
+                'password' => config('database.connections.mysql.password'),
+                'charset' => 'utf8mb4',
+                'collation' => 'utf8mb4_unicode_ci',
+                'prefix' => '',
+                'strict' => true,
+                'engine' => null,
+            ]);
+            DB::setDefaultConnection($databasename);
+        }
+
+    }
 
     public function key(Request $request)
     {
@@ -27,18 +55,29 @@ class AdminController extends Controller
         return view('Admin');
     }
 
+
+
     public function admin(Request $request)
     {
         $email = $request->input('email');
-        session(['email' => $email]);
         $password = $request->input('password');
-        if ($email == 'nk@gmail.com' && $password == 'nk@1234') {
 
+        // i provided credentials   
+        if ($email == 'nk@gmail.com' && $password == 'nk@1234') {
+            session(['email' => $email]);
             return redirect()->route('dashboard');
         } else {
-            return redirect()->back()->with('error', 'Invalid Credentials');
-        }
 
+            $login_data = UserModel::where('email', '=', $email)->first();
+
+            if ($email == $login_data->email && $password == $login_data->password) {
+                session(['login_email' => $email]);
+                return redirect()->route('UserTable');
+            } else {
+                return redirect()->back()->with('error', 'Invalid Credentials');
+            }
+
+        }
     }
 
 
@@ -52,12 +91,13 @@ class AdminController extends Controller
     {
 
         $email = session('email');
+        
         if (!empty($email)) {
 
             $emailArray = explode('@', $email);
             $db_prefix = $emailArray[0];
             $databasename = $db_prefix . '_DB';
-            // dd($databasename);
+            // // dd($databasename);
 
             DB::statement('CREATE DATABASE IF NOT EXISTS ' . $databasename);
             Config::set('database.connections.' . $databasename, [
@@ -81,7 +121,7 @@ class AdminController extends Controller
                 '--path' => 'database/migrations/2025_06_04_093250_user_crud.php',
             ]);
 
-        
+
             DB::setDefaultConnection($databasename);
             return redirect()->route('user.index');
         } else {
@@ -90,6 +130,56 @@ class AdminController extends Controller
 
 
 
+    }
+
+    public function roleInstall()
+    {
+        $email = session('email');
+        if (!empty($email)) {
+
+            $emailArray = explode('@', $email);
+            $db_prefix = $emailArray[0];
+            $databasename = $db_prefix . '_DB';
+            // dd($databasename);
+
+            // DB::statement('CREATE DATABASE IF NOT EXISTS ' . $databasename);
+            // Config::set('database.connections.' . $databasename, [
+            //     'driver' => 'mysql',
+            //     'host' => config('database.connections.mysql.host'),
+            //     'port' => config('database.connections.mysql.port'),
+            //     'database' => $databasename,
+            //     'username' => config('database.connections.mysql.username'),
+            //     'password' => config('database.connections.mysql.password'),
+            //     'charset' => 'utf8mb4',
+            //     'collation' => 'utf8mb4_unicode_ci',
+            //     'prefix' => '',
+            //     'strict' => true,
+            //     'engine' => null,
+            // ]);
+
+            session(['dynamic_db' => $databasename]);
+
+            Artisan::call('migrate', [
+                '--database' => $databasename,
+                '--path' => 'database/migrations/2025_06_05_112216_role.php',
+            ]);
+
+
+            // DB::setDefaultConnection($databasename);
+            return redirect()->route('role.index');
+        }
+    }
+
+    public function UserTable()
+    {
+        $data = UserModel::all();
+        $role = RoleModel::all();
+        foreach($role as $r){
+            echo $r['permissions'];
+        }
+        exit;
+
+        return view('UserTable', ['data' => $data, 'role' => $role]);
     }
 
 

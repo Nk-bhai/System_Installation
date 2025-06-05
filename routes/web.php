@@ -1,5 +1,6 @@
 <?php
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -15,13 +16,16 @@ Route::view('/key' , 'Key');
 Route::post('key', [AdminController::class , 'key'])->name('key');
 
 Route::get('admin', [AdminController::class , 'adminPage'])->name('adminPage');
+Route::get('UserTable', [AdminController::class , 'UserTable'])->name('UserTable');
 Route::post('admin', [AdminController::class , 'admin'])->name('admin');
 
 Route::redirect('superAdmin' , 'key');
 
 Route::get('dashboard', [AdminController::class , 'dashboardPage'])->name('dashboard');
 Route::post('dashboard', [AdminController::class , 'UserCrudInstall'])->name('UserCrudInstall');
+Route::any('roleinstall', [AdminController::class , 'roleInstall'])->name('roleInstall');
 
+Route::resource('role' , RoleController::class);
 Route::resource('user' , UserController::class);
 
 

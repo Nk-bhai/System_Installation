@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\RoleModel;
 use App\Models\UserModel;
 use Config;
 use DB;
@@ -13,21 +14,21 @@ class UserController extends Controller
     {
         $dynamicDb = session('dynamic_db');
         if ($dynamicDb) {
-                Config::set('database.connections.' . $dynamicDb, [
-                    'driver' => 'mysql',
-                    'host' => config('database.connections.mysql.host'),
-                    'port' => config('database.connections.mysql.port'),
-                    'database' => $dynamicDb,
-                    'username' => config('database.connections.mysql.username'),
-                    'password' => config('database.connections.mysql.password'),
-                    'charset' => 'utf8mb4',
-                    'collation' => 'utf8mb4_unicode_ci',
-                    'prefix' => '',
-                    'strict' => true,
-                    'engine' => null,
-                ]);
+            Config::set('database.connections.' . $dynamicDb, [
+                'driver' => 'mysql',
+                'host' => config('database.connections.mysql.host'),
+                'port' => config('database.connections.mysql.port'),
+                'database' => $dynamicDb,
+                'username' => config('database.connections.mysql.username'),
+                'password' => config('database.connections.mysql.password'),
+                'charset' => 'utf8mb4',
+                'collation' => 'utf8mb4_unicode_ci',
+                'prefix' => '',
+                'strict' => true,
+                'engine' => null,
+            ]);
             DB::setDefaultConnection($dynamicDb);
-            
+
         }
     }
 
@@ -36,8 +37,9 @@ class UserController extends Controller
      */
     public function index()
     {
+        $role = RoleModel::get('role_name');
         $data = UserModel::all();
-        return view('User', ['data' => $data]);
+        return view('User', ['data' => $data, 'role' => $role]);
     }
 
     /**
@@ -55,7 +57,9 @@ class UserController extends Controller
     {
         UserModel::insert([
             'name' => $request->input('name'),
-            'age' => $request->input('age'),
+            'email' => $request->input('email'),
+            'password' => $request->input('password'),
+            'role' => $request->input('role'),
         ]);
         return redirect()->route('user.index');
     }
@@ -74,7 +78,9 @@ class UserController extends Controller
     public function edit(string $id)
     {
         $data = UserModel::where('id', '=', $id)->get();
-        return view('UserEdit', ['data' => $data]);
+        $role = RoleModel::get('role_name');
+        
+        return view('UserEdit', ['data' => $data, 'role' => $role]);
     }
 
     /**
@@ -82,9 +88,10 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        UserModel::where('id' , '=' , $id)->update([
+        UserModel::where('id', '=', $id)->update([
             'name' => $request->input('name'),
-            'age' => $request->input('age'),
+            'email' => $request->input('email'),
+            'role' => $request->input('role'),
         ]);
         return redirect()->route('user.index');
 

@@ -1,26 +1,29 @@
-{{-- <h1>Dashboard</h1>
+<h1>Dashboard</h1>
 
 <p>Role</p>
-<form action="" method="post">
-    @csrf
+{{-- <form action="{{ route('role.index') }}" >
+    
     <input type="submit" value="Role install">
 
-</form>
+</form> --}}
+<a href="{{ route('roleInstall') }}">Role Install</a>
 
 <p>User</p>
 <form action="{{ route('UserCrudInstall') }}" method="post">
     @csrf
     <input type="submit" value="User install">
-
+    
 </form>
+{{-- <a href="{{ route('UserCrudInstall') }}">User Install</a> --}}
+
 
 <form action="{{ route('logout') }}" method="post">
     @csrf
     <input type="submit" value="Logout">
-</form> --}}
+</form>
 
 
-
+{{-- 
 @extends('master')
 @section('contents')
     <div class="d-flex flex-column flex-root">
@@ -117,7 +120,7 @@
 
                     </div>
                     <!--end::Container-->
-                    <form action="" method="post">
+                    <form action="{{ route('role.index') }}" method="post">
                         @csrf
                         <input type="submit" value="Role install">
 
@@ -132,4 +135,4 @@
             </div>
             <!--end::Page-->
         </div>
-@endsection
+@endsection --}}

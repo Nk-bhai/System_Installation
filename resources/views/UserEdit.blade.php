@@ -1,5 +1,8 @@
-{{-- <h1>User Crud Update Page</h1>
-@foreach ($data as $dt )
+<h1>User Crud Update Page</h1>
+
+    
+
+ @foreach ($data as $dt )
 
 <form action="{{ route('user.update' , $dt->id) }}" method="post">
     @csrf
@@ -9,19 +12,29 @@
 
     <br><br>
 
-    <label>Age</label>
-    <input type="number" name="age" value="{{ $dt->age }}">
+    <label>Email</label>
+    <input type="email" name="email" value="{{ $dt->email }}">
 
     <br><br>
+
+    <label>Assign Role</label>
+    <select name="role" >
+        @foreach ($role as $r)
+            
+            <option value="{{ $r->role_name }}" {{ $r->role_name == $dt->role ? "selected" : ""}}>{{$r->role_name}}</option>
+        @endforeach
+    </select>
+
+    <br><br>    
 
     <input type="submit" value="Update">
 
 </form>
-@endforeach --}}
+@endforeach
 
 {{-- @extends('master') --}}
 {{-- @section('contents') --}}
-<!DOCTYPE html>
+{{-- <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -92,10 +105,10 @@
             </div>
 
         </div>
-    </div>
+    </div> --}}
 
     {{-- @endsection --}}
-
+{{-- 
 </body>
 
-</html>
+</html> --}}
