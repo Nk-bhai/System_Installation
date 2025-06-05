@@ -172,14 +172,18 @@ class AdminController extends Controller
 
     public function UserTable()
     {
+        
         $data = UserModel::all();
-        $role = RoleModel::all();
-        foreach($role as $r){
-            echo $r['permissions'];
+        $Particular_role = UserModel::where('email' , '=' , session('login_email'))->get('role');
+        foreach($Particular_role as $p){
+            echo $p['role'];
         }
-        exit;
+        
 
-        return view('UserTable', ['data' => $data, 'role' => $role]);
+        
+        
+
+        return view('UserTable', ['data' => $data]);
     }
 
 

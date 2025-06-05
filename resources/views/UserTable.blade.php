@@ -24,6 +24,4 @@
     @endforeach
 </table>
 
-@foreach ($role as $r)
-    {{ $r->permissions }}
-@endforeach
+
