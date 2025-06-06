@@ -12,14 +12,19 @@ Route::get('/', function () {
 
 Route::resource('superAdmin' , SuperAdminController::class);
 
-Route::view('/key' , 'Key');
+Route::get('/key', function () {
+    if (session()->has('access_granted')) {
+        return redirect()->route('adminPage');
+    }
+    return view('Key');
+});
 Route::post('key', [AdminController::class , 'key'])->name('key');
 
 Route::get('admin', [AdminController::class , 'adminPage'])->name('adminPage');
 Route::get('UserTable', [AdminController::class , 'UserTable'])->name('UserTable');
 Route::post('admin', [AdminController::class , 'admin'])->name('admin');
 
-Route::redirect('superAdmin' , 'key');
+// Route::redirect('superAdmin' , 'key');
 
 Route::get('dashboard', [AdminController::class , 'dashboardPage'])->name('dashboard');
 Route::post('dashboard', [AdminController::class , 'UserCrudInstall'])->name('UserCrudInstall');
@@ -27,8 +32,7 @@ Route::any('roleinstall', [AdminController::class , 'roleInstall'])->name('roleI
 
 Route::resource('role' , RoleController::class);
 Route::resource('user' , UserController::class);
+Route::put('admin_update' , [UserController::class , 'admin_update'])->name('admin_update');
 
 
 Route::post('logout', [AdminController::class , 'logout'])->name('logout');
-
-route::view('table' , 'table');

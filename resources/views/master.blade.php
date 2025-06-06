@@ -14,6 +14,7 @@
 		<link href="dist/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
 		<link href="dist/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
 		<!--end::Global Stylesheets Bundle-->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 <body id="kt_body" class="bg-body">
     
@@ -32,5 +33,7 @@
 		<script src="dist/assets/js/custom/authentication/sign-in/general.js"></script>
 		<!--end::Page Custom Javascript-->
 		<!--end::Javascript--> --}}
+	
+
 </body>
 </html>

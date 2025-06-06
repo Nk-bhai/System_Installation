@@ -1,4 +1,4 @@
-{{-- <form action="{{ route('key') }}" method="post">
+<form action="{{ route('key') }}" method="post">
     @csrf
     <label >Enter Key</label>
     <input type="text" name="key">
@@ -8,9 +8,9 @@
     <input type="submit" value="submit">
 
     {{ session('error') }}
-</form> --}}
+</form>
 
-@extends('master')
+{{-- @extends('master')
 @section('contents')
 
 
@@ -67,5 +67,5 @@
         <!--end::Authentication - Sign-in-->
     </div>
 
-   
-@endsection
+
+@endsection --}}

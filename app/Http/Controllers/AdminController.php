@@ -12,29 +12,38 @@ use Illuminate\Http\Request;
 class AdminController extends Controller
 {
 
+    private function setDynamicDatabaseConnection($email)
+    {
+        $emailArray = explode('@', $email);
+        $db_prefix = $emailArray[0];
+        $databasename = $db_prefix . '_DB';
+
+        DB::statement('CREATE DATABASE IF NOT EXISTS ' . $databasename);
+
+        Config::set('database.connections.' . $databasename, [
+            'driver' => 'mysql',
+            'host' => config('database.connections.mysql.host'),
+            'port' => config('database.connections.mysql.port'),
+            'database' => $databasename,
+            'username' => config('database.connections.mysql.username'),
+            'password' => config('database.connections.mysql.password'),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+
+        session(['dynamic_db' => $databasename]);
+        DB::setDefaultConnection($databasename);
+
+        return $databasename;
+    }
+
     public function __construct()
     {
-
-        if (!empty(session('email'))) {
-
-            $emailArray = explode('@', session('email'));
-            $db_prefix = $emailArray[0];
-            $databasename = $db_prefix . '_DB';
-            DB::statement('CREATE DATABASE IF NOT EXISTS ' . $databasename);
-            Config::set('database.connections.' . $databasename, [
-                'driver' => 'mysql',
-                'host' => config('database.connections.mysql.host'),
-                'port' => config('database.connections.mysql.port'),
-                'database' => $databasename,
-                'username' => config('database.connections.mysql.username'),
-                'password' => config('database.connections.mysql.password'),
-                'charset' => 'utf8mb4',
-                'collation' => 'utf8mb4_unicode_ci',
-                'prefix' => '',
-                'strict' => true,
-                'engine' => null,
-            ]);
-            DB::setDefaultConnection($databasename);
+        if (session()->has('email')) {
+            $this->setDynamicDatabaseConnection(session('email'));
         }
 
     }
@@ -44,9 +53,10 @@ class AdminController extends Controller
         $key = $request->input('key');
         if ($key !== '1234') {
             return redirect()->back()->with('error', 'Key Not Valid');
-        } else {
-            return redirect()->route('adminPage');
         }
+        session(['access_granted' => true]);
+        return redirect()->route('adminPage');
+
     }
 
 
@@ -62,7 +72,7 @@ class AdminController extends Controller
         $email = $request->input('email');
         $password = $request->input('password');
 
-        // i provided credentials   
+        // i provided credentials
         if ($email == 'nk@gmail.com' && $password == 'nk@1234') {
             session(['email' => $email]);
             return redirect()->route('dashboard');
@@ -86,104 +96,63 @@ class AdminController extends Controller
         // dump(session('email'));
         return view('Dashboard');
     }
-
     public function UserCrudInstall()
     {
-
         $email = session('email');
-        
         if (!empty($email)) {
-
-            $emailArray = explode('@', $email);
-            $db_prefix = $emailArray[0];
-            $databasename = $db_prefix . '_DB';
-            // // dd($databasename);
-
-            DB::statement('CREATE DATABASE IF NOT EXISTS ' . $databasename);
-            Config::set('database.connections.' . $databasename, [
-                'driver' => 'mysql',
-                'host' => config('database.connections.mysql.host'),
-                'port' => config('database.connections.mysql.port'),
-                'database' => $databasename,
-                'username' => config('database.connections.mysql.username'),
-                'password' => config('database.connections.mysql.password'),
-                'charset' => 'utf8mb4',
-                'collation' => 'utf8mb4_unicode_ci',
-                'prefix' => '',
-                'strict' => true,
-                'engine' => null,
-            ]);
-
-            session(['dynamic_db' => $databasename]);
+            $databasename = $this->setDynamicDatabaseConnection($email);
 
             Artisan::call('migrate', [
                 '--database' => $databasename,
                 '--path' => 'database/migrations/2025_06_04_093250_user_crud.php',
             ]);
 
-
-            DB::setDefaultConnection($databasename);
             return redirect()->route('user.index');
-        } else {
-            return redirect()->route('dashboard');
         }
 
-
-
+        return redirect()->route('dashboard');
     }
 
     public function roleInstall()
     {
         $email = session('email');
         if (!empty($email)) {
-
-            $emailArray = explode('@', $email);
-            $db_prefix = $emailArray[0];
-            $databasename = $db_prefix . '_DB';
-            // dd($databasename);
-
-            // DB::statement('CREATE DATABASE IF NOT EXISTS ' . $databasename);
-            // Config::set('database.connections.' . $databasename, [
-            //     'driver' => 'mysql',
-            //     'host' => config('database.connections.mysql.host'),
-            //     'port' => config('database.connections.mysql.port'),
-            //     'database' => $databasename,
-            //     'username' => config('database.connections.mysql.username'),
-            //     'password' => config('database.connections.mysql.password'),
-            //     'charset' => 'utf8mb4',
-            //     'collation' => 'utf8mb4_unicode_ci',
-            //     'prefix' => '',
-            //     'strict' => true,
-            //     'engine' => null,
-            // ]);
-
-            session(['dynamic_db' => $databasename]);
+            $databasename = $this->setDynamicDatabaseConnection($email);
 
             Artisan::call('migrate', [
                 '--database' => $databasename,
                 '--path' => 'database/migrations/2025_06_05_112216_role.php',
             ]);
 
-
-            // DB::setDefaultConnection($databasename);
             return redirect()->route('role.index');
         }
+
+        return redirect()->route('dashboard');
     }
+
+
 
     public function UserTable()
     {
-        
-        $data = UserModel::all();
-        $Particular_role = UserModel::where('email' , '=' , session('login_email'))->get('role');
-        foreach($Particular_role as $p){
-            echo $p['role'];
+        $data = UserModel::where('email' , '!=' , session('login_email'))->get();
+        $user_name = UserModel::where('email' , '=' , session('login_email'))->get('name');
+        $user = UserModel::where('email', session('login_email'))->first();
+
+        if (!$user) {
+            return redirect()->back()->with('error', 'User not found');
         }
-        
 
-        
-        
+        $roleName = $user->role;
 
-        return view('UserTable', ['data' => $data]);
+        $role = RoleModel::where('role_name', $roleName)->first();
+
+        $permissions = [];
+
+        if ($role && $role->permissions) {
+            $permissions = array_map('trim', explode(',', $role->permissions));
+        }
+
+        return view('UserTable', ['user_name' => $user_name ,'data' => $data, 'permissions' => $permissions]);
     }
 
 

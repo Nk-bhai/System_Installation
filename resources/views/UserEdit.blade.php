@@ -1,12 +1,11 @@
 <h1>User Crud Update Page</h1>
 
-    
-
  @foreach ($data as $dt )
 
-<form action="{{ route('user.update' , $dt->id) }}" method="post">
+<form action="{{ route('admin_update') }}" method="post">
     @csrf
     @method('PUT')
+    <input type="hidden" name="id" value="{{ $dt->id }}">
     <label>Name</label>
     <input type="text" name="name" value="{{ $dt->name }}">
 

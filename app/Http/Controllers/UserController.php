@@ -79,7 +79,7 @@ class UserController extends Controller
     {
         $data = UserModel::where('id', '=', $id)->get();
         $role = RoleModel::get('role_name');
-        
+
         return view('UserEdit', ['data' => $data, 'role' => $role]);
     }
 
@@ -94,8 +94,16 @@ class UserController extends Controller
             'role' => $request->input('role'),
         ]);
         return redirect()->route('user.index');
-
-
+    }
+    public function admin_update(Request $request)
+    {
+        $id = $request->input('id');
+        UserModel::where('id', '=', $id)->update([
+            'name' => $request->input('name'),
+            'email' => $request->input('email'),
+            'role' => $request->input('role'),
+        ]);
+        return redirect()->route('UserTable');
     }
 
     /**
@@ -104,6 +112,7 @@ class UserController extends Controller
     public function destroy(string $id)
     {
         UserModel::where('id', '=', $id)->delete();
-        return redirect()->route('user.index');
+        return redirect()->route('UserTable');
     }
 }
+    

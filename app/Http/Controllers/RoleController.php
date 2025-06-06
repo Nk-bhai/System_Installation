@@ -35,8 +35,9 @@ class RoleController extends Controller
      */
     public function index()
     {
-        // dd("HI");
-        return view('Role');
+        $roleData = RoleModel::all();
+
+        return view('Role' ,['roleData' => $roleData]);
     }
 
     /**
@@ -81,7 +82,17 @@ class RoleController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $role_edit_data = RoleModel::where('id' ,'=' , $id)->get();
+        $role = RoleModel::where('id', '=' , $id)->first();
+
+        $permissions = [];
+
+        if ($role && $role->permissions) {
+            $permissions = array_map('trim', explode(',', $role->permissions));
+        }
+        
+        
+        return view('RoleEdit' , ['role_edit_data' => $role_edit_data , 'permissions' => $permissions]);
     }
 
     /**
@@ -89,7 +100,17 @@ class RoleController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $permissions = $request->input('permissions');
+
+        $permissions_string = "";  
+        foreach($permissions as $p){
+            $permissions_string .= $p . ','; 
+        } 
+        RoleModel::where('id' , '=', $id)->update([
+            'role_name' => $request->input('role_name'),
+            'permissions' => $permissions_string
+        ]);
+        return redirect()->route('role.index');
     }
 
     /**
@@ -97,6 +118,7 @@ class RoleController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        RoleModel::where('id' , '=' , $id)->delete();
+          return redirect()->route('role.index');
     }
 }
