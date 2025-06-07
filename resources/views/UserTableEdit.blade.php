@@ -1,21 +1,22 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
-<h1>User Crud Update Page</h1>
+<h1>Admin Update Page</h1>
 
  @foreach ($data as $dt )
 
-<form action="{{ route('user.update' , $dt->id) }}" method="post" id="user_update">
+<form action="{{ route('admin_update') }}" method="post" id="admin_update">
     @csrf
     @method('PUT')
+    <input type="hidden" name="id" value="{{ $dt->id }}" >
     <label>Name</label>
     <input type="text" name="name" value="{{ $dt->name }}" id="name">
-    <span id="name_error" style="color:red"></span>
+    <span id="name_error" style="color: red"></span>
 
     <br><br>
-
+    
     <label>Email</label>
     <input type="email" name="email" value="{{ $dt->email }}" id="email">
-    <span id="email_error" style="color:red"></span>
+    <span id="name_error" style="color: red"></span>
 
     <br><br>
 
@@ -26,7 +27,6 @@
             <option value="{{ $r->role_name }}" {{ $r->role_name == $dt->role ? "selected" : ""}}>{{$r->role_name}}</option>
         @endforeach
     </select>
-    <span id="role_error" style="color:red"></span>
 
     <br><br>    
 
@@ -35,13 +35,14 @@
 </form>
 @endforeach
 
+
 <script>
     $(document).ready(function () {
         $("#name").on('input', ValidateName);
         $("#email").on('input', ValidateEmail);
         // $("#role").on('change', ValidateRole);
 
-        $("#user_update").submit(function (e) {
+        $("#admin_update").submit(function (e) {
             let name = ValidateName();
             let email = ValidateEmail();
             // let role = ValidateRole();

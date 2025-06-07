@@ -9,12 +9,12 @@
 
     <br><br>
 
-    <label>permissions</label>
-    <input type="checkbox" value="View" name="permissions[]" checked >View
-    <input type="checkbox" value="Create" name="permissions[]">Create
-    <input type="checkbox" value="Delete" name="permissions[]">Delete
-    <input type="checkbox" value="Update" name="permissions[]">Update
-
+    <label>Permissions : </label>
+    <input type="checkbox" value="View" id="view" name="permissions[]" checked>View
+    <input type="checkbox" value="Create" name="permissions[]" id="create">Create
+    <input type="checkbox" value="Delete" name="permissions[]" id="delete">Delete
+    <input type="checkbox" value="Update" name="permissions[]" id="update">Update
+    <div id="permissions_error" style="color:red"></div>    
     <br><br>
 
     <input type="submit" value="submit">
@@ -24,60 +24,79 @@
 <a href="/dashboard">Dashboard</a>
 
 <table border="1">
-    <tr>
-        <th>Role Name</th>
-        <th>Permissions</th>
-        <th>Actions</th>
-    </tr>
-    @foreach ($roleData as $rd )
+    @forelse ($roleData as $rd)
+        <tr>
+            <th>Role Name</th>
+            <th>Permissions</th>
+            <th>Actions</th>
+        </tr>
+        @break
+    @empty
+    @endforelse
+
+    @forelse ($roleData as $rd)
         <tr>
             <td>{{$rd->role_name}}</td>
             <td>{{$rd->permissions}}</td>
             <td>
-                <form action="{{ route('role.destroy' , $rd->id) }}" method="post">
+                <form action="{{ route('role.destroy', $rd->id) }}" method="post">
                     @csrf
                     @method('DELETE')
                     <input type="submit" value="Delete">
                 </form>
-                <form action="{{ route('role.edit' , $rd->id) }}" method="get">
+                <form action="{{ route('role.edit', $rd->id) }}" method="get">
                     <input type="submit" value="Edit">
                 </form>
             </td>
         </tr>
-    @endforeach
+    @empty
+        <p>No Role Assigned Yet.</p>
+    @endforelse
 </table>
 
 
 
 <script>
-      
-        $(document).ready(function () {
-            $("#role_name").on("input", Validate_Role_name);
 
-            $("#role_assign_form").submit(function (e) {
-                let role_name = Validate_Role_name();
-                
-                if (!role_name) {
-                    e.preventDefault();
-                }
-            })
-        })
+    $(document).ready(function () {
+        $("#role_name").on("input", Validate_Role_name);
+        $("input[name='permissions[]']").on("change", Validate_Permissions);
 
-     // role name validations
-        function Validate_Role_name() {
-            let role_name = $("#role_name").val();
-            if (role_name == "") {
-                $("#role_name_error").html("Role name cannot be blank");
-                return false;
+        $("#role_assign_form").submit(function (e) {
+            let role_name_valid = Validate_Role_name();
+            let permissions_valid = Validate_Permissions();
+
+            if (!role_name_valid || !permissions_valid) {
+                e.preventDefault(); // Prevent submission
             }
-            else if (!/^[A-Za-z ]{1,100}$/.test(role_name)) {
-                $("#role_name_error").html("role name must contain only characters and spaces");
-                return false;
-            }
-            else {
-                $("#role_name_error").html("");
-                return true;
-            }
+        });
+    });
+    // role name validations
+    function Validate_Role_name() {
+        let role_name = $("#role_name").val();
+        if (role_name == "") {
+            $("#role_name_error").html("Role name cannot be blank");
+            return false;
         }
+        else if (!/^[A-Za-z ]{1,100}$/.test(role_name)) {
+            $("#role_name_error").html("role name must contain only characters and spaces");
+            return false;
+        }
+        else {
+            $("#role_name_error").html("");
+            return true;
+        }
+    }
+
+    function Validate_Permissions() {
+        if ($("input[name='permissions[]']:checked").length === 0) {
+            $("#permissions_error").html("At least one permission must be selected");
+            return false;
+        } else {
+            $("#permissions_error").html("");
+            return true;
+        }
+    }
+
 
 </script>

@@ -15,14 +15,12 @@ class VerifyAccessKey
      */
     public function handle(Request $request, Closure $next): Response
     {
-         // Allow access to the key input page
         if ($request->is('key')) {
             return $next($request);
         }
 
-        // Check session for access key
         if (!session()->has('access_granted')) {
-            return redirect('/key')->with('error', 'Access denied. Please enter the access key.');
+            return redirect('/key');
         }
         return $next($request);
     }

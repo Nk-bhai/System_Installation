@@ -3,31 +3,32 @@
 namespace App\Http\Controllers;
 
 use App\Models\RoleModel;
+use App\Models\UserModel;
 use Config;
 use DB;
 use Illuminate\Http\Request;
 
 class RoleController extends Controller
 {
-     public function __construct()
+    public function __construct()
     {
         $dynamicDb = session('dynamic_db');
         if ($dynamicDb) {
-                Config::set('database.connections.' . $dynamicDb, [
-                    'driver' => 'mysql',
-                    'host' => config('database.connections.mysql.host'),
-                    'port' => config('database.connections.mysql.port'),
-                    'database' => $dynamicDb,
-                    'username' => config('database.connections.mysql.username'),
-                    'password' => config('database.connections.mysql.password'),
-                    'charset' => 'utf8mb4',
-                    'collation' => 'utf8mb4_unicode_ci',
-                    'prefix' => '',
-                    'strict' => true,
-                    'engine' => null,
-                ]);
+            Config::set('database.connections.' . $dynamicDb, [
+                'driver' => 'mysql',
+                'host' => config('database.connections.mysql.host'),
+                'port' => config('database.connections.mysql.port'),
+                'database' => $dynamicDb,
+                'username' => config('database.connections.mysql.username'),
+                'password' => config('database.connections.mysql.password'),
+                'charset' => 'utf8mb4',
+                'collation' => 'utf8mb4_unicode_ci',
+                'prefix' => '',
+                'strict' => true,
+                'engine' => null,
+            ]);
             DB::setDefaultConnection($dynamicDb);
-            
+
         }
     }
     /**
@@ -37,7 +38,7 @@ class RoleController extends Controller
     {
         $roleData = RoleModel::all();
 
-        return view('Role' ,['roleData' => $roleData]);
+        return view('Role', ['roleData' => $roleData]);
     }
 
     /**
@@ -56,10 +57,10 @@ class RoleController extends Controller
         $role_name = $request->input('role');
         $permissions = $request->input('permissions');
 
-        $permissions_string = "";  
-        foreach($permissions as $p){
-            $permissions_string .= $p . ','; 
-        } 
+        $permissions_string = "";
+        foreach ($permissions as $p) {
+            $permissions_string .= $p . ',';
+        }
         // echo $permissions_string;exit;
         // print_r($permissions);exit;
         RoleModel::insert([
@@ -82,17 +83,17 @@ class RoleController extends Controller
      */
     public function edit(string $id)
     {
-        $role_edit_data = RoleModel::where('id' ,'=' , $id)->get();
-        $role = RoleModel::where('id', '=' , $id)->first();
+        $role_edit_data = RoleModel::where('id', '=', $id)->get();
+        $role = RoleModel::where('id', '=', $id)->first();
 
         $permissions = [];
 
         if ($role && $role->permissions) {
             $permissions = array_map('trim', explode(',', $role->permissions));
         }
-        
-        
-        return view('RoleEdit' , ['role_edit_data' => $role_edit_data , 'permissions' => $permissions]);
+
+
+        return view('RoleEdit', ['role_edit_data' => $role_edit_data, 'permissions' => $permissions]);
     }
 
     /**
@@ -100,16 +101,24 @@ class RoleController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $permissions = $request->input('permissions');
+        // role_name change globally in all table
+        $role = RoleModel::find($id);
+        $old_role_name = $role->role_name;
+        $new_role_name = $request->input('role_name');
 
-        $permissions_string = "";  
-        foreach($permissions as $p){
-            $permissions_string .= $p . ','; 
-        } 
-        RoleModel::where('id' , '=', $id)->update([
+        $permissions = $request->input('permissions');
+        $permissions_string = "";
+        foreach ($permissions as $p) {
+            $permissions_string .= $p . ',';
+        }
+
+        RoleModel::where('id', '=', $id)->update([
             'role_name' => $request->input('role_name'),
             'permissions' => $permissions_string
         ]);
+
+        // role_name change globally in all table
+        UserModel::where('role', $old_role_name)->update(['role' => $new_role_name]);
         return redirect()->route('role.index');
     }
 
@@ -118,7 +127,7 @@ class RoleController extends Controller
      */
     public function destroy(string $id)
     {
-        RoleModel::where('id' , '=' , $id)->delete();
-          return redirect()->route('role.index');
+        RoleModel::where('id', '=', $id)->delete();
+        return redirect()->route('role.index');
     }
 }

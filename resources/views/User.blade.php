@@ -1,27 +1,47 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <h1>User Role Assign Page</h1>
-<form action="{{ route('user.store') }}" method="post">
+<form action="{{ route('user.store') }}" method="post" id="user_role_assign">
     @csrf
     <label>Name</label>
-    <input type="text" name="name">
-
+    <input type="text" name="name" id="name">
+    <span id="name_error" style="color:red">
+    </span>
+        @error('name')
+            {{ $message }}
+        @enderror
     <br><br>
 
     <label>Email</label>
-    <input type="email" name="email">
+    <input type="email" name="email" id="email">
+    <span id="email_error" style="color:red">
+    </span>
+        @error('email')
+            {{ $message }}
+        @enderror
 
     <br><br>
 
     <label>Password</label>
-    <input type="password" name="password">
+    <input type="password" name="password" id="password">
+    <span id="password_error" style="color:red">
+    </span>
+    @error('password')
+    {{ $message }}
+        @enderror
 
     <br><br>
     <label>Assign Role</label>
-    <select name="role">
+    <select name="role" id="role">
+        <option value="assign">--Assign Role--</option>
         @foreach ($role as $r)
             <option value="{{ $r->role_name }}">{{$r->role_name}}</option>
         @endforeach
     </select>
+    <span id="role_error" style="color:red">
 
+    @error('role')
+        {{ $message }}
+    @enderror
     <br><br>
 
 
@@ -30,12 +50,23 @@
 </form>
 
 <table border="1">
-    <tr>
+      <tr>
         <th>Name</th>
         <th>Email</th>
         <th>Role</th>
+        <th>Actions</th>
     </tr>
-    @foreach ($data as $dt)
+    {{-- @forelse ($data as $dt)
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+        </tr>
+        @break
+    @empty
+    @endforelse --}}
+
+    @forelse ($data as $dt)
         <tr>
             <td>{{$dt->name}}</td>
             <td>{{$dt->email}}</td>
@@ -51,12 +82,105 @@
                 </form>
             </td>
         </tr>
-    @endforeach
+    @empty
+        <p>No Role assigned to user Yet.</p>
+    @endforelse
 </table>
 
 <a href="/dashboard">Dashboard</a>
 <a href="/admin">Admin Login Page</a>
 
+<script>
+    $(document).ready(function () {
+        $("#name").on('input', ValidateName);
+        $("#email").on('input', ValidateEmail);
+        $("#password").on('input', ValidatePassword);
+        // $("#role").on('change', ValidateRole);
+
+        $("#user_role_assign").submit(function (e) {
+            let name = ValidateName();
+            let email = ValidateEmail();
+            let password = ValidatePassword();
+            // let role = ValidateRole();
+            if (!name || !email || !password){
+                e.preventDefault();
+            }
+        })
+    })
+
+    // name validations
+    function ValidateName() {
+        let name = $("#name").val();
+        if (name == "") {
+            $("#name_error").html("Name cannot be blank");
+            return false;
+        }
+
+        else if (/^[ ]{1,100}$/.test(name)) {
+            $("#name_error").html("Name cannot contain spaces only");
+            return false;
+        }
+        else if (!/^[A-Za-z ]{1,100}$/.test(name)) {
+            $("#name_error").html("Name should contain characters and spaces only");
+            return false;
+        }
+        else {
+            $("#name_error").html("");
+            return true;
+
+        }
+    }
+
+    // emial validations
+    function ValidateEmail() {
+        let email = $("#email").val();
+
+        if (email == "") {
+            $("#email_error").html("Email cannot be blank");
+            return false;
+        }
+        else if (!/^[A-Za-z0-9.]+@[A-Za-z]{2,7}\.[A-Za-z]{2,100}$/.test(email)) {
+            $("#email_error").html("Email must be valid");
+            return false;
+        }
+        else {
+            $("#email_error").html("");
+            return true;
+        }
+    }
+
+    // password validations
+    function ValidatePassword() {
+        let password = $("#password").val();
+        if (password == "") {
+            $("#password_error").html("Password cannot be blank");
+            return false;
+        }
+        else if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8}$/.test(password)) {
+            $("#password_error").html("Password must contain atleast 1 uppercase , 1 Lowercase , 1 Digits , 1 Special Character and must be of 8 characters");
+            return false;
+
+        } else {
+            $("#password_error").html("");
+            return true;
+        }
+
+    }
+
+//     // role validations
+//     function ValidateRole() {
+//     let role = $("#role").val();
+//     if (role === "assign") {
+//         $("#role_error").html("Please select a role");
+//         return false;
+//     } else {
+//         $("#role_error").html("");
+//         return true;
+//     }
+// }
+
+
+</script>
 
 
 {{-- @extends('master')

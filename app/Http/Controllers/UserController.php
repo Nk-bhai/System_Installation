@@ -55,6 +55,12 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'name' => ['required', 'min:2'],
+            'email' => ['required', 'min:2' , 'email'],
+            'password' => ['required', 'min:2' , 'max:8'],
+            'role' => ['required']
+        ]);
         UserModel::insert([
             'name' => $request->input('name'),
             'email' => $request->input('email'),
@@ -76,11 +82,19 @@ class UserController extends Controller
      * Show the form for editing the specified resource.
      */
     public function edit(string $id)
-    {
+    {   
         $data = UserModel::where('id', '=', $id)->get();
         $role = RoleModel::get('role_name');
 
         return view('UserEdit', ['data' => $data, 'role' => $role]);
+    }
+    public function User_Table_edit(Request $request )
+    {
+        $id = $request->input('id');
+        $data = UserModel::where('id', '=', $id)->get();
+        $role = RoleModel::get('role_name');
+
+        return view('UserTableEdit', ['data' => $data, 'role' => $role]);
     }
 
     /**

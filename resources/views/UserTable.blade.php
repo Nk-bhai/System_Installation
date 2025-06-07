@@ -23,7 +23,9 @@
                 @endif
 
                 @if (in_array('Update', $permissions))
-                    <form action="{{ route('user.edit', $dt->id) }}" method="get" style="display:inline;">
+                    <form action="{{ route('User_Table_edit') }}" method="post" style="display:inline;">
+                        @csrf
+                        <input type="hidden" value="{{ $dt->id }}" name="id">
                         <input type="submit" value="Edit">
                     </form>
                 @endif

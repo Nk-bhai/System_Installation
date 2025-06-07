@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 class AdminController extends Controller
 {
 
-    private function setDynamicDatabaseConnection($email)
+    public function setDynamicDatabaseConnection($email)
     {
         $emailArray = explode('@', $email);
         $db_prefix = $emailArray[0];
@@ -77,9 +77,8 @@ class AdminController extends Controller
             session(['email' => $email]);
             return redirect()->route('dashboard');
         } else {
-
             $login_data = UserModel::where('email', '=', $email)->first();
-
+            
             if ($email == $login_data->email && $password == $login_data->password) {
                 session(['login_email' => $email]);
                 return redirect()->route('UserTable');
@@ -134,8 +133,8 @@ class AdminController extends Controller
 
     public function UserTable()
     {
-        $data = UserModel::where('email' , '!=' , session('login_email'))->get();
-        $user_name = UserModel::where('email' , '=' , session('login_email'))->get('name');
+        $data = UserModel::where('email', '!=', session('login_email'))->get();
+        $user_name = UserModel::where('email', '=', session('login_email'))->get('name');
         $user = UserModel::where('email', session('login_email'))->first();
 
         if (!$user) {
@@ -152,7 +151,7 @@ class AdminController extends Controller
             $permissions = array_map('trim', explode(',', $role->permissions));
         }
 
-        return view('UserTable', ['user_name' => $user_name ,'data' => $data, 'permissions' => $permissions]);
+        return view('UserTable', ['user_name' => $user_name, 'data' => $data, 'permissions' => $permissions]);
     }
 
 

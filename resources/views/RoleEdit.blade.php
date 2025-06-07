@@ -36,7 +36,7 @@
             <input type="checkbox" value="Update" name="permissions[]">Update
         @endif
         
-
+        <div id="permissions_error" style="color:red"></div>
 
         <br><br>
 
@@ -50,22 +50,21 @@
 <a href="/dashboard">Dashboard</a>
 
 
-
-
 <script>
 
     $(document).ready(function () {
         $("#role_name").on("input", Validate_Role_name);
+        $("input[name='permissions[]']").on("change", Validate_Permissions);
 
         $("#role_assign_form").submit(function (e) {
-            let role_name = Validate_Role_name();
+            let role_name_valid = Validate_Role_name();
+            let permissions_valid = Validate_Permissions();
 
-            if (!role_name) {
-                e.preventDefault();
+            if (!role_name_valid || !permissions_valid) {
+                e.preventDefault(); // Prevent submission
             }
-        })
-    })
-
+        });
+    });
     // role name validations
     function Validate_Role_name() {
         let role_name = $("#role_name").val();
@@ -82,5 +81,16 @@
             return true;
         }
     }
+
+    function Validate_Permissions() {
+        if ($("input[name='permissions[]']:checked").length === 0) {
+            $("#permissions_error").html("At least one permission must be selected");
+            return false;
+        } else {
+            $("#permissions_error").html("");
+            return true;
+        }
+    }
+
 
 </script>
