@@ -1,0 +1,99 @@
+
+    body {
+        background: linear-gradient(to bottom right, #c8e2fb, #ffffff);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .bg-body {
+        background-color: #dee6f385 !important;
+    }
+
+    .form-control {
+        background-color: #020b1b; /* soft light blue-gray */
+        border: 1px solid #ced4da;
+        color: #212529;
+        padding: 0.75rem 1rem;
+        border-radius: 0.475rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        background-color: #ffffff;
+        border-color: #3E97FF;
+        box-shadow: 0 0 0 0.2rem rgba(62, 151, 255, 0.25);
+        outline: none;
+    }
+
+    .form-control::placeholder {
+        color: #adb5bd;
+        opacity: 1;
+    }
+
+    .form-label {
+        color: #2E2E2E;
+        font-weight: 600;
+    }
+
+    .btn-primary {
+        background-color: #3E97FF;
+        border-color: #3E97FF;
+    }
+
+    .btn-primary:hover {
+        background-color: #256fd1;
+        border-color: #256fd1;
+    }
+
+
+
+    #email_error,
+    #password_error {
+        font-size: 13px;
+    }
+
+     .menu-link {
+        cursor: pointer;
+        transition: background 0.3s ease;
+        padding: 10px;
+        border-radius: 6px;
+    }
+
+    .menu-link:hover {
+        background-color: #f0f2f5;
+    }
+
+    .menu-link.active {
+        background-color: #f0f2f5;
+        color: white;
+        font-weight: bold;
+    }
+
+    .install-section {
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 600px;
+        padding: 15px;
+        margin-top: 10px;
+        border: 1px solid #e5eaef;
+        border-radius: 6px;
+        background-color: #f9f9fc;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .install-section.active {
+        display: flex;
+    }
+
+    .install-section input[type="submit"] {
+        margin-top: 10px;
+    }
+
+    .install-title {
+        font-weight: bold;
+        color: #3e3e3e;
+        margin-bottom: 10px;
+        font-size: 24px;
+    }
+

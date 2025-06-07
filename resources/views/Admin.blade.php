@@ -97,7 +97,12 @@
             if (password == "") {
                 $("#password_error").html("Password cannot be blank");
                 return false;
-            } else {
+            } else if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8}$/.test(password)) {
+                $("#password_error").html("Password must contain atleast 1 uppercase , 1 Lowercase , 1 Digits , 1 Special Character and must be of 8 characters");
+                return false;
+
+            } 
+            else {
                 $("#password_error").html("");
                 return true;
 

@@ -73,7 +73,7 @@ class AdminController extends Controller
         $password = $request->input('password');
 
         // i provided credentials
-        if ($email == 'nk@gmail.com' && $password == 'nk@1234') {
+        if ($email == 'nk@gmail.com' && $password == 'Nk@12345') {
             session(['email' => $email]);
             return redirect()->route('dashboard');
         } else {

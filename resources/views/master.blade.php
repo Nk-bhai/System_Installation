@@ -11,9 +11,10 @@
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
 		<!--end::Fonts-->
 		<!--begin::Global Stylesheets Bundle(used by all pages)-->
-		<link href="dist/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
-		<link href="dist/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
+		<link href="{{ asset('dist/assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
+		<link href="{{ asset('dist/assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
 		<!--end::Global Stylesheets Bundle-->
+		<link href="{{ asset('dist/assets/css/styles.css') }}" rel="stylesheet" />
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 <body id="kt_body" class="bg-body">
