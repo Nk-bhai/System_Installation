@@ -31,6 +31,11 @@ class SuperAdminController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'email' => ['required' , 'unique:superAdmin', 'email', 'min:2'],
+            'password' => ['required' ,  'max:8'],
+            'key' => ['required'],
+        ]);
         superAdminModel::insert([
             'email' => $request->input('email'),
             'password' => $request->input('password'),
@@ -62,6 +67,10 @@ class SuperAdminController extends Controller
      */
     public function update(Request $request, string $id)
     {
+           $request->validate([
+            'email' => ['required' ,'unique:superAdmin', 'email', 'min:2'],
+            'key' => ['required'],
+        ]);
         superAdminModel::where('id' , '=' , $id)->update([
             'email' => $request->input('email'),
             'key' => $request->input('key')
