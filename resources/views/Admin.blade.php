@@ -1,5 +1,3 @@
-@extends('master')
-@section('contents')
     {{-- <h1>Admin Login Page</h1>
 
     <form action="{{ route('admin') }}" method="post">
@@ -17,15 +15,15 @@
         <input type="submit" value="Login">
     </form> --}}
 
+@extends('master')
+@section('contents')
+
     <div class="d-flex flex-column flex-root">
         <div class="d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed"
             style="background-image: url(dist/assets/media/illustrations/dozzy-1/14.png">
             <div class="d-flex flex-center flex-column flex-column-fluid p-10 pb-lg-20">
-                {{-- <h1 style="color:green">Admin Page</h1> --}}
                 <div class="w-lg-500px bg-body rounded shadow-sm p-10 p-lg-15 mx-auto">
-                    <!--begin::Form-->
-                    <form class="form w-100"  action="{{ route('admin') }}" method="post"
-                        id="loginform">
+                    <form class="form w-100"  action="{{ route('admin') }}" method="post" id="loginform">
                         @csrf
                         <div class="text-center mb-10">
                             <h1 class="text-dark mb-3"> Login Page</h1>
@@ -35,7 +33,7 @@
                             <input class="form-control form-control-lg form-control-solid" type="email" name="email"
                                 id="email" />
                             <div id="email_error" style="color:red"></div>
-                        </div>
+                        </div>  
                         <div class="fv-row mb-10">
                             <div class="d-flex flex-stack mb-2">
                                 <label class="form-label fw-bolder text-dark fs-6 mb-0">Password</label>
@@ -100,12 +98,10 @@
             } else if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8}$/.test(password)) {
                 $("#password_error").html("Password must contain atleast 1 uppercase , 1 Lowercase , 1 Digits , 1 Special Character and must be of 8 characters");
                 return false;
-
             } 
             else {
                 $("#password_error").html("");
                 return true;
-
             }
         }
     </script>

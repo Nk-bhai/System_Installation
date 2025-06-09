@@ -108,8 +108,7 @@
                                                         @endif
 
                                                         @if (in_array('Delete', $permissions))
-                                                            <form action="{{ route('user.destroy', $dt->id) }}" method="post"
-                                                                onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                                            <form action="{{ route('user.destroy', $dt->id) }}" method="post" onsubmit="return confirm('Are you sure you want to delete this user?');">
                                                                 @csrf
                                                                 @method('DELETE')
                                                                 <button type="submit" class="btn btn-sm btn-light-danger">

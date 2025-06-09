@@ -12,6 +12,7 @@ class SuperAdminController extends Controller
      */
     public function index()
     {
+        
         $data = superAdminModel::all();
         return view('SuperAdmin' , ['data' => $data]);
 
@@ -35,7 +36,7 @@ class SuperAdminController extends Controller
             'password' => $request->input('password'),
             'key' => $request->input('key')
         ]);
-
+        
         return redirect()->route('superAdmin.index');
     }
 

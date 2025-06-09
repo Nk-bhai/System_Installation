@@ -7,6 +7,8 @@ use App\Models\UserModel;
 use Artisan;
 use Config;
 use DB;
+use GuzzleHttp\Client;
+use Http;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -51,6 +53,12 @@ class AdminController extends Controller
     public function key(Request $request)
     {
         $key = $request->input('key');
+        
+        $response = Http::get('https://jsonplaceholder.typicode.com/posts/1');
+        // $response = Http::get('http://127.0.0.1:8000/api/superadmin/1');
+        // return $response['title'];
+        // dd("HELLO");
+    
         if ($key !== '1234') {
             return redirect()->back()->with('error', 'Key Not Valid');
         }
