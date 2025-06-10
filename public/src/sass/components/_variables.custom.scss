@@ -6,15 +6,15 @@
 
 // Theme colors
 // Primary
-$primary:       									if(isDarkMode(), #0BB783, #50CD89);
-$primary-active:    								if(isDarkMode(), #04AA77, #47BE7D);
-$primary-light:    									if(isDarkMode(), #1C3238, #E8FFF3);
+$primary:       									if(isDarkMode(), #3699FF, #009EF7);
+$primary-active:    								if(isDarkMode(), #187DE4, #0095E8);
+$primary-light:    								    if(isDarkMode(), #212E48, #F1FAFF);
 $primary-inverse:  									#FFFFFF;
 
 // Success
-$success:       									if(isDarkMode(), #3699FF, #00B2FF);
-$success-active:    								if(isDarkMode(), #187DE4, #0098DA);
-$success-light:    								    if(isDarkMode(), #212E48, #F1FAFF);
+$success:       									if(isDarkMode(), #0BB783, #50CD89);
+$success-active:    								if(isDarkMode(), #04AA77, #47BE7D);
+$success-light:    									if(isDarkMode(), #1C3238, #E8FFF3);
 $success-inverse:  									#FFFFFF;
 
 // Info
@@ -34,8 +34,3 @@ $warning:       									if(isDarkMode(), #FFA800, #FFC700);
 $warning-active:    								if(isDarkMode(), #EE9D01, #F1BC00);
 $warning-light:    									if(isDarkMode(), #392F28, #FFF8DD);
 $warning-inverse:  									#FFFFFF;
-
-// Card
-$card-bg:                                           if(isDarkMode(), #1E1E2D, rgba(245, 248, 250, 0.35));
-$card-box-shadow: 									none; 
-$card-border-enabled: 								true;

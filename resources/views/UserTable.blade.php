@@ -49,7 +49,7 @@
             <h1 class="text-center mb-10">Welcome Mr. {{ $name->name }}</h1>
         @endforeach
         <div class="d-flex justify-content-center">
-            <div class="col-lg-10">
+            <div class="col-lg-10"> 
                 <div class="card shadow-sm">
                     <div class="card-header border-0 pt-5 d-flex justify-content-between align-items-center">
                         <div>
