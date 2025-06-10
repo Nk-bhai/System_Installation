@@ -43,6 +43,9 @@ class AdminController extends Controller
 
     public function key(Request $request)
     {
+        $request->validate([
+            'key' => ['required']
+        ]);
         $key = $request->input('key');
 
         $response = Http::get('https://jsonplaceholder.typicode.com/posts/1');
@@ -66,36 +69,12 @@ class AdminController extends Controller
 
 
 
-    // public function admin(Request $request)
-    // {
-    //     $email = $request->input('email');
-    //     $password = $request->input('password');
-    //     $login_data = UserModel::where('email', '=', $email)->first();
-    //     // $login_data = UserModel::get();
-
-    //     // i provided credentials
-    //     if ($email == 'nk@gmail.com' && $password == 'Nk@12345') {
-    //         session(['email' => $email]);
-    //         return redirect()->route('dashboard');
-    //     } else {
-
-    //         if ($email == $login_data->email && $password == $login_data->password) {
-    //             session(['login_email' => $email]);
-    //             return redirect()->route('UserTable');
-    //         } else {
-    //             return redirect()->back()->with('error', 'Invalid Credentials');
-    //         }
-
-    //     }
-    // }
-
-
     public function admin(Request $request)
     {
         $email = $request->input('email');
         $password = $request->input('password');
 
-        // Login via hardcoded super admin OR static db user table
+        // i provided credentials
         if ($email === 'nk@gmail.com' && $password === 'Nk@12345') {
             session(['email' => $email]);
             return redirect()->route('dashboard');
@@ -110,10 +89,12 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'Invalid Credentials');
         }
     }
+
     public function dashboardPage()
     {
         return view('Dashboard');
     }
+
     public function UserCrudInstall()
     {
         Artisan::call('migrate', [
@@ -133,8 +114,6 @@ class AdminController extends Controller
 
         return redirect()->route('role.index');
     }
-
-
 
     public function UserTable()
     {
@@ -158,7 +137,6 @@ class AdminController extends Controller
 
         return view('UserTable', ['user_name' => $user_name, 'data' => $data, 'permissions' => $permissions]);
     }
-
 
     public function logout(Request $request)
     {

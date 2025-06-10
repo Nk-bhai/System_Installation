@@ -29,7 +29,7 @@ class SuperAdminApiController extends Controller
      */
     public function show(string $id)
     {
-        $data = superAdminModel::where('key' ,'=' , $id)->first();
+        $data = superAdminModel::where('email' ,'=' , $id)->first();
         return [
             'id' => $data->id,
             'email' => $data->email,

@@ -12,12 +12,6 @@ Route::get('/', function () {
 
 Route::resource('superAdmin' , SuperAdminController::class);
 
-// Route::get('/key', function () {
-//     if (session()->has('access_granted')) {
-//         return redirect()->route('adminPage');
-//     }
-//     return view('Key');
-// });
 Route::view('/key' , 'Key');
 
 Route::post('key', [AdminController::class , 'key'])->name('key');

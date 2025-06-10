@@ -9,6 +9,3 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::apiResource('superadmin' , SuperAdminApiController::class);
-
-  
-// "guzzlehttp/guzzle": "^7.9",
