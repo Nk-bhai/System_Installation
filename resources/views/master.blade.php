@@ -14,7 +14,7 @@
 		<link href="{{ asset('dist/assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
 		<link href="{{ asset('dist/assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
 		<!--end::Global Stylesheets Bundle-->
-		<link href="{{ asset('dist/assets/css/styles.css') }}" rel="stylesheet" />
+		{{-- <link href="{{ asset('dist/assets/css/styles.css') }}" rel="stylesheet" /> --}}
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 <body id="kt_body" class="bg-body">

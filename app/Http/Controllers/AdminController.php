@@ -7,18 +7,16 @@ use App\Models\UserModel;
 use Artisan;
 use Config;
 use DB;
-use GuzzleHttp\Client;
 use Http;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
 
-    public function setDynamicDatabaseConnection($email)
+    public function __construct()
     {
-        $emailArray = explode('@', $email);
-        $db_prefix = $emailArray[0];
-        $databasename = $db_prefix . '_DB';
+
+        $databasename = 'nk_db';
 
         DB::statement('CREATE DATABASE IF NOT EXISTS ' . $databasename);
 
@@ -39,26 +37,19 @@ class AdminController extends Controller
         session(['dynamic_db' => $databasename]);
         DB::setDefaultConnection($databasename);
 
-        return $databasename;
-    }
 
-    public function __construct()
-    {
-        if (session()->has('email')) {
-            $this->setDynamicDatabaseConnection(session('email'));
-        }
 
     }
 
     public function key(Request $request)
     {
         $key = $request->input('key');
-        
+
         $response = Http::get('https://jsonplaceholder.typicode.com/posts/1');
         // $response = Http::get('http://127.0.0.1:8000/api/superadmin/1');
         // return $response['title'];
         // dd("HELLO");
-    
+
         if ($key !== '1234') {
             return redirect()->back()->with('error', 'Key Not Valid');
         }
@@ -75,66 +66,72 @@ class AdminController extends Controller
 
 
 
+    // public function admin(Request $request)
+    // {
+    //     $email = $request->input('email');
+    //     $password = $request->input('password');
+    //     $login_data = UserModel::where('email', '=', $email)->first();
+    //     // $login_data = UserModel::get();
+
+    //     // i provided credentials
+    //     if ($email == 'nk@gmail.com' && $password == 'Nk@12345') {
+    //         session(['email' => $email]);
+    //         return redirect()->route('dashboard');
+    //     } else {
+
+    //         if ($email == $login_data->email && $password == $login_data->password) {
+    //             session(['login_email' => $email]);
+    //             return redirect()->route('UserTable');
+    //         } else {
+    //             return redirect()->back()->with('error', 'Invalid Credentials');
+    //         }
+
+    //     }
+    // }
+
+
     public function admin(Request $request)
     {
         $email = $request->input('email');
         $password = $request->input('password');
 
-        // i provided credentials
-        if ($email == 'nk@gmail.com' && $password == 'Nk@12345') {
+        // Login via hardcoded super admin OR static db user table
+        if ($email === 'nk@gmail.com' && $password === 'Nk@12345') {
             session(['email' => $email]);
             return redirect()->route('dashboard');
-        } else {
-            $login_data = UserModel::where('email', '=', $email)->first();
-            
-            if ($email == $login_data->email && $password == $login_data->password) {
-                session(['login_email' => $email]);
-                return redirect()->route('UserTable');
-            } else {
-                return redirect()->back()->with('error', 'Invalid Credentials');
-            }
+        }
 
+        $user = UserModel::where('email', $email)->first();
+
+        if ($user && $user->password === $password) {
+            session(['login_email' => $email]);
+            return redirect()->route('UserTable');
+        } else {
+            return redirect()->back()->with('error', 'Invalid Credentials');
         }
     }
-
-
     public function dashboardPage()
     {
-        // dump(session('email'));
         return view('Dashboard');
     }
     public function UserCrudInstall()
     {
-        $email = session('email');
-        if (!empty($email)) {
-            $databasename = $this->setDynamicDatabaseConnection($email);
+        Artisan::call('migrate', [
+            '--database' => 'nk_db',
+            '--path' => 'database/migrations/2025_06_04_093250_user_crud.php',
+        ]);
 
-            Artisan::call('migrate', [
-                '--database' => $databasename,
-                '--path' => 'database/migrations/2025_06_04_093250_user_crud.php',
-            ]);
-
-            return redirect()->route('user.index');
-        }
-
-        return redirect()->route('dashboard');
+        return redirect()->route('user.index');
     }
 
     public function roleInstall()
     {
-        $email = session('email');
-        if (!empty($email)) {
-            $databasename = $this->setDynamicDatabaseConnection($email);
+        Artisan::call('migrate', [
+            '--database' => 'nk_db',
+            '--path' => 'database/migrations/2025_06_05_112216_role.php',
+        ]);
 
-            Artisan::call('migrate', [
-                '--database' => $databasename,
-                '--path' => 'database/migrations/2025_06_05_112216_role.php',
-            ]);
-
-            return redirect()->route('role.index');
-        }
-
-        return redirect()->route('dashboard');
+        return redirect()->route('role.index');
     }
 
 
