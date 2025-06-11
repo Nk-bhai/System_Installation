@@ -75,7 +75,11 @@
                             <div class="mb-5">
                                 <label class="form-label fs-6 fw-bolder text-dark">Role Name</label>
                                 <input class="form-control form-control-solid" type="text" name="role" id="role_name" />
-                                <span id="role_name_error" style="color:red"></span>
+                                <span id="role_name_error" style="color:red">
+                                    @error('role')
+                                    {{ $message }}
+                                    @enderror
+                                </span>
                             </div>
 
                             <div class="mb-5">

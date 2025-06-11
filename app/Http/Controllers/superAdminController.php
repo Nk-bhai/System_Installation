@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\superAdminModel;
+use DB;
 use Illuminate\Http\Request;
 
 class SuperAdminController extends Controller
@@ -12,9 +13,9 @@ class SuperAdminController extends Controller
      */
     public function index()
     {
-        
+        // dd(DB::connection()->getDatabaseName());
         $data = superAdminModel::all();
-        return view('SuperAdmin' , ['data' => $data]);
+        return view('SuperAdmin', ['data' => $data]);
 
     }
 
@@ -32,16 +33,16 @@ class SuperAdminController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'email' => ['required' , 'unique:superAdmin', 'email', 'min:2'],
-            'password' => ['required' ,  'max:8'],
-            'key' => ['required'],
+            'email' => ['required', 'unique:superAdmin', 'email', 'min:2'],
+            'password' => ['required', 'max:8'],
+            'key' => ['required', 'max:14'],
         ]);
         superAdminModel::insert([
             'email' => $request->input('email'),
             'password' => $request->input('password'),
             'key' => $request->input('key')
         ]);
-        
+
         return redirect()->route('superAdmin.index');
     }
 
@@ -58,8 +59,8 @@ class SuperAdminController extends Controller
      */
     public function edit(string $id)
     {
-        $data = superAdminModel::where('id' ,'=' , $id)->get();
-        return view('SuperAdminEdit' , ['data' => $data]);
+        $data = superAdminModel::where('id', '=', $id)->get();
+        return view('SuperAdminEdit', ['data' => $data]);
     }
 
     /**
@@ -67,11 +68,12 @@ class SuperAdminController extends Controller
      */
     public function update(Request $request, string $id)
     {
-           $request->validate([
-            'email' => ['required' ,'unique:superAdmin', 'email', 'min:2'],
-            'key' => ['required'],
+        $request->validate([
+            'email' => ['required', 'email', 'min:2'],
+            // 'password' => ['required', 'max:8'],
+            'key' => ['required', 'max:14']
         ]);
-        superAdminModel::where('id' , '=' , $id)->update([
+        superAdminModel::where('id', '=', $id)->update([
             'email' => $request->input('email'),
             'key' => $request->input('key')
         ]);
@@ -83,7 +85,7 @@ class SuperAdminController extends Controller
      */
     public function destroy(string $id)
     {
-        superAdminModel::where('id' , '=' , $id)->delete();
+        superAdminModel::where('id', '=', $id)->delete();
         return redirect()->route('superAdmin.index');
     }
 }

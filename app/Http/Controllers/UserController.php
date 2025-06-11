@@ -37,9 +37,19 @@ class UserController extends Controller
      */
     public function index()
     {
-        $role = RoleModel::get('role_name');
-        $data = UserModel::all();
-        return view('User', ['data' => $data, 'role' => $role]);
+
+        // $role = RoleModel::get('role_name');
+        // $data = UserModel::all();
+        // return view('User', ['data' => $data, 'role' => $role]);
+
+        try {
+            $role = RoleModel::get('role_name');
+            $data = UserModel::all();
+
+            return view('User', ['data' => $data, 'role' => $role]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect()->back()->with('error', 'Assign the role First');
+        }
     }
 
     /**
@@ -57,8 +67,8 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'min:2'],
-            'email' => ['required', 'min:2' , 'email'],
-            'password' => ['required', 'min:2' , 'max:8'],
+            'email' => ['required', 'min:2', 'email'],
+            'password' => ['required', 'min:2', 'max:8'],
             'role' => ['required']
         ]);
         UserModel::insert([
@@ -82,13 +92,13 @@ class UserController extends Controller
      * Show the form for editing the specified resource.
      */
     public function edit(string $id)
-    {   
+    {
         $data = UserModel::where('id', '=', $id)->get();
         $role = RoleModel::get('role_name');
 
         return view('UserEdit', ['data' => $data, 'role' => $role]);
     }
-    public function User_Table_edit(Request $request )
+    public function User_Table_edit(Request $request)
     {
         $id = $request->input('id');
         $data = UserModel::where('id', '=', $id)->get();
@@ -129,4 +139,5 @@ class UserController extends Controller
         return redirect()->route('UserTable');
     }
 }
-    
+
+//i am building a functionality where first the client in their system  needs to enter the key that i provide to them . After the key has been verify the client should redirected to login page where he should enter the email id and password that i provide . After successfull login the client should be redirected to dashboard. Problem is that how to verify the key . Also i have a super Admin who can terminate the key anytime.
