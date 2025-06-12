@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b708cca9ca834946ab0e258ce8f88948",
+    "content-hash": "d540b09c3af35b2660252dfcd498350a",
     "packages": [
         {
             "name": "brick/math",
@@ -2174,36 +2174,6 @@
             "time": "2025-03-24T10:02:05+00:00"
         },
         {
-            "name": "nand/laravel-license",
-            "version": "dev-main",
-            "dist": {
-                "type": "path",
-                "url": "C:/laravel-license-package",
-                "reference": "4607c5565f9bf9edb634fbf323e782ade24c5a28"
-            },
-            "require": {
-                "illuminate/support": "^12.0",
-                "php": "^8.2"
-            },
-            "type": "laravel",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Nand\\License\\LicenseServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Nand\\License\\": "src/"
-                }
-            },
-            "description": "A Laravel package for license key verification and app locking",
-            "transport-options": {
-                "relative": false
-            }
-        },
-        {
             "name": "nesbot/carbon",
             "version": "3.9.1",
             "source": {
@@ -2514,6 +2484,48 @@
                 "source": "https://github.com/nikic/PHP-Parser/tree/v5.5.0"
             },
             "time": "2025-05-31T08:24:38+00:00"
+        },
+        {
+            "name": "nk/system-auth",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "C:/nk-system-auth",
+                "reference": "228ccd4f3b04b710ce046b2fe77339c4d7180efe"
+            },
+            "require": {
+                "illuminate/database": "^9.0|^10.0|^11.0|^12.0",
+                "illuminate/routing": "^9.0|^10.0|^11.0|^12.0",
+                "illuminate/session": "^9.0|^10.0|^11.0|^12.0",
+                "illuminate/support": "^9.0|^10.0|^11.0|^12.0",
+                "php": "^8.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Nk\\SystemAuth\\SystemAuthServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Nk\\SystemAuth\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nand Kathiriya",
+                    "email": "nkbhai242001@gmail.com"
+                }
+            ],
+            "description": "A Laravel package for key-based authentication and license verification",
+            "transport-options": {
+                "relative": false
+            }
         },
         {
             "name": "nunomaduro/termwind",
@@ -8176,7 +8188,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "nand/laravel-license": 20
+        "nk/system-auth": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

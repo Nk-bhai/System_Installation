@@ -6,6 +6,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Nand\License\Http\Middleware\VerifyLicense;
+use Nk\SystemAuth\Http\Middleware\EnsureKeyVerified;
+use Nk\SystemAuth\Http\Middleware\EnsurePackagePresent;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,7 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->append(XssSanitization::class);
-        $middleware->append(VerifyLicense::class);
+        // $middleware->append(VerifyLicense::class);
+        // $middleware->append(EnsureKeyVerified::class);
+        $middleware->append(EnsurePackagePresent::class);
 
     })
     ->withExceptions(function (Exceptions $exceptions) {

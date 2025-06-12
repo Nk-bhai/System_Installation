@@ -85,34 +85,35 @@ class AdminController extends Controller
     //     }
     // }
 
-    
+
     public function admin(Request $request)
-{
-    $email = $request->input('email');
-    $password = $request->input('password');
+    {
+        $email = $request->input('email');
+        $password = $request->input('password');
 
-    // Hardcoded credentials check
-    if ($email === 'nk@gmail.com' && $password === 'Nk@12345') {
-        session(['email' => $email]);
-        return redirect()->route('dashboard');
+        // Hardcoded credentials check
+        if ($email === 'nk@gmail.com' && $password === 'Nk@12345') {
+            session(['email' => $email]);
+            return redirect()->route('dashboard');
+        }
+
+        try {
+            $user = UserModel::where('email', '=', $email)->first();
+
+            if (!$user) {
+                return redirect()->back()->with('error', 'Invalid Credentials');
+            }
+            if ($user && $user->password === $password) {
+                session(['login_email' => $email]);
+                return redirect()->route('UserTable');
+            } else {
+                return redirect()->back()->with('error', 'Invalid Credentials');
+            }
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect()->back()->with('error', 'Invalid Credentials');
+        }
     }
-
-    try {
-        $user = UserModel::where('email', '=', $email)->first();
-
-        if (!$user) {
-            return redirect()->back()->with('error', 'Invalid Credentials');
-        }
-        if ($user && $user->password === $password) {
-            session(['login_email' => $email]);
-            return redirect()->route('UserTable');
-        } else {
-            return redirect()->back()->with('error', 'Invalid Credentials');
-        }
-    } catch (\Illuminate\Database\QueryException $e) {
-        return redirect()->back()->with('error', 'Invalid Credentials');
-    } 
-}
+    
     public function dashboardPage()
     {
         return view('Dashboard');

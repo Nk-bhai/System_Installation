@@ -7,22 +7,21 @@
         "laravel",
         "framework"
     ],
+
     "license": "MIT",
     "repositories": [
-        {
-            "type": "path",
-            "url": "C:/laravel-license-package"
-        }
-    ],
-
-
+    {
+        "type": "path",
+        "url": "C:/nk-system-auth"
+    }
+],
     "require": {
         "php": "^8.2",
         "guzzlehttp/guzzle": "^7.9",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
-        "nand/laravel-license": "dev-main"
+        "nk/system-auth": "dev-main"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
