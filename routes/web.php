@@ -30,4 +30,11 @@ Route::resource('user' , UserController::class);
 Route::put('admin_update' , [UserController::class , 'admin_update'])->name('admin_update');
 Route::post('UserTableEdit' , [UserController::class , 'User_Table_edit'])->name('User_Table_edit');
 
+use Nand\CarLicense\CarLicenseServiceProvider;
 
+Route::get('/test-provider', function () {
+    if (class_exists(CarLicenseServiceProvider::class)) {
+        return 'Service Provider Loaded: ' . CarLicenseServiceProvider::class;
+    }
+    return 'Class NOT found';
+});

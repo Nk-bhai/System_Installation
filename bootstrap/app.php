@@ -5,6 +5,7 @@ use App\Http\Middleware\XssSanitization;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Nand\License\Http\Middleware\VerifyLicense;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->append(XssSanitization::class);
+        $middleware->append(VerifyLicense::class);
+
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
