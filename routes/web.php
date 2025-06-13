@@ -11,9 +11,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::resource('superAdmin', SuperAdminController::class);
 
-// Route::view('/key', 'Key');
+
+// Route::view('/key', 'Key')->name('key');
 // Route::post('key', [AdminController::class, 'key'])->name('key');
 Route::get('admin', [AdminController::class, 'adminPage'])->name('adminPage');
 Route::post('admin', [AdminController::class, 'admin'])->name('admin');
