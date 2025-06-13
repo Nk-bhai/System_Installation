@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d540b09c3af35b2660252dfcd498350a",
+    "content-hash": "f36ccf5644992ad74df515119dee021a",
     "packages": [
         {
             "name": "brick/math",
@@ -2487,11 +2487,11 @@
         },
         {
             "name": "nk/system-auth",
-            "version": "dev-main",
+            "version": "dev-master",
             "dist": {
                 "type": "path",
                 "url": "C:/nk-system-auth",
-                "reference": "228ccd4f3b04b710ce046b2fe77339c4d7180efe"
+                "reference": "0317e69b2cc830d6a54c3e271e045c8e9f3f180e"
             },
             "require": {
                 "illuminate/database": "^9.0|^10.0|^11.0|^12.0",
