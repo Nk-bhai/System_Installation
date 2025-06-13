@@ -13,7 +13,6 @@ Route::get('/', function () {
 
 Route::resource('superAdmin', SuperAdminController::class);
 
-// Removed conflicting /key and /admin routes
 // Route::view('/key', 'Key');
 // Route::post('key', [AdminController::class, 'key'])->name('key');
 Route::get('admin', [AdminController::class, 'adminPage'])->name('adminPage');
@@ -26,7 +25,7 @@ Route::any('roleinstall', [AdminController::class, 'roleInstall'])->name('roleIn
 Route::post('logout', [AdminController::class, 'logout'])->name('logout');
 
 Route::resource('role', RoleController::class);
+
 Route::resource('user', UserController::class);
 Route::put('admin_update', [UserController::class, 'admin_update'])->name('admin_update');
 Route::post('UserTableEdit', [UserController::class, 'User_Table_edit'])->name('User_Table_edit');
-

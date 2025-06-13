@@ -44,10 +44,9 @@ class AdminController extends Controller
         ]);
         $key = $request->input('key');
 
-
-        if ($key !== '1234') {
-            return redirect()->back()->with('error', 'Key Not Valid');
-        }
+        // if ($key !== '1234') {
+        //     return redirect()->back()->with('error', 'Key Not Valid');
+        // }
 
         session(['access_granted' => true]);
         return redirect()->route('adminPage');
@@ -91,11 +90,11 @@ class AdminController extends Controller
         $email = $request->input('email');
         $password = $request->input('password');
 
-        // Hardcoded credentials check
-        if ($email === 'nk@gmail.com' && $password === 'Nk@12345') {
-            session(['email' => $email]);
-            return redirect()->route('dashboard');
-        }
+        // // Hardcoded credentials check
+        // if ($email === 'nk@gmail.com' && $password === 'Nk@12345') {
+        //     session(['email' => $email]);
+        //     return redirect()->route('dashboard');
+        // }
 
         try {
             $user = UserModel::where('email', '=', $email)->first();
@@ -113,7 +112,7 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'Invalid Credentials');
         }
     }
-    
+
     public function dashboardPage()
     {
         return view('Dashboard');
@@ -165,7 +164,7 @@ class AdminController extends Controller
 
     public function logout(Request $request)
     {
-        $request->session()->flush();
+        // $request->session()->forgot('login_email');
         return redirect()->route('adminPage');
     }
 }

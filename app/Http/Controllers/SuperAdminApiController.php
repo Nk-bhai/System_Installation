@@ -21,7 +21,7 @@ class SuperAdminApiController extends Controller
      */
     public function store(Request $request)
     {
-        
+
     }
 
     /**
@@ -29,14 +29,17 @@ class SuperAdminApiController extends Controller
      */
     public function show(string $id)
     {
-        $data = superAdminModel::where('email' ,'=' , $id)->first();
-        return [
-            'id' => $data->id,
-            'email' => $data->email,
-            'password' => $data->password,
-            'key' => $data->key,
-        ];
-        // return $data;
+        $data = superAdminModel::where('key', '=', $id)->first();
+        
+        if ($data) {
+            return [
+                'id' => $data->id,
+                'email' => $data->email,
+                'password' => $data->password,
+                'key' => $data->key,
+            ];
+        }
+        return null;
     }
 
     /**

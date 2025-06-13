@@ -24,9 +24,9 @@
                 </div>
                 <div style="color:red">
                     {{ session('error') }}
-                    @if ($errors->has('email'))
+                    {{-- @if ($errors->has('email'))
                         {{ $errors->first('email') }}
-                    @endif
+                    @endif --}}
                 </div>
                 <div class="text-center">
                     <button type="submit" id="kt_sign_in_submit" class="btn btn-lg btn-primary w-100 mb-5">

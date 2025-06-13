@@ -8,6 +8,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Nand\License\Http\Middleware\VerifyLicense;
 use Nk\SystemAuth\Http\Middleware\EnsureKeyVerified;
 use Nk\SystemAuth\Http\Middleware\EnsurePackagePresent;
+use \Illuminate\Session\Middleware\StartSession;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -17,10 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->append(StartSession::class);
         $middleware->append(XssSanitization::class);
-        // $middleware->append(VerifyLicense::class);
-        // $middleware->append(EnsureKeyVerified::class);
         $middleware->append(EnsurePackagePresent::class);
+        $middleware->append(EnsureKeyVerified::class);
 
     })
     ->withExceptions(function (Exceptions $exceptions) {
