@@ -40,7 +40,7 @@
 
 
 
-@extends('master')
+@extends('master_old')
 @section('contents')
 
     <div class="d-flex flex-column flex-root">

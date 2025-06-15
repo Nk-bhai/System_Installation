@@ -1,181 +1,29 @@
-{{-- <h1>User Role Assign Page</h1> --}}
-{{-- <form action="{{ route('user.store') }}" method="post" id="user_role_assign">
-    @csrf
-    <label>Name</label>
-    <input type="text" name="name" id="name">
-    <span id="name_error" style="color:red">
-    </span>
-    @error('name')
-    {{ $message }}
-    @enderror
-    <br><br>
-
-    <label>Email</label>
-    <input type="email" name="email" id="email">
-    <span id="email_error" style="color:red">
-    </span>
-    @error('email')
-    {{ $message }}
-    @enderror
-
-    <br><br>
-
-    <label>Password</label>
-    <input type="password" name="password" id="password">
-    <span id="password_error" style="color:red">
-    </span>
-    @error('password')
-    {{ $message }}
-    @enderror
-
-    <br><br>
-    <label>Assign Role</label>
-    <select name="role" id="role">
-        <option value="assign">--Assign Role--</option>
-        @foreach ($role as $r)
-        <option value="{{ $r->role_name }}">{{$r->role_name}}</option>
-        @endforeach
-    </select>
-    <span id="role_error" style="color:red">
-
-        @error('role')
-        {{ $message }}
-        @enderror
-        <br><br>
-
-
-        <input type="submit" value="submit">
-
-</form> --}}
-
-{{-- <table border="1">
-
-    @forelse ($data as $dt)
-    <tr>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Role</th>
-    </tr>
-    @break
-    @empty
-    @endforelse
-
-    @forelse ($data as $dt)
-    <tr>
-        <td>{{$dt->name}}</td>
-        <td>{{$dt->email}}</td>
-        <td>{{$dt->role}}</td>
-        <td>
-            <form action="{{ route('user.destroy', $dt->id) }}" method="post">
-                @csrf
-                @method('DELETE')
-                <input type="submit" value="Delete">
-            </form>
-            <form action="{{ route('user.edit', $dt->id) }}" method="get">
-                <input type="submit" value="Edit">
-            </form>
-        </td>
-    </tr>
-    @empty
-    <p>No Role assigned to user Yet.</p>
-    @endforelse
-</table> --}}
-
-{{-- <a href="/dashboard">Dashboard</a>
-<a href="/admin">Admin Login Page</a> --}}
-
-
-
-
 @extends('master')
+
 @section('contents')
-
-    <div class="container-fluid py-10">
-
-        <div class="d-flex justify-content-end mb-5 gap-5">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-end mb-5 gap-5 mt-n10">
             <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a>
-            <a href="/admin" class="btn btn-danger">Logout</a>
+            <button type="button" class="btn btn-primary" id="addUserButton" data-bs-toggle="modal"
+                data-bs-target="#addUserModal">Add</button>
         </div>
-        {{-- <div class="d-flex justify-content-end mb-5">
-        </div> --}}
         <div class="row">
-            <!-- Form Section -->
-            <div class="col-lg-4 mb-10">
+            <div class="col-lg-12">
                 <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Assign Role</h3>
-                    </div>
-                    <div class="card-body">
-                        <form action="{{ route('user.store') }}" method="post" id="user_role_assign">
-                            @csrf
-
-                            <div class="mb-5">
-                                <label class="form-label fs-6 fw-bolder text-dark">Name</label>
-                                <input class="form-control form-control-solid" type="text" name="name" id="name" />
-                                <span id="name_error" style="color:red"></span>
-                                @error('name')
-                                    {{ $message }}
-                                @enderror
-                            </div>
-
-                            <div class="mb-5">
-                                <label class="form-label fs-6 fw-bolder text-dark">Email</label>
-                                <input class="form-control form-control-solid" type="email" name="email" id="email" />
-                                <span id="email_error" style="color:red"></span>
-                                @error('email')
-                                    {{ $message }}
-                                @enderror
-                            </div>
-
-                            <div class="mb-5">
-                                <label class="form-label fs-6 fw-bolder text-dark">Password</label>
-                                <input class="form-control form-control-solid" type="password" name="password"
-                                    id="password" />
-                                <span id="password_error" style="color:red"></span>
-                                @error('password')
-                                    {{ $message }}
-                                @enderror
-                            </div>
-
-                            <div class="mb-5">
-                                <label class="form-label fw-bolder text-dark fs-6">Assign Role</label>
-                                <select name="role" id="role" class="form-select form-select-solid" data-control="select2"
-                                    data-placeholder="Select a role" id="role">
-                                    <option value="assign">--Assign Role--</option>
-                                    @foreach ($role as $r)
-                                        <option value="{{ $r->role_name }}">{{ $r->role_name }}</option>
-                                    @endforeach
-                                </select>
-                                <span id="role_error" style="color:red">
-                                    @error('role')
-                                        {{ $message }}
-                                    @enderror
-                                </span>
-                            </div>
-
-
-                            <div>
-                                <button type="submit" class="btn btn-primary w-100">
-                                    Submit
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Table Section -->
-            <div class="col-lg-8">
-                <div class="card">
-                    <div class="card-header">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <h3 class="card-title">User List</h3>
+                        <div class="search-bar">
+                            <input type="text" id="searchInput" class="form-control form-control-solid"
+                                placeholder="Search by name, email, or role..." style="width: 300px;">
+                        </div>
                     </div>
                     <div class="card-body">
                         @if ($data->isEmpty())
                             <div class="alert alert-warning">No Role assigned to user Yet.</div>
                         @else
                             <div class="table-responsive">
-                                <table class="table table-row-bordered table-row-black-100 align-middle gs-0 gy-3">
+                                <table class="table table-row-bordered table-row-black-100 align-middle gs-0 gy-3"
+                                    id="userTable">
                                     <thead>
                                         <tr class="fw-bold text-muted">
                                             <th class="min-w-150px">Name</th>
@@ -197,20 +45,19 @@
                                                     <span class="text-dark fw-bold d-block">{{ $dt->role }}</span>
                                                 </td>
                                                 <td>
-                                                    <div class="d-flex gap-2">
-                                                        <!-- Edit Button -->
-                                                        <form action="{{ route('user.edit', $dt->id) }}" method="get">
-                                                            <input type="submit" value="Edit" class="btn btn-sm btn-light-primary">
-                                                        </form>
-
-                                                        <!-- Delete Button -->
+                                                    <div class="d-flex gap-3 align-items-center">
+                                                        <button type="button" class="btn btn-sm btn-light-primary editUserButton"
+                                                            data-bs-toggle="modal" data-bs-target="#editUserModal"
+                                                            data-id="{{ $dt->id }}" data-name="{{ $dt->name }}"
+                                                            data-email="{{ $dt->email }}" data-role="{{ $dt->role }}"
+                                                            data-url="{{ route('user.update', $dt->id) }}">Edit</button>
                                                         <form action="{{ route('user.destroy', $dt->id) }}" method="post"
+                                                            class="d-inline-flex align-items-center m-0 p-0"
                                                             onsubmit="return confirm('Are you sure you want to delete this role?');">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit" class="btn btn-sm btn-light-danger">
-                                                                Delete
-                                                            </button>
+                                                            <button type="submit"
+                                                                class="btn btn-sm btn-light-danger">Delete</button>
                                                         </form>
                                                     </div>
                                                 </td>
@@ -221,17 +68,157 @@
                             </div>
                         @endif
                     </div>
-
                 </div>
             </div>
         </div>
-
-
     </div>
 
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalLabel">Assign Role</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ route('user.store') }}" method="post" id="user_role_assign">
+                        @csrf
+                        <div class="mb-5">
+                            <label class="form-label fs-6 fw-bolder text-dark">Name</label>
+                            <input class="form-control form-control-solid" type="text" name="name" id="name" />
+                            <span id="name_error" style="color:red"></span>
+                            @error('name')
+                                {{ $message }}
+                            @enderror
+                        </div>
+                        <div class="mb-5">
+                            <label class="form-label fs-6 fw-bolder text-dark">Email</label>
+                            <input class="form-control form-control-solid" type="email" name="email" id="email" />
+                            <span id="email_error" style="color:red"></span>
+                            @error('email')
+                                {{ $message }}
+                            @enderror
+                        </div>
+                        <div class="mb-5">
+                            <label class="form-label fs-6 fw-bolder text-dark">Password</label>
+                            <div class="password-wrapper">
+                                <input class="form-control form-control-solid" type="password" name="password"
+                                    id="password" />
+                                <span class="password-toggle-icon" onclick="Password_Show_hide()">
+                                    <i class="fas fa-eye"></i>
+                                </span>
+                            </div>
+                            <div id="password_error" style="color:red"></div>
+                            @error('password')
+                                {{ $message }}
+                            @enderror
+                        </div>
+                        <div class="mb-5">
+                            <label class="form-label fw-bolder text-dark fs-5">Assign Role</label>
+                            <select name="role" id="role" class="form-select form-select-solid" 
+                                data-placeholder="Select a role">
+                                <option value="assign">--Assign Role--</option>
+                                @foreach ($role as $r)
+                                    <option value="{{ $r->role_name }}">{{ $r->role_name }}</option>
+                                @endforeach
+                            </select>
+                            <span id="role_error" style="color: red">
+                                @error('role')
+                                    {{ $message }}
+                                @enderror
+                            </span>
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-primary w-100">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="" method="post" id="user_update">
+                        @csrf
+                        @method('PUT')
+                        <div class="mb-5">
+                            <label class="form-label fs-6 fw-bolder text-dark">Name</label>
+                            <input class="form-control form-control-solid" type="text" name="name" id="edit_name" />
+                            <span id="edit_name_error" style="color:red"></span>
+                            @error('name')
+                                {{ $message }}
+                            @enderror
+                        </div>
+                        <div class="mb-5">
+                            <label class="form-label fs-6 fw-bolder text-dark">Email</label>
+                            <input class="form-control form-control-solid" type="email" name="email" id="edit_email" />
+                            <span id="edit_email_error" style="color:red"></span>
+                            @error('email')
+                                {{ $message }}
+                            @enderror
+                        </div>
+                        <div class="mb-5">
+                            <label class="form-label fw-bolder text-dark fs-6">Assign Role</label>
+                            <select name="role" id="edit_role" class="form-select form-select-solid" 
+                                data-placeholder="Select a role">
+                                <option value="assign">--Assign Role--</option>
+                                @foreach ($role as $r)
+                                    <option value="{{ $r->role_name }}">{{ $r->role_name }}</option>
+                                @endforeach
+                            </select>
+                            <span id="edit_role_error" style="color:red">
+                                @error('role')
+                                    {{ $message }}
+                                @enderror
+                            </span>
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-primary w-100">Update</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
+        // password show hide
+        function Password_Show_hide() {
+            var x = document.getElementById("password");
+            let icon = document.querySelector(".password-toggle-icon i");
+            if (x.type === "password") {
+                x.type = "text";
+                icon.classList.remove("fa-eye");
+                icon.classList.add("fa-eye-slash");
+            } else {
+                x.type = "password";
+                icon.classList.remove("fa-eye-slash");
+                icon.classList.add("fa-eye");
+            }
+        }
         $(document).ready(function () {
+            // Search functionality
+            $("#searchInput").on("keyup", function () {
+                let value = $(this).val().toLowerCase();
+                $("#userTable tbody tr").filter(function () {
+                    $(this).toggle(
+                        $(this).find("td:eq(0)").text().toLowerCase().indexOf(value) > -1 || // Name
+                        $(this).find("td:eq(1)").text().toLowerCase().indexOf(value) > -1 || // Email
+                        $(this).find("td:eq(2)").text().toLowerCase().indexOf(value) > -1   // Role
+                    );
+                });
+            });
+
+            // Add User Validations
             $("#name").on('input', ValidateName);
             $("#email").on('input', ValidateEmail);
             $("#password").on('input', ValidatePassword);
@@ -245,80 +232,174 @@
                 if (!name || !email || !password || !role) {
                     e.preventDefault();
                 }
-            })
-        })
+            });
 
-        // name validations
-        function ValidateName() {
-            let name = $("#name").val();
-            if (name == "") {
-                $("#name_error").html("Name cannot be blank");
-                return false;
+            // Edit User Validations
+            $("#edit_name").on('input', ValidateEditName);
+            $("#edit_email").on('input', ValidateEditEmail);
+            $("#edit_role").on('change', ValidateEditRole);
+
+            $("#user_update").submit(function (e) {
+                let name = ValidateEditName();
+                let email = ValidateEditEmail();
+                let role = ValidateEditRole();
+                if (!name || !email || !role) {
+                    e.preventDefault();
+                }
+            });
+
+            // Populate Edit Modal
+            $('.editUserButton').on('click', function () {
+                let id = $(this).data('id');
+                let name = $(this).data('name');
+                let email = $(this).data('email');
+                let role = $(this).data('role');
+                let url = $(this).data('url');
+
+                $('#editUserModal').find('form').attr('action', url);
+                $('#edit_name').val(name);
+                $('#edit_email').val(email);
+                $('#edit_role').val(role);
+
+                // Ensure modal opens
+                try {
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        let modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+                        modal.show();
+                    } else {
+                        console.error("Bootstrap JS is not loaded. Using fallback.");
+                        $("#editUserModal").addClass("show").css("display", "block");
+                        $("body").addClass("modal-open").append('<div class="modal-backdrop fade show"></div>');
+                    }
+                } catch (e) {
+                    console.error("Error opening edit modal:", e);
+                }
+            });
+
+            // Fallback to manually trigger add modal if Bootstrap JS is not loaded
+            $("#addUserButton").on("click", function () {
+                try {
+                    if (typeof bootstrap === 'undefined' || !bootstrap.Modal) {
+                        console.error("Bootstrap JS is not loaded. Check your master layout.");
+                        $("#addUserModal").addClass("show").css("display", "block");
+                        $("body").addClass("modal-open").append('<div class="modal-backdrop fade show"></div>');
+                    }
+                } catch (e) {
+                    console.error("Error triggering modal:", e);
+                }
+            });
+
+            // Handle manual modal close
+            $(".btn-close, [data-bs-dismiss='modal']").on("click", function () {
+                $("#addUserModal").removeClass("show").css("display", "none");
+                $("#editUserModal").removeClass("show").css("display", "none");
+                $("body").removeClass("modal-open");
+                $(".modal-backdrop").remove();
+            });
+
+            // Add User Validation Functions
+            function ValidateName() {
+                let name = $("#name").val();
+                if (name == "") {
+                    $("#name_error").html("Name cannot be blank");
+                    return false;
+                } else if (/^[ ]{1,100}$/.test(name)) {
+                    $("#name_error").html("Name cannot contain spaces only");
+                    return false;
+                } else if (!/^[A-Za-z ]{1,100}$/.test(name)) {
+                    $("#name_error").html("Name should contain characters and spaces only");
+                    return false;
+                } else {
+                    $("#name_error").html("");
+                    return true;
+                }
             }
 
-            else if (/^[ ]{1,100}$/.test(name)) {
-                $("#name_error").html("Name cannot contain spaces only");
-                return false;
-            }
-            else if (!/^[A-Za-z ]{1,100}$/.test(name)) {
-                $("#name_error").html("Name should contain characters and spaces only");
-                return false;
-            }
-            else {
-                $("#name_error").html("");
-                return true;
-
-            }
-        }
-
-        // emial validations
-        function ValidateEmail() {
-            let email = $("#email").val();
-
-            if (email == "") {
-                $("#email_error").html("Email cannot be blank");
-                return false;
-            }
-            else if (!/^[A-Za-z0-9.]+@[A-Za-z]{2,7}\.[A-Za-z]{2,100}$/.test(email)) {
-                $("#email_error").html("Email must be valid");
-                return false;
-            }
-            else {
-                $("#email_error").html("");
-                return true;
-            }
-        }
-
-        // password validations
-        function ValidatePassword() {
-            let password = $("#password").val();
-            if (password == "") {
-                $("#password_error").html("Password cannot be blank");
-                return false;
-            }
-            else if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8}$/.test(password)) {
-                $("#password_error").html("Password must contain atleast 1 uppercase , 1 Lowercase , 1 Digits , 1 Special Character and must be of 8 characters");
-                return false;
-
-            } else {
-                $("#password_error").html("");
-                return true;
+            function ValidateEmail() {
+                let email = $("#email").val();
+                if (email == "") {
+                    $("#email_error").html("Email cannot be blank");
+                    return false;
+                } else if (!/^[A-Za-z0-9.]+@[A-Za-z]{2,7}\.[A-Za-z]{2,100}$/.test(email)) {
+                    $("#email_error").html("Email must be valid");
+                    return false;
+                } else {
+                    $("#email_error").html("");
+                    return true;
+                }
             }
 
-        }
+            function ValidatePassword() {
+                let password = $("#password").val();
+                if (password == "") {
+                    $("#password_error").html("Password cannot be blank");
+                    return false;
+                } else if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8}$/.test(password)) {
+                    $("#password_error").html("Password must contain at least 1 uppercase, 1 lowercase, 1 digit, 1 special character and must be 8 characters");
+                    return false;
+                } else {
+                    $("#password_error").html("");
+                    return true;
+                }
+            }
 
-            // role validations
             function ValidateRole() {
-            let role = $("#role").val();
-            if (role === "assign") {
-                $("#role_error").html("Please select a role");
-                return false;
-            } else {
-                $("#role_error").html("");
-                return true;
+                let role = $("#role").val();
+                if (role === "assign") {
+                    $("#role_error").html("Please select a role");
+                    return false;
+                } else {
+                    $("#role_error").html("");
+                    return true;
+                }
             }
-        }
 
+            // Edit User Validation Functions
+            function ValidateEditName() {
+                let name = $("#edit_name").val();
+                if (name == "") {
+                    $("#edit_name_error").html("Name cannot be blank");
+                    return false;
+                } else if (/^[ ]{1,100}$/.test(name)) {
+                    $("#edit_name_error").html("Name cannot contain spaces only");
+                    return false;
+                } else if (!/^[A-Za-z ]{1,100}$/.test(name)) {
+                    $("#edit_name_error").html("Name should contain characters and spaces only");
+                    return false;
+                } else {
+                    $("#edit_name_error").html("");
+                    return true;
+                }
+            }
 
+            function ValidateEditEmail() {
+                let email = $("#edit_email").val();
+                if (email == "") {
+                    $("#edit_email_error").html("Email cannot be blank");
+                    return false;
+                } else if (!/^[A-Za-z0-9.]+@[A-Za-z]{2,7}\.[A-Za-z]{2,100}$/.test(email)) {
+                    $("#edit_email_error").html("Email must be valid");
+                    return false;
+                } else {
+                    $("#edit_email_error").html("");
+                    return true;
+                }
+            }
+
+            function ValidateEditRole() {
+                let role = $("#edit_role").val();
+                if (role === "assign") {
+                    $("#edit_role_error").html("Please select a role");
+                    return false;
+                } else {
+                    $("#edit_role_error").html("");
+                    return true;
+                }
+            }
+        });
     </script>
 @endsection
+
+@php
+    $pageTitle = 'Users';
+@endphp

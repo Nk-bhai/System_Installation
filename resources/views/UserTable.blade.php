@@ -1,15 +1,18 @@
-@extends('master')
+@extends('master_old')
 @section('contents')
-
-<div class="container py-10">
-        <div class="d-flex justify-content-end mb-5 gap-5">
-            <a href="/admin" class="btn btn-danger">Logout</a>
+<div class="position-relative">
+        <!-- Logout Button Container -->
+        <div class="logout-container position-absolute top-0 end-0 p-3">
+            <a href="{{ route('system.auth.login') }}" class="btn btn-danger">Logout</a>
         </div>
+    <div class="container py-10">
+      
         @foreach ($user_name as $name)
             <h1 class="text-center mb-10">Welcome Mr. {{ $name->name }}</h1>
         @endforeach
+
         <div class="d-flex justify-content-center">
-            <div class="col-lg-10"> 
+            <div class="col-lg-10">
                 <div class="card shadow-sm">
                     <div class="card-header border-0 pt-5 d-flex justify-content-between align-items-center">
                         <div>
@@ -36,10 +39,10 @@
                                             <th class="min-w-150px">Name</th>
                                             <th class="min-w-200px">Email</th>
                                             <th class="min-w-150px">Role</th>
-                                            @if(!in_array('Delete', $permissions) && !in_array('Update' , $permissions))
-                                            <th class="min-w-150px text-center" style="display: none">Actions</th>
+                                            @if(!in_array('Delete', $permissions) && !in_array('Update', $permissions))
+                                                <th class="min-w-150px text-center" style="display: none">Actions</th>
                                             @else
-                                            <th class="min-w-150px text-center">Actions</th>
+                                                <th class="min-w-150px text-center">Actions</th>
                                             @endif
                                         </tr>
                                     </thead>
@@ -68,7 +71,8 @@
                                                         @endif
 
                                                         @if (in_array('Delete', $permissions))
-                                                            <form action="{{ route('user.destroy', $dt->id) }}" method="post" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                                            <form action="{{ route('user.destroy', $dt->id) }}" method="post"
+                                                                onsubmit="return confirm('Are you sure you want to delete this user?');">
                                                                 @csrf
                                                                 @method('DELETE')
                                                                 <button type="submit" class="btn btn-sm btn-light-danger">

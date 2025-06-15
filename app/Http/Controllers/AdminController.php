@@ -37,85 +37,97 @@ class AdminController extends Controller
 
     }
 
-    public function key(Request $request)
-    {
-        $request->validate([
-            'key' => ['required']
-        ]);
-        $key = $request->input('key');
+    // public function key(Request $request)
+    // {
+    //     $request->validate([
+    //         'key' => ['required']
+    //     ]);
+    //     $key = $request->input('key');
 
-        // if ($key !== '1234') {
-        //     return redirect()->back()->with('error', 'Key Not Valid');
-        // }
+    //     // if ($key !== '1234') {
+    //     //     return redirect()->back()->with('error', 'Key Not Valid');
+    //     // }
 
-        session(['access_granted' => true]);
-        return redirect()->route('adminPage');
+    //     session(['access_granted' => true]);
+    //     return redirect()->route('adminPage');
 
-    }
+    // }
 
-    public function adminPage()
-    {
-        return view('Admin');
-    }
+    // public function adminPage()
+    // {
+    //     return view('Admin');
+    // }
+
+
 
 
     // public function admin(Request $request)
     // {
     //     $email = $request->input('email');
     //     $password = $request->input('password');
-
-    //     // i provided credentials
-    //     if ($email === 'nk@gmail.com' && $password === 'Nk@12345') {
-    //         session(['email' => $email]);
-    //         return redirect()->route('dashboard');
-    //     } else {
+        
+    //     try {
     //         $user = UserModel::where('email', '=', $email)->first();
 
     //         if (!$user) {
     //             return redirect()->back()->with('error', 'Invalid Credentials');
     //         }
-
     //         if ($user && $user->password === $password) {
     //             session(['login_email' => $email]);
-    //             return redirect()->route('UserTable');
+    //             return redirect()->route('UserTable');  
     //         } else {
     //             return redirect()->back()->with('error', 'Invalid Credentials');
     //         }
+    //     } catch (\Illuminate\Database\QueryException $e) {
+    //         return redirect()->back()->with('error', 'Invalid Credentials');
     //     }
     // }
 
+ 
 
-    public function admin(Request $request)
-    {
-        $email = $request->input('email');
-        $password = $request->input('password');
+public function admin(Request $request)
+{
+    $email = $request->input('email');
+    $password = $request->input('password');
+    
+    try {
+        $user = UserModel::where('email', $email)->first();
 
-        // // Hardcoded credentials check
-        // if ($email === 'nk@gmail.com' && $password === 'Nk@12345') {
-        //     session(['email' => $email]);
-        //     return redirect()->route('dashboard');
-        // }
-
-        try {
-            $user = UserModel::where('email', '=', $email)->first();
-
-            if (!$user) {
-                return redirect()->back()->with('error', 'Invalid Credentials');
-            }
-            if ($user && $user->password === $password) {
-                session(['login_email' => $email]);
-                return redirect()->route('UserTable');
-            } else {
-                return redirect()->back()->with('error', 'Invalid Credentials');
-            }
-        } catch (\Illuminate\Database\QueryException $e) {
-            return redirect()->back()->with('error', 'Invalid Credentials');
+        if (!$user || !$user->password === $password) {
+            return false; // Authentication failed
         }
-    }
 
+        // Authentication successful, set session and return true
+        session(['login_email' => $email]);
+        return true;
+
+    } catch (\Illuminate\Database\QueryException $e) {
+        return false; // Database error, treat as authentication failure
+    }
+}
+   
+   
     public function dashboardPage()
     {
-        return view('Dashboard');
+        try {
+            $roleCount = RoleModel::count();
+        } catch (\Exception $e) {
+            $roleCount = 0;
+        }
+
+        try {
+            $userCount = UserModel::count();
+        } catch (\Exception $e) {
+            $userCount = 0;
+        }
+        // $roleCount = RoleModel::count();
+        // $userCount = UserModel::count();
+
+        // Pass the counts to the Dashboard view
+        return view('Dashboard', [
+            'roleCount' => $roleCount,
+            'userCount' => $userCount
+        ]);
     }
 
     public function UserCrudInstall()
@@ -130,6 +142,7 @@ class AdminController extends Controller
 
     public function roleInstall()
     {
+        // dd("Hello");
         Artisan::call('migrate', [
             '--database' => session('dynamic_db'),
             '--path' => 'database/migrations/2025_06_05_112216_role.php',

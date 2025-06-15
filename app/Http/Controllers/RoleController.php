@@ -12,6 +12,7 @@ class RoleController extends Controller
 {
     public function __construct()
     {
+        // dd(session('dynamic_db'));
         $dynamicDb = session('dynamic_db');
         if ($dynamicDb) {
             Config::set('database.connections.' . $dynamicDb, [
@@ -55,18 +56,16 @@ class RoleController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'role' => ['required'],
-            // 'permissions' => ['required']
+            'role_name' => ['required', 'string', 'max:100', 'regex:/^[A-Za-z ]+$/'],
+            'permissions' => ['required', 'array', 'min:1'],
+            'permissions.*' => ['in:View,Create,Delete,Update'],
         ]);
-        $role_name = $request->input('role');
+        $role_name = $request->input('role_name');
         $permissions = $request->input('permissions');
-
         $permissions_string = "";
         foreach ($permissions as $p) {
             $permissions_string .= $p . ',';
         }
-        // echo $permissions_string;exit;
-        // print_r($permissions);exit;
         RoleModel::insert([
             'role_name' => $role_name,
             'permissions' => $permissions_string
