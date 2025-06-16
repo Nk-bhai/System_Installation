@@ -387,7 +387,7 @@
         function Validate_Role_name() {
             let role_name = $("#role_name").val().trim();
             if (role_name === "") {
-                $("#role_name_error").html("Role name cannot be blank");
+                $("#role_name_error").html("Role name cannot be empty");
                 return false;
             } else if (!/^[A-Za-z ]{1,100}$/.test(role_name)) {
                 $("#role_name_error").html("Role name must contain only letters and spaces");
@@ -412,7 +412,7 @@
         function Validate_Edit_Role_name() {
             let role_name = $("#edit_role_name").val().trim();
             if (role_name === "") {
-                $("#edit_role_name_error").html("Role name cannot be blank");
+                $("#edit_role_name_error").html("Role name cannot be empty");
                 return false;
             } else if (!/^[A-Za-z ]{1,100}$/.test(role_name)) {
                 $("#edit_role_name_error").html("Role name must contain only letters and spaces");

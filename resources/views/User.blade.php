@@ -351,7 +351,7 @@
                 function ValidateName() {
                     let name = $("#name").val();
                     if (name == "") {
-                        $("#name_error").html("Name cannot be blank");
+                        $("#name_error").html("Name cannot be empty");
                         return false;
                     } else if (/^[ ]{1,100}$/.test(name)) {
                         $("#name_error").html("Name cannot contain spaces only");
@@ -368,7 +368,7 @@
                 function ValidateEmail() {
                     let email = $("#email").val();
                     if (email == "") {
-                        $("#email_error").html("Email cannot be blank");
+                        $("#email_error").html("Email cannot be empty");
                         return false;
                     } else if (!/^[A-Za-z0-9.]+@[A-Za-z]{2,7}\.[A-Za-z]{2,100}$/.test(email)) {
                         $("#email_error").html("Email must be valid");
@@ -382,7 +382,7 @@
                 function ValidatePassword() {
                     let password = $("#password").val();
                     if (password == "") {
-                        $("#password_error").html("Password cannot be blank");
+                        $("#password_error").html("Password cannot be empty");
                         return false;
                     } else if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8}$/.test(password)) {
                         $("#password_error").html("Password must contain at least 1 uppercase, 1 lowercase, 1 digit, 1 special character and must be 8 characters");
@@ -408,7 +408,7 @@
                 function ValidateEditName() {
                     let name = $("#edit_name").val();
                     if (name == "") {
-                        $("#edit_name_error").html("Name cannot be blank");
+                        $("#edit_name_error").html("Name cannot be empty");
                         return false;
                     } else if (/^[ ]{1,100}$/.test(name)) {
                         $("#edit_name_error").html("Name cannot contain spaces only");
@@ -425,7 +425,7 @@
                 function ValidateEditEmail() {
                     let email = $("#edit_email").val();
                     if (email == "") {
-                        $("#edit_email_error").html("Email cannot be blank");
+                        $("#edit_email_error").html("Email cannot be empty");
                         return false;
                     } else if (!/^[A-Za-z0-9.]+@[A-Za-z]{2,7}\.[A-Za-z]{2,100}$/.test(email)) {
                         $("#edit_email_error").html("Email must be valid");

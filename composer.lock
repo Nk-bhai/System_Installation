@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "06ba1457926865da123507e531cb998a",
+    "content-hash": "f36ccf5644992ad74df515119dee021a",
     "packages": [
         {
             "name": "brick/math",
@@ -2488,16 +2488,10 @@
         {
             "name": "nk/system-auth",
             "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Nk-bhai/Laravel-Authentication-Package.git",
-                "reference": "d984fd08af25bfedd5052bd1442a2f4d4525d939"
-            },
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Nk-bhai/Laravel-Authentication-Package/zipball/d984fd08af25bfedd5052bd1442a2f4d4525d939",
-                "reference": "d984fd08af25bfedd5052bd1442a2f4d4525d939",
-                "shasum": ""
+                "type": "path",
+                "url": "C:/nk-system-auth",
+                "reference": "d984fd08af25bfedd5052bd1442a2f4d4525d939"
             },
             "require": {
                 "illuminate/database": "^9.0|^10.0|^11.0|^12.0",
@@ -2506,7 +2500,6 @@
                 "illuminate/support": "^9.0|^10.0|^11.0|^12.0",
                 "php": "^8.0"
             },
-            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
@@ -2530,11 +2523,9 @@
                 }
             ],
             "description": "A Laravel package for key-based authentication and license verification",
-            "support": {
-                "source": "https://github.com/Nk-bhai/Laravel-Authentication-Package/tree/master",
-                "issues": "https://github.com/Nk-bhai/Laravel-Authentication-Package/issues"
-            },
-            "time": "2025-06-16T10:05:58+00:00"
+            "transport-options": {
+                "relative": false
+            }
         },
         {
             "name": "nunomaduro/termwind",

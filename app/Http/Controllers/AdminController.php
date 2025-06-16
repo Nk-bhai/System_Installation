@@ -7,15 +7,32 @@ use App\Models\UserModel;
 use Artisan;
 use Config;
 use DB;
+use Http;
 use Illuminate\Http\Request;
 
 
 class AdminController extends Controller
 {
 
-    public function __construct()
+    public function __construct(Request $request)
     {
-        $databasename = 'system_db';
+        // dd(session('database_name'));
+        if(!empty(session('database_name'))){
+            $databasename = session('database_name');
+        }else{
+            $ip_address = $request->ip();
+            $response = Http::get("http://192.168.12.127:8005/api/superadmin/get/{$ip_address}");
+            $keyData = $response->json();
+            if($keyData[$ip_address] == $ip_address && $keyData['verified'] == 1 ){
+                $databasename = $keyData['database'];
+            }
+            
+        }
+
+
+        
+        // $databasename = "hello";
+
         DB::statement('CREATE DATABASE IF NOT EXISTS ' . $databasename);
 
         Config::set('database.connections.' . $databasename, [
@@ -36,54 +53,6 @@ class AdminController extends Controller
         DB::setDefaultConnection($databasename);
 
     }
-
-    // public function key(Request $request)
-    // {
-    //     $request->validate([
-    //         'key' => ['required']
-    //     ]);
-    //     $key = $request->input('key');
-
-    //     // if ($key !== '1234') {
-    //     //     return redirect()->back()->with('error', 'Key Not Valid');
-    //     // }
-
-    //     session(['access_granted' => true]);
-    //     return redirect()->route('adminPage');
-
-    // }
-
-    // public function adminPage()
-    // {
-    //     return view('Admin');
-    // }
-
-
-
-
-    // public function admin(Request $request)
-    // {
-    //     $email = $request->input('email');
-    //     $password = $request->input('password');
-
-    //     try {
-    //         $user = UserModel::where('email', '=', $email)->first();
-
-    //         if (!$user) {
-    //             return redirect()->back()->with('error', 'Invalid Credentials');
-    //         }
-    //         if ($user && $user->password === $password) {
-    //             session(['login_email' => $email]);
-    //             return redirect()->route('UserTable');  
-    //         } else {
-    //             return redirect()->back()->with('error', 'Invalid Credentials');
-    //         }
-    //     } catch (\Illuminate\Database\QueryException $e) {
-    //         return redirect()->back()->with('error', 'Invalid Credentials');
-    //     }
-    // }
-
-
 
     public function admin(Request $request)
     {
