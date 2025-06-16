@@ -15,7 +15,7 @@ class AdminController extends Controller
 
     public function __construct()
     {
-        $databasename = 'nk_db';
+        $databasename = 'system_db';
         DB::statement('CREATE DATABASE IF NOT EXISTS ' . $databasename);
 
         Config::set('database.connections.' . $databasename, [
