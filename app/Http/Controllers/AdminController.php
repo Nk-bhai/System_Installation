@@ -65,7 +65,7 @@ class AdminController extends Controller
     // {
     //     $email = $request->input('email');
     //     $password = $request->input('password');
-        
+
     //     try {
     //         $user = UserModel::where('email', '=', $email)->first();
 
@@ -83,30 +83,30 @@ class AdminController extends Controller
     //     }
     // }
 
- 
 
-public function admin(Request $request)
-{
-    $email = $request->input('email');
-    $password = $request->input('password');
-    
-    try {
-        $user = UserModel::where('email', $email)->first();
 
-        if (!$user || !$user->password === $password) {
-            return false; // Authentication failed
+    public function admin(Request $request)
+    {
+        $email = $request->input('email');
+        $password = $request->input('password');
+
+        try {
+            $user = UserModel::where('email', $email)->first();
+
+            if (!$user || !$user->password === $password) {
+                return false; // Authentication failed
+            }
+
+            // Authentication successful, set session and return true
+            session(['login_email' => $email]);
+            return true;
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            return false; // Database error, treat as authentication failure
         }
-
-        // Authentication successful, set session and return true
-        session(['login_email' => $email]);
-        return true;
-
-    } catch (\Illuminate\Database\QueryException $e) {
-        return false; // Database error, treat as authentication failure
     }
-}
-   
-   
+
+
     public function dashboardPage()
     {
         try {
@@ -154,7 +154,7 @@ public function admin(Request $request)
 
     public function UserTable()
     {
-        $data = UserModel::where('email', '!=', session('login_email'))->get();
+        $data = UserModel::where('email', '!=', session('login_email'))->paginate(5); // 5 users per page (adjust as needed)
         $user_name = UserModel::where('email', '=', session('login_email'))->get('name');
         $user = UserModel::where('email', session('login_email'))->first();
 
@@ -177,8 +177,9 @@ public function admin(Request $request)
 
     public function logout(Request $request)
     {
-        // $request->session()->forgot('login_email');
-        return redirect()->route('adminPage');
+        $request->session()->forget('login_email');
+        $request->session()->forget('user_logged_in');
+        return redirect()->route('system.auth.login')->with('message', 'Logged out successfully');
     }
 }
 

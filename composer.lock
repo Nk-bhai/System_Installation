@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "98d63f19167fa05f79fddd7756d6349e",
+    "content-hash": "b0d6d79c9ad1a35434194c62ba6f4956",
     "packages": [
         {
             "name": "brick/math",
@@ -2484,48 +2484,6 @@
                 "source": "https://github.com/nikic/PHP-Parser/tree/v5.5.0"
             },
             "time": "2025-05-31T08:24:38+00:00"
-        },
-        {
-            "name": "nk/system-auth",
-            "version": "dev-master",
-            "dist": {
-                "type": "path",
-                "url": "C:/nk-system-auth",
-                "reference": "0317e69b2cc830d6a54c3e271e045c8e9f3f180e"
-            },
-            "require": {
-                "illuminate/database": "^9.0|^10.0|^11.0|^12.0",
-                "illuminate/routing": "^9.0|^10.0|^11.0|^12.0",
-                "illuminate/session": "^9.0|^10.0|^11.0|^12.0",
-                "illuminate/support": "^9.0|^10.0|^11.0|^12.0",
-                "php": "^8.0"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Nk\\SystemAuth\\SystemAuthServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Nk\\SystemAuth\\": "src/"
-                }
-            },
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nand Kathiriya",
-                    "email": "nkbhai242001@gmail.com"
-                }
-            ],
-            "description": "A Laravel package for key-based authentication and license verification",
-            "transport-options": {
-                "relative": false
-            }
         },
         {
             "name": "nunomaduro/termwind",

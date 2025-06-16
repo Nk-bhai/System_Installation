@@ -37,9 +37,15 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $roleData = RoleModel::all();
-
-        return view('Role', ['roleData' => $roleData]);
+        // Debug: Log the entire session
+    \Log::info('Session data in index method:', session()->all());
+        $roleData = RoleModel::paginate(5);
+        $add_message = session()->get('add_message');
+        $delete_message = session()->get('delete_message');
+        $update_message = session()->get('update_message');
+   // Debug: Log the retrieved messages
+    \Log::info("Retrieved messages - add: {$add_message}, update: {$update_message}, delete: {$delete_message}");
+        return view('Role', ['roleData' => $roleData, 'add_message' => $add_message, 'delete_message' => $delete_message, 'update_message' => $update_message]);
     }
 
     /**
@@ -56,7 +62,7 @@ class RoleController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'role_name' => ['required', 'string', 'max:100', 'regex:/^[A-Za-z ]+$/'],
+            'role_name' => ['required', 'string', 'max:100', 'regex:/^[A-Za-z ]+$/', 'unique:role,role_name'],
             'permissions' => ['required', 'array', 'min:1'],
             'permissions.*' => ['in:View,Create,Delete,Update'],
         ]);
@@ -70,7 +76,7 @@ class RoleController extends Controller
             'role_name' => $role_name,
             'permissions' => $permissions_string
         ]);
-        return redirect()->route('role.index');
+        return redirect()->route('role.index')->with(['add_message' => "Role Added Successfully"]);
     }
 
     /**
@@ -122,7 +128,11 @@ class RoleController extends Controller
 
         // role_name change globally in all table
         UserModel::where('role', $old_role_name)->update(['role' => $new_role_name]);
-        return redirect()->route('role.index');
+        $redirect= redirect()->route('role.index')->with(['update_message' => "role Update Successfully"]);
+        // Debug: Log the session data immediately after setting it
+    \Log::info('Session data after setting update_message:', session()->all());
+
+    return $redirect;
     }
 
     /**
@@ -131,6 +141,8 @@ class RoleController extends Controller
     public function destroy(string $id)
     {
         RoleModel::where('id', '=', $id)->delete();
+        // return redirect()->route('role.index')->with(['delete_message' => "role Deleted Successfully"]);
+        session()->flash('delete_message', 'role Deleted Successfully');
         return redirect()->route('role.index');
     }
 }

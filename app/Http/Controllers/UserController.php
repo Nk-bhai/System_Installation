@@ -38,13 +38,9 @@ class UserController extends Controller
     public function index()
     {
 
-        // $role = RoleModel::get('role_name');
-        // $data = UserModel::all();
-        // return view('User', ['data' => $data, 'role' => $role]);
-
         try {
             $role = RoleModel::get('role_name');
-            $data = UserModel::all();
+            $data = UserModel::paginate(5);
 
             return view('User', ['data' => $data, 'role' => $role]);
         } catch (\Illuminate\Database\QueryException $e) {

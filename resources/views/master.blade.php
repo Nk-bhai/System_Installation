@@ -34,43 +34,75 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-	  <style>
-        .password-wrapper {
-            position: relative;
-            width: 100%; /* Ensure the wrapper takes full width of the input */
-        }
+	<style>
+		.password-wrapper {
+			position: relative;
+			width: 100%;
+			/* Ensure the wrapper takes full width of the input */
+		}
 
-        .password-wrapper input {
-            padding-right: 40px; /* Space for the eye icon */
-            width: 100%; /* Ensure input takes full width */
-        }
+		.password-wrapper input {
+			padding-right: 40px;
+			/* Space for the eye icon */
+			width: 100%;
+			/* Ensure input takes full width */
+		}
 
-        .password-toggle-icon {
-            position: absolute;
-            right: 15px; /* Position inside the input field */
-            top: 50%; /* Vertically center the icon */
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #7e8299; /* Matches Metronic's muted text color */
-            font-size: 10.1rem; /* Slightly larger for visibility */
-            transition: color 0.3s ease; /* Smooth hover transition */
-        }
+		.password-toggle-icon {
+			position: absolute;
+			right: 15px;
+			/* Position inside the input field */
+			top: 50%;
+			/* Vertically center the icon */
+			transform: translateY(-50%);
+			cursor: pointer;
+			color: #7e8299;
+			/* Matches Metronic's muted text color */
+			font-size: 10.1rem;
+			/* Slightly larger for visibility */
+			transition: color 0.3s ease;
+			/* Smooth hover transition */
+		}
 
-        .password-toggle-icon:hover {
-            color: #009ef7; /* Matches Metronic's primary color for interactivity */
-        }
+		.password-toggle-icon:hover {
+			color: #009ef7;
+			/* Matches Metronic's primary color for interactivity */
+		}
 
-        /* Fine-tune vertical alignment for large inputs */
-        .form-control-lg ~ .password-toggle-icon {
-            top: calc(50% + 2px);
-        }
+		/* Fine-tune vertical alignment for large inputs */
+		.form-control-lg~.password-toggle-icon {
+			top: calc(50% + 2px);
+		}
+
 		#kt_content {
 			padding-top: 0 !important;
 			margin-top: 0 !important;
 		}
-		
+
 		.wrapper {
 			min-height: auto !important;
+		}
+
+		.popup {
+			position: fixed;
+			top: 20px;
+			left: 50%;
+			transform: translateX(-50%);
+			background-color: #4CAF50;
+			/* Green background */
+			color: white;
+			padding: 15px 25px;
+			border-radius: 25px;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+			z-index: 1000;
+			text-align: center;
+			opacity: 0;
+			/* Initially hidden */
+			transition: opacity 0.5s ease-in-out;
+		}
+
+		.popup.show {
+			opacity: 1;
 		}
 	</style>
 </head>
@@ -150,47 +182,50 @@
 								</a>
 							</div>
 							<div class="menu-item">
-								{{-- <a class="menu-link {{ Request::is('roleinstall') ? 'active' : '' }}" href="/role"> --}}
-								<a class="menu-link {{ Request::is('roleinstall') ? 'active' : '' }}" href="{{ route('roleInstall') }}">
+								{{-- <a class="menu-link {{ Request::is('roleinstall') ? 'active' : '' }}" href="/role">
+									--}}
+									<a class="menu-link {{ Request::is('roleinstall') ? 'active' : '' }}"
+										href="{{ route('roleInstall') }}">
 
-									<span class="menu-icon">
-										<!--begin::Svg Icon | path: icons/duotune/general/gen025.svg-->
-										<span class="svg-icon svg-icon-2">
-											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="25"
-												viewBox="0 0 24 25" fill="none">
-												<path opacity="0.3"
-													d="M8.9 21L7.19999 22.6999C6.79999 23.0999 6.2 23.0999 5.8 22.6999L4.1 21H8.9ZM4 16.0999L2.3 17.8C1.9 18.2 1.9 18.7999 2.3 19.1999L4 20.9V16.0999ZM19.3 9.1999L15.8 5.6999C15.4 5.2999 14.8 5.2999 14.4 5.6999L9 11.0999V21L19.3 10.6999C19.7 10.2999 19.7 9.5999 19.3 9.1999Z"
-													fill="black" />
-												<path
-													d="M21 15V20C21 20.6 20.6 21 20 21H11.8L18.8 14H20C20.6 14 21 14.4 21 15ZM10 21V4C10 3.4 9.6 3 9 3H4C3.4 3 3 3.4 3 4V21C3 21.6 3.4 22 4 22H9C9.6 22 10 21.6 10 21ZM7.5 18.5C7.5 19.1 7.1 19.5 6.5 19.5C5.9 19.5 5.5 19.1 5.5 18.5C5.5 17.9 5.9 17.5 6.5 17.5C7.1 17.5 7.5 17.9 7.5 18.5Z"
-													fill="black" />
-											</svg>
+										<span class="menu-icon">
+											<!--begin::Svg Icon | path: icons/duotune/general/gen025.svg-->
+											<span class="svg-icon svg-icon-2">
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="25"
+													viewBox="0 0 24 25" fill="none">
+													<path opacity="0.3"
+														d="M8.9 21L7.19999 22.6999C6.79999 23.0999 6.2 23.0999 5.8 22.6999L4.1 21H8.9ZM4 16.0999L2.3 17.8C1.9 18.2 1.9 18.7999 2.3 19.1999L4 20.9V16.0999ZM19.3 9.1999L15.8 5.6999C15.4 5.2999 14.8 5.2999 14.4 5.6999L9 11.0999V21L19.3 10.6999C19.7 10.2999 19.7 9.5999 19.3 9.1999Z"
+														fill="black" />
+													<path
+														d="M21 15V20C21 20.6 20.6 21 20 21H11.8L18.8 14H20C20.6 14 21 14.4 21 15ZM10 21V4C10 3.4 9.6 3 9 3H4C3.4 3 3 3.4 3 4V21C3 21.6 3.4 22 4 22H9C9.6 22 10 21.6 10 21ZM7.5 18.5C7.5 19.1 7.1 19.5 6.5 19.5C5.9 19.5 5.5 19.1 5.5 18.5C5.5 17.9 5.9 17.5 6.5 17.5C7.1 17.5 7.5 17.9 7.5 18.5Z"
+														fill="black" />
+												</svg>
+											</span>
+											<!--end::Svg Icon-->
 										</span>
-										<!--end::Svg Icon-->
-									</span>
-									<span class="menu-title">Role Management</span>
-								</a>
+										<span class="menu-title">Role Management</span>
+									</a>
 							</div>
 							<div class="menu-item">
 								{{-- <a class="menu-link {{ Request::is('user') ? 'active' : '' }}" href="/user"> --}}
-								<a class="menu-link {{ Request::is('user') ? 'active' : '' }}" href="{{ route('UserCrudInstall') }}">
-									<span class="menu-icon">
-										<!--begin::Svg Icon | path: icons/duotune/art/art002.svg-->
-										<span class="svg-icon svg-icon-2">
-											<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-												viewBox="0 0 24 24" fill="none">
-												<path opacity="0.3"
-													d="M21.25 18.525L13.05 21.825C12.35 22.125 11.65 22.125 10.95 21.825L2.75 18.525C1.75 18.125 1.75 16.725 2.75 16.325L4.04999 15.825L10.25 18.325C10.85 18.525 11.45 18.625 12.05 18.625C12.65 18.625 13.25 18.525 13.85 18.325L20.05 15.825L21.35 16.325C22.35 16.725 22.35 18.125 21.25 18.525ZM13.05 16.425L21.25 13.125C22.25 12.725 22.25 11.325 21.25 10.925L13.05 7.62502C12.35 7.32502 11.65 7.32502 10.95 7.62502L2.75 10.925C1.75 11.325 1.75 12.725 2.75 13.125L10.95 16.425C11.65 16.725 12.45 16.725 13.05 16.425Z"
-													fill="black" />
-												<path
-													d="M11.05 11.025L2.84998 7.725C1.84998 7.325 1.84998 5.925 2.84998 5.525L11.05 2.225C11.75 1.925 12.45 1.925 13.15 2.225L21.35 5.525C22.35 5.925 22.35 7.325 21.35 7.725L13.05 11.025C12.45 11.325 11.65 11.325 11.05 11.025Z"
-													fill="black" />
-											</svg>
+									<a class="menu-link {{ Request::is('user') ? 'active' : '' }}"
+										href="{{ route('UserCrudInstall') }}">
+										<span class="menu-icon">
+											<!--begin::Svg Icon | path: icons/duotune/art/art002.svg-->
+											<span class="svg-icon svg-icon-2">
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+													viewBox="0 0 24 24" fill="none">
+													<path opacity="0.3"
+														d="M21.25 18.525L13.05 21.825C12.35 22.125 11.65 22.125 10.95 21.825L2.75 18.525C1.75 18.125 1.75 16.725 2.75 16.325L4.04999 15.825L10.25 18.325C10.85 18.525 11.45 18.625 12.05 18.625C12.65 18.625 13.25 18.525 13.85 18.325L20.05 15.825L21.35 16.325C22.35 16.725 22.35 18.125 21.25 18.525ZM13.05 16.425L21.25 13.125C22.25 12.725 22.25 11.325 21.25 10.925L13.05 7.62502C12.35 7.32502 11.65 7.32502 10.95 7.62502L2.75 10.925C1.75 11.325 1.75 12.725 2.75 13.125L10.95 16.425C11.65 16.725 12.45 16.725 13.05 16.425Z"
+														fill="black" />
+													<path
+														d="M11.05 11.025L2.84998 7.725C1.84998 7.325 1.84998 5.925 2.84998 5.525L11.05 2.225C11.75 1.925 12.45 1.925 13.15 2.225L21.35 5.525C22.35 5.925 22.35 7.325 21.35 7.725L13.05 11.025C12.45 11.325 11.65 11.325 11.05 11.025Z"
+														fill="black" />
+												</svg>
+											</span>
+											<!--end::Svg Icon-->
 										</span>
-										<!--end::Svg Icon-->
-									</span>
-									<span class="menu-title">Users</span>
-								</a>
+										<span class="menu-title">Users</span>
+									</a>
 							</div>
 						</div>
 						<!--end::Menu-->
@@ -209,14 +244,14 @@
 							<h1 class="text-dark fw-bolder fs-3">{{ $pageTitle ?? 'Dashboard' }}</h1>
 						</div>
 						<div class="d-flex align-items-center">
-							<a href="{{ route('system.auth.login') }}" class="btn btn-danger">Logout</a>
+							<a href="{{ route('logout') }}" class="btn btn-danger">Logout</a>
 						</div>
 					</div>
 				</div>
 				<!--end::Header-->
 				<!--begin::Content-->
 				<div class="content d-flex flex-column" id="kt_content">
-					
+
 					@yield('contents')
 				</div>
 				<!--end::Content-->

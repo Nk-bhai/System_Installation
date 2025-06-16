@@ -65,6 +65,9 @@
                                         @endforeach
                                     </tbody>
                                 </table>
+                                <div class="d-flex justify-content-center mt-4">
+                                    {{ $data->links() }}
+                                </div>
                             </div>
                         @endif
                     </div>
@@ -116,7 +119,7 @@
                         </div>
                         <div class="mb-5">
                             <label class="form-label fw-bolder text-dark fs-5">Assign Role</label>
-                            <select name="role" id="role" class="form-select form-select-solid" 
+                            <select name="role" id="role" class="form-select form-select-solid"
                                 data-placeholder="Select a role">
                                 <option value="assign">--Assign Role--</option>
                                 @foreach ($role as $r)
@@ -168,7 +171,7 @@
                         </div>
                         <div class="mb-5">
                             <label class="form-label fw-bolder text-dark fs-6">Assign Role</label>
-                            <select name="role" id="edit_role" class="form-select form-select-solid" 
+                            <select name="role" id="edit_role" class="form-select form-select-solid"
                                 data-placeholder="Select a role">
                                 <option value="assign">--Assign Role--</option>
                                 @foreach ($role as $r)

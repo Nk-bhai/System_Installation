@@ -1,7 +1,23 @@
 @extends('master')
 
 @section('contents')
-{{ session('error') }}
+
+
+{{-- popup --}}
+   @if (!empty($delete_message))
+  <div id="messagePopup" class="popup">
+    <h2>{{$delete_message}}</h2>
+  </div>
+@elseif (!empty($update_message))
+  <div id="messagePopup" class="popup">
+    <h2>{{$update_message}}</h2>
+  </div>
+@elseif (!empty($add_message))
+  <div id="messagePopup" class="popup">
+    <h2>{{$add_message}}</h2>
+  </div>
+@endif
+
     <div class="container-fluid">
         <div class="d-flex justify-content-end mb-5 gap-5 mt-n10">
             <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a>
@@ -65,6 +81,9 @@
                                         @endforeach
                                     </tbody>
                                 </table>
+                                <div class="d-flex justify-content-center mt-4">
+                                    {{ $roleData->links() }}
+                                </div>
                             </div>
                         @endif
                     </div>
@@ -130,6 +149,7 @@
             </div>
         </div>
     </div>
+   
 
     <!-- Edit Role Modal -->
     <div class="modal fade" id="editRoleModal" tabindex="-1" aria-labelledby="editRoleModalLabel" aria-hidden="true">
@@ -191,6 +211,24 @@
     </div>
 
     <script>
+        
+  // popup script
+  document.addEventListener('DOMContentLoaded', function () {
+    const messagePopup = document.getElementById('messagePopup');
+
+    if (messagePopup) {
+      // Show the popup
+      messagePopup.classList.add('show');
+
+      setTimeout(function () {
+        messagePopup.classList.remove('show');
+        setTimeout(() => {
+          messagePopup.remove();
+        }, 500);
+      }, 2500); // 1.5 seconds
+    }
+  });
+
         $(document).ready(function () {
             // Search functionality
             $("#searchInput").on("keyup", function () {
