@@ -20,7 +20,7 @@
 
     <div class="container-fluid">
         <div class="d-flex justify-content-end mb-5 gap-5 mt-n10">
-            <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+            {{-- <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a> --}}
             <button type="button" class="btn btn-primary" id="addRoleButton" data-bs-toggle="modal"
                 data-bs-target="#addRoleModal">Add</button>
         </div>
@@ -66,7 +66,7 @@
                                                             data-url="{{ route('role.update', $rd->id) }}">
                                                             Edit
                                                         </button>
-                                                        <form action="{{ route('role.destroy', $rd->id) }}" method="post"
+                                                        {{-- <form action="{{ route('role.destroy', $rd->id) }}" method="post"
                                                             class="d-inline-flex align-items-center m-0 p-0"
                                                             onsubmit="return confirm('Are you sure you want to delete this role?');">
                                                             @csrf
@@ -74,7 +74,12 @@
                                                             <button type="submit" class="btn btn-sm btn-light-danger">
                                                                 Delete
                                                             </button>
-                                                        </form>
+                                                        </form> --}}
+                                                        <button type="button" class="btn btn-sm btn-light-danger deleteRoleButton"
+                                                                data-bs-toggle="modal" data-bs-target="#deleteRoleModal"
+                                                                data-id="{{ $rd->id }}"
+                                                                data-role-name="{{ $rd->role_name }}"
+                                                                data-url="{{ route('role.destroy', $rd->id) }}">Delete</button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -209,7 +214,28 @@
             </div>
         </div>
     </div>
-
+    <!-- Delete Role Modal -->
+    <div class="modal fade" id="deleteRoleModal" tabindex="-1" aria-labelledby="deleteRoleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteRoleModalLabel">Delete Role</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete role <strong id="delete_role_name"></strong>?</p>
+                    <form action="" method="post" id="role_delete">
+                        @csrf
+                        @method('DELETE')
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
     <script>
         
   // popup script
@@ -310,6 +336,27 @@
                     console.error("Error opening edit modal:", e);
                 }
             });
+            $('.deleteRoleButton').on('click', function () {
+                let id = $(this).data('id');
+                let role_name = $(this).data('role-name');
+                let url = $(this).data('url');
+
+                $('#deleteRoleModal').find('form').attr('action', url);
+                $('#delete_role_name').text(role_name);
+
+                try {
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        let modal = new bootstrap.Modal(document.getElementById('deleteRoleModal'));
+                        modal.show();
+                    } else {
+                        console.error("Bootstrap JS is not loaded. Using fallback.");
+                        $("#deleteRoleModal").addClass("show").css("display", "block");
+                        $("body").addClass("modal-open").append('<div class="modal-backdrop fade show"></div>');
+                    }
+                } catch (e) {
+                    console.error("Error opening delete modal:", e);
+                }
+            });
 
             // Fallback to manually trigger add modal if Bootstrap JS is not loaded
             $("#addRoleButton").on("click", function () {
@@ -328,6 +375,7 @@
             $(".btn-close, [data-bs-dismiss='modal']").on("click", function () {
                 $("#addRoleModal").removeClass("show").css("display", "none");
                 $("#editRoleModal").removeClass("show").css("display", "none");
+                $("#deleteRoleModal").removeClass("show").css("display", "none");
                 $("body").removeClass("modal-open");
                 $(".modal-backdrop").remove();
                 $('#submitRoleForm').prop('disabled', false).text('Submit');

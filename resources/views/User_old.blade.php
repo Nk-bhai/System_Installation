@@ -92,10 +92,10 @@
 
     <div class="container-fluid py-10">
 
-        <div class="d-flex justify-content-end mb-5 gap-5">
+        {{-- <div class="d-flex justify-content-end mb-5 gap-5">
             <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a>
             <a href="/admin" class="btn btn-danger">Logout</a>
-        </div>
+        </div> --}}
         {{-- <div class="d-flex justify-content-end mb-5">
         </div> --}}
         <div class="row">

@@ -116,10 +116,9 @@ class RoleController extends Controller
         $new_role_name = $request->input('role_name');
 
         $permissions = $request->input('permissions');
-        $permissions_string = "";
-        foreach ($permissions as $p) {
-            $permissions_string .= $p . ',';
-        }
+        // $permissions_string = "";
+        $permissions_string = implode(',', $permissions);
+
 
         RoleModel::where('id', '=', $id)->update([
             'role_name' => $request->input('role_name'),

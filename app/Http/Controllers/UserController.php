@@ -7,6 +7,7 @@ use App\Models\UserModel;
 use Config;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class UserController extends Controller
 {
@@ -72,6 +73,7 @@ class UserController extends Controller
             'email' => $request->input('email'),
             'password' => $request->input('password'),
             'role' => $request->input('role'),
+            'created_at' => Carbon::now()
         ]);
         return redirect()->route('user.index');
     }

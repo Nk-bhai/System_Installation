@@ -3,7 +3,7 @@
 @section('contents')
     <div class="container-fluid">
         <div class="d-flex justify-content-end mb-5 gap-5 mt-n10">
-            <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+            {{-- <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a> --}}
             <button type="button" class="btn btn-primary" id="addUserButton" data-bs-toggle="modal"
                 data-bs-target="#addUserModal">Add</button>
         </div>
@@ -51,14 +51,18 @@
                                                             data-id="{{ $dt->id }}" data-name="{{ $dt->name }}"
                                                             data-email="{{ $dt->email }}" data-role="{{ $dt->role }}"
                                                             data-url="{{ route('user.update', $dt->id) }}">Edit</button>
-                                                        <form action="{{ route('user.destroy', $dt->id) }}" method="post"
+                                                        {{-- <form action="{{ route('user.destroy', $dt->id) }}" method="post"
                                                             class="d-inline-flex align-items-center m-0 p-0"
                                                             onsubmit="return confirm('Are you sure you want to delete this role?');">
                                                             @csrf
                                                             @method('DELETE')
                                                             <button type="submit"
                                                                 class="btn btn-sm btn-light-danger">Delete</button>
-                                                        </form>
+                                                        </form> --}}
+                                                        <button type="button" class="btn btn-sm btn-light-danger deleteUserButton"
+                                                            data-bs-toggle="modal" data-bs-target="#deleteUserModal"
+                                                            data-id="{{ $dt->id }}" data-name="{{ $dt->name }}"
+                                                            data-url="{{ route('user.destroy', $dt->id) }}">Delete</button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -192,217 +196,260 @@
             </div>
         </div>
     </div>
-
-    <script>
-        // password show hide
-        function Password_Show_hide() {
-            var x = document.getElementById("password");
-            let icon = document.querySelector(".password-toggle-icon i");
-            if (x.type === "password") {
-                x.type = "text";
-                icon.classList.remove("fa-eye");
-                icon.classList.add("fa-eye-slash");
-            } else {
-                x.type = "password";
-                icon.classList.remove("fa-eye-slash");
-                icon.classList.add("fa-eye");
+    <!-- Delete User Modal -->
+    <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteUserModalLabel">Delete User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete user <strong id="delete_user_name"></strong>?</p>
+                    <form action="" method="post" id="user_delete">
+                        @csrf
+                        @method('DELETE')
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <script>
+            // password show hide
+            function Password_Show_hide() {
+                var x = document.getElementById("password");
+                let icon = document.querySelector(".password-toggle-icon i");
+                if (x.type === "password") {
+                    x.type = "text";
+                    icon.classList.remove("fa-eye");
+                    icon.classList.add("fa-eye-slash");
+                } else {
+                    x.type = "password";
+                    icon.classList.remove("fa-eye-slash");
+                    icon.classList.add("fa-eye");
+                }
             }
-        }
-        $(document).ready(function () {
-            // Search functionality
-            $("#searchInput").on("keyup", function () {
-                let value = $(this).val().toLowerCase();
-                $("#userTable tbody tr").filter(function () {
-                    $(this).toggle(
-                        $(this).find("td:eq(0)").text().toLowerCase().indexOf(value) > -1 || // Name
-                        $(this).find("td:eq(1)").text().toLowerCase().indexOf(value) > -1 || // Email
-                        $(this).find("td:eq(2)").text().toLowerCase().indexOf(value) > -1   // Role
-                    );
+            $(document).ready(function () {
+                // Search functionality
+                $("#searchInput").on("keyup", function () {
+                    let value = $(this).val().toLowerCase();
+                    $("#userTable tbody tr").filter(function () {
+                        $(this).toggle(
+                            $(this).find("td:eq(0)").text().toLowerCase().indexOf(value) > -1 || // Name
+                            $(this).find("td:eq(1)").text().toLowerCase().indexOf(value) > -1 || // Email
+                            $(this).find("td:eq(2)").text().toLowerCase().indexOf(value) > -1   // Role
+                        );
+                    });
                 });
-            });
 
-            // Add User Validations
-            $("#name").on('input', ValidateName);
-            $("#email").on('input', ValidateEmail);
-            $("#password").on('input', ValidatePassword);
-            $("#role").on('change', ValidateRole);
+                // Add User Validations
+                $("#name").on('input', ValidateName);
+                $("#email").on('input', ValidateEmail);
+                $("#password").on('input', ValidatePassword);
+                $("#role").on('change', ValidateRole);
 
-            $("#user_role_assign").submit(function (e) {
-                let name = ValidateName();
-                let email = ValidateEmail();
-                let password = ValidatePassword();
-                let role = ValidateRole();
-                if (!name || !email || !password || !role) {
-                    e.preventDefault();
-                }
-            });
+                $("#user_role_assign").submit(function (e) {
+                    let name = ValidateName();
+                    let email = ValidateEmail();
+                    let password = ValidatePassword();
+                    let role = ValidateRole();
+                    if (!name || !email || !password || !role) {
+                        e.preventDefault();
+                    }
+                });
 
-            // Edit User Validations
-            $("#edit_name").on('input', ValidateEditName);
-            $("#edit_email").on('input', ValidateEditEmail);
-            $("#edit_role").on('change', ValidateEditRole);
+                // Edit User Validations
+                $("#edit_name").on('input', ValidateEditName);
+                $("#edit_email").on('input', ValidateEditEmail);
+                $("#edit_role").on('change', ValidateEditRole);
 
-            $("#user_update").submit(function (e) {
-                let name = ValidateEditName();
-                let email = ValidateEditEmail();
-                let role = ValidateEditRole();
-                if (!name || !email || !role) {
-                    e.preventDefault();
-                }
-            });
+                $("#user_update").submit(function (e) {
+                    let name = ValidateEditName();
+                    let email = ValidateEditEmail();
+                    let role = ValidateEditRole();
+                    if (!name || !email || !role) {
+                        e.preventDefault();
+                    }
+                });
 
-            // Populate Edit Modal
-            $('.editUserButton').on('click', function () {
-                let id = $(this).data('id');
-                let name = $(this).data('name');
-                let email = $(this).data('email');
-                let role = $(this).data('role');
-                let url = $(this).data('url');
+                // Populate Edit Modal
+                $('.editUserButton').on('click', function () {
+                    let id = $(this).data('id');
+                    let name = $(this).data('name');
+                    let email = $(this).data('email');
+                    let role = $(this).data('role');
+                    let url = $(this).data('url');
 
-                $('#editUserModal').find('form').attr('action', url);
-                $('#edit_name').val(name);
-                $('#edit_email').val(email);
-                $('#edit_role').val(role);
+                    $('#editUserModal').find('form').attr('action', url);
+                    $('#edit_name').val(name);
+                    $('#edit_email').val(email);
+                    $('#edit_role').val(role);
 
-                // Ensure modal opens
-                try {
-                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                        let modal = new bootstrap.Modal(document.getElementById('editUserModal'));
-                        modal.show();
+                    // Ensure modal opens
+                    try {
+                        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                            let modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+                            modal.show();
+                        } else {
+                            console.error("Bootstrap JS is not loaded. Using fallback.");
+                            $("#editUserModal").addClass("show").css("display", "block");
+                            $("body").addClass("modal-open").append('<div class="modal-backdrop fade show"></div>');
+                        }
+                    } catch (e) {
+                        console.error("Error opening edit modal:", e);
+                    }
+                });
+
+                $('.deleteUserButton').on('click', function () {
+                    let id = $(this).data('id');
+                    let name = $(this).data('name');
+                    let url = $(this).data('url');
+
+                    $('#deleteUserModal').find('form').attr('action', url);
+                    $('#delete_user_name').text(name);
+
+                    try {
+                        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                            let modal = new bootstrap.Modal(document.getElementById('deleteUserModal'));
+                            modal.show();
+                        } else {
+                            console.error("Bootstrap JS is not loaded. Using fallback.");
+                            $("#deleteUserModal").addClass("show").css("display", "block");
+                            $("body").addClass("modal-open").append('<div class="modal-backdrop fade show"></div>');
+                        }
+                    } catch (e) {
+                        console.error("Error opening delete modal:", e);
+                    }
+                });
+
+                // Fallback to manually trigger add modal if Bootstrap JS is not loaded
+                $("#addUserButton").on("click", function () {
+                    try {
+                        if (typeof bootstrap === 'undefined' || !bootstrap.Modal) {
+                            console.error("Bootstrap JS is not loaded. Check your master layout.");
+                            $("#addUserModal").addClass("show").css("display", "block");
+                            $("body").addClass("modal-open").append('<div class="modal-backdrop fade show"></div>');
+                        }
+                    } catch (e) {
+                        console.error("Error triggering modal:", e);
+                    }
+                });
+
+                // Handle manual modal close
+                $(".btn-close, [data-bs-dismiss='modal']").on("click", function () {
+                    $("#addUserModal").removeClass("show").css("display", "none");
+                    $("#editUserModal").removeClass("show").css("display", "none");
+                    $("#deleteUserModal").removeClass("show").css("display", "none");
+                    $("body").removeClass("modal-open");
+                    $(".modal-backdrop").remove();
+                });
+
+                // Add User Validation Functions
+                function ValidateName() {
+                    let name = $("#name").val();
+                    if (name == "") {
+                        $("#name_error").html("Name cannot be blank");
+                        return false;
+                    } else if (/^[ ]{1,100}$/.test(name)) {
+                        $("#name_error").html("Name cannot contain spaces only");
+                        return false;
+                    } else if (!/^[A-Za-z ]{1,100}$/.test(name)) {
+                        $("#name_error").html("Name should contain characters and spaces only");
+                        return false;
                     } else {
-                        console.error("Bootstrap JS is not loaded. Using fallback.");
-                        $("#editUserModal").addClass("show").css("display", "block");
-                        $("body").addClass("modal-open").append('<div class="modal-backdrop fade show"></div>');
+                        $("#name_error").html("");
+                        return true;
                     }
-                } catch (e) {
-                    console.error("Error opening edit modal:", e);
                 }
-            });
 
-            // Fallback to manually trigger add modal if Bootstrap JS is not loaded
-            $("#addUserButton").on("click", function () {
-                try {
-                    if (typeof bootstrap === 'undefined' || !bootstrap.Modal) {
-                        console.error("Bootstrap JS is not loaded. Check your master layout.");
-                        $("#addUserModal").addClass("show").css("display", "block");
-                        $("body").addClass("modal-open").append('<div class="modal-backdrop fade show"></div>');
+                function ValidateEmail() {
+                    let email = $("#email").val();
+                    if (email == "") {
+                        $("#email_error").html("Email cannot be blank");
+                        return false;
+                    } else if (!/^[A-Za-z0-9.]+@[A-Za-z]{2,7}\.[A-Za-z]{2,100}$/.test(email)) {
+                        $("#email_error").html("Email must be valid");
+                        return false;
+                    } else {
+                        $("#email_error").html("");
+                        return true;
                     }
-                } catch (e) {
-                    console.error("Error triggering modal:", e);
+                }
+
+                function ValidatePassword() {
+                    let password = $("#password").val();
+                    if (password == "") {
+                        $("#password_error").html("Password cannot be blank");
+                        return false;
+                    } else if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8}$/.test(password)) {
+                        $("#password_error").html("Password must contain at least 1 uppercase, 1 lowercase, 1 digit, 1 special character and must be 8 characters");
+                        return false;
+                    } else {
+                        $("#password_error").html("");
+                        return true;
+                    }
+                }
+
+                function ValidateRole() {
+                    let role = $("#role").val();
+                    if (role === "assign") {
+                        $("#role_error").html("Please select a role");
+                        return false;
+                    } else {
+                        $("#role_error").html("");
+                        return true;
+                    }
+                }
+
+                // Edit User Validation Functions
+                function ValidateEditName() {
+                    let name = $("#edit_name").val();
+                    if (name == "") {
+                        $("#edit_name_error").html("Name cannot be blank");
+                        return false;
+                    } else if (/^[ ]{1,100}$/.test(name)) {
+                        $("#edit_name_error").html("Name cannot contain spaces only");
+                        return false;
+                    } else if (!/^[A-Za-z ]{1,100}$/.test(name)) {
+                        $("#edit_name_error").html("Name should contain characters and spaces only");
+                        return false;
+                    } else {
+                        $("#edit_name_error").html("");
+                        return true;
+                    }
+                }
+
+                function ValidateEditEmail() {
+                    let email = $("#edit_email").val();
+                    if (email == "") {
+                        $("#edit_email_error").html("Email cannot be blank");
+                        return false;
+                    } else if (!/^[A-Za-z0-9.]+@[A-Za-z]{2,7}\.[A-Za-z]{2,100}$/.test(email)) {
+                        $("#edit_email_error").html("Email must be valid");
+                        return false;
+                    } else {
+                        $("#edit_email_error").html("");
+                        return true;
+                    }
+                }
+
+                function ValidateEditRole() {
+                    let role = $("#edit_role").val();
+                    if (role === "assign") {
+                        $("#edit_role_error").html("Please select a role");
+                        return false;
+                    } else {
+                        $("#edit_role_error").html("");
+                        return true;
+                    }
                 }
             });
-
-            // Handle manual modal close
-            $(".btn-close, [data-bs-dismiss='modal']").on("click", function () {
-                $("#addUserModal").removeClass("show").css("display", "none");
-                $("#editUserModal").removeClass("show").css("display", "none");
-                $("body").removeClass("modal-open");
-                $(".modal-backdrop").remove();
-            });
-
-            // Add User Validation Functions
-            function ValidateName() {
-                let name = $("#name").val();
-                if (name == "") {
-                    $("#name_error").html("Name cannot be blank");
-                    return false;
-                } else if (/^[ ]{1,100}$/.test(name)) {
-                    $("#name_error").html("Name cannot contain spaces only");
-                    return false;
-                } else if (!/^[A-Za-z ]{1,100}$/.test(name)) {
-                    $("#name_error").html("Name should contain characters and spaces only");
-                    return false;
-                } else {
-                    $("#name_error").html("");
-                    return true;
-                }
-            }
-
-            function ValidateEmail() {
-                let email = $("#email").val();
-                if (email == "") {
-                    $("#email_error").html("Email cannot be blank");
-                    return false;
-                } else if (!/^[A-Za-z0-9.]+@[A-Za-z]{2,7}\.[A-Za-z]{2,100}$/.test(email)) {
-                    $("#email_error").html("Email must be valid");
-                    return false;
-                } else {
-                    $("#email_error").html("");
-                    return true;
-                }
-            }
-
-            function ValidatePassword() {
-                let password = $("#password").val();
-                if (password == "") {
-                    $("#password_error").html("Password cannot be blank");
-                    return false;
-                } else if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8}$/.test(password)) {
-                    $("#password_error").html("Password must contain at least 1 uppercase, 1 lowercase, 1 digit, 1 special character and must be 8 characters");
-                    return false;
-                } else {
-                    $("#password_error").html("");
-                    return true;
-                }
-            }
-
-            function ValidateRole() {
-                let role = $("#role").val();
-                if (role === "assign") {
-                    $("#role_error").html("Please select a role");
-                    return false;
-                } else {
-                    $("#role_error").html("");
-                    return true;
-                }
-            }
-
-            // Edit User Validation Functions
-            function ValidateEditName() {
-                let name = $("#edit_name").val();
-                if (name == "") {
-                    $("#edit_name_error").html("Name cannot be blank");
-                    return false;
-                } else if (/^[ ]{1,100}$/.test(name)) {
-                    $("#edit_name_error").html("Name cannot contain spaces only");
-                    return false;
-                } else if (!/^[A-Za-z ]{1,100}$/.test(name)) {
-                    $("#edit_name_error").html("Name should contain characters and spaces only");
-                    return false;
-                } else {
-                    $("#edit_name_error").html("");
-                    return true;
-                }
-            }
-
-            function ValidateEditEmail() {
-                let email = $("#edit_email").val();
-                if (email == "") {
-                    $("#edit_email_error").html("Email cannot be blank");
-                    return false;
-                } else if (!/^[A-Za-z0-9.]+@[A-Za-z]{2,7}\.[A-Za-z]{2,100}$/.test(email)) {
-                    $("#edit_email_error").html("Email must be valid");
-                    return false;
-                } else {
-                    $("#edit_email_error").html("");
-                    return true;
-                }
-            }
-
-            function ValidateEditRole() {
-                let role = $("#edit_role").val();
-                if (role === "assign") {
-                    $("#edit_role_error").html("Please select a role");
-                    return false;
-                } else {
-                    $("#edit_role_error").html("");
-                    return true;
-                }
-            }
-        });
-    </script>
+        </script>
 @endsection
 
-@php
-    $pageTitle = 'Users';
-@endphp
+    @php
+        $pageTitle = 'Users';
+    @endphp

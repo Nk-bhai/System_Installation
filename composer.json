@@ -11,8 +11,8 @@
     "license": "MIT",
     "repositories": [
     {
-        "type": "path",
-        "url": "C:/nk-system-auth"
+        "type": "vcs",
+        "url": "https://github.com/Nk-bhai/Laravel-Authentication-Package.git"
     }
 ],
     "require": {
@@ -20,7 +20,8 @@
         "guzzlehttp/guzzle": "^7.9",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^2.10.1"
+        "laravel/tinker": "^2.10.1",
+        "nk/system-auth": "dev-master"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

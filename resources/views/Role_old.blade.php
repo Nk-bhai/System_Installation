@@ -58,9 +58,9 @@
 
     <div class="container-fluid py-10">
 
-        <div class="d-flex justify-content-end mb-5">
+        {{-- <div class="d-flex justify-content-end mb-5">
             <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a>
-        </div>
+        </div> --}}
         <div class="row">
             <!-- Form Section -->
             <div class="col-lg-4 mb-10">
