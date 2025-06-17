@@ -17,20 +17,20 @@ class AdminController extends Controller
     public function __construct(Request $request)
     {
         // dd(session('database_name'));
-        if(!empty(session('database_name'))){
+        if (!empty(session('database_name'))) {
             $databasename = session('database_name');
-        }else{
+        } else {
             $ip_address = $request->ip();
             $response = Http::get("http://192.168.12.127:8005/api/superadmin/get/{$ip_address}");
             $keyData = $response->json();
-            if($keyData[$ip_address] == $ip_address && $keyData['verified'] == 1 ){
+            if ($keyData[$ip_address] == $ip_address && $keyData['verified'] == 1) {
                 $databasename = $keyData['database'];
             }
-            
+
         }
 
 
-        
+
         // $databasename = "hello";
 
         DB::statement('CREATE DATABASE IF NOT EXISTS ' . $databasename);
@@ -146,6 +146,12 @@ class AdminController extends Controller
 
     public function logout(Request $request)
     {
+        $user = UserModel::where('email', session('login_email'))->first();
+
+        if ($user) {
+            $user->last_logout_at = now();
+            $user->save();
+        }
         $request->session()->forget('login_email');
         $request->session()->forget('user_logged_in');
         return redirect()->route('system.auth.login')->with('message', 'Logged out successfully');

@@ -29,6 +29,7 @@
                                             <th class="min-w-150px">Name</th>
                                             <th class="min-w-200px">Email</th>
                                             <th class="min-w-150px">Role</th>
+                                            <th class="min-w-150px">Last Logout</th>
                                             <th class="min-w-150px">Actions</th>
                                         </tr>
                                     </thead>
@@ -43,6 +44,12 @@
                                                 </td>
                                                 <td>
                                                     <span class="text-dark fw-bold d-block">{{ $dt->role }}</span>
+                                                </td>
+                                                <td>
+                                                    {{-- <span class="text-dark fw-bold d-block">{{ $dt->last_logout_at ? \Carbon\Carbon::parse($dt->last_logout_at)->diffForHumans() : 'Never' }}</span> --}}
+                                                    {{-- <span class="text-dark fw-bold d-block">{{ $dt->last_logout_at ? $dt->last_logout_at : '-' }}</span> --}}
+                                                    <span class="text-dark fw-bold d-block"> {{ $dt->last_logout_at ? \Carbon\Carbon::parse($dt->last_logout_at)->timezone('Asia/Kolkata')->format('d-m-Y h:i A') : '-' }} </span>
+                                                    
                                                 </td>
                                                 <td>
                                                     <div class="d-flex gap-3 align-items-center">

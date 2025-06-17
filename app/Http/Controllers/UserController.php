@@ -137,5 +137,3 @@ class UserController extends Controller
         return redirect()->route('UserTable');
     }
 }
-
-//i am building a functionality where first the client in their system  needs to enter the key that i provide to them . After the key has been verify the client should redirected to login page where he should enter the email id and password that i provide . After successfull login the client should be redirected to dashboard. Problem is that how to verify the key . Also i have a super Admin who can terminate the key anytime.
