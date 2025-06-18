@@ -12,12 +12,10 @@ class ProfileController extends Controller
     public function show(Request $request)
     {
         $ip_address = $request->ip();
-        $response = Http::get("http://192.168.12.143:8005/api/superadmin/get/{$ip_address}");
+        $response = Http::get("http://192.168.1.14:8005/api/superadmin/get/{$ip_address}");
         $keyData = $response->json();
         session(['superadmin_email' => $keyData['email']]);
-        $profile_path = $keyData['profile_logo'];
-        $profile_logo = explode("/", $profile_path)[1];
-        session(['profile_logo' => $profile_logo]);
+        session(['profile_logo' => $keyData['profile_logo']]);
 
         return view('profile', [
             'keyData' => $keyData,
@@ -39,11 +37,26 @@ class ProfileController extends Controller
         ]);
 
         $ip_address = $request->ip();
-        if ($request->input('avatar_remove')) {
-            // dd("Here");
-            session()->forget('profile_logo');
 
+        // if profile is to be remove
+        if ($request->input('avatar_remove')) {
+            $ip_address = $request->ip();
+
+            try {
+                $response = Http::post("http://192.168.1.14:8005/api/superadmin/remove_profile_logo/{$ip_address}");
+
+                if ($response->successful()) {
+                    session(['profile_logo' => 'blank.png']);
+                    return redirect()->route('profile.show')->with('success', 'Avatar removed successfully!');
+                } else {
+                    return back()->withErrors(['avatar' => $response->json()['error'] ?? 'Failed to remove profile logo via API']);
+                }
+            } catch (\Exception $e) {
+                return back()->withErrors(['avatar' => 'Error occurred while calling remove API: ' . $e->getMessage()]);
+            }
         }
+
+        // if profile to be set
         if ($request->hasFile('avatar')) {
 
             // Prepare the file for the API request
@@ -58,7 +71,7 @@ class ProfileController extends Controller
                     'avatar',
                     file_get_contents($filePath),
                     $fileName
-                )->post("http://192.168.12.143:8005/api/superadmin/profile_logo/{$ip_address}");
+                )->post("http://192.168.1.14:8005/api/superadmin/profile_logo/{$ip_address}");
 
 
                 // Check if the API request was successful

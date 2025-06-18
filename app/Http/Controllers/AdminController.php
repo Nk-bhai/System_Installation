@@ -21,7 +21,7 @@ class AdminController extends Controller
             $databasename = session('database_name');
         } else {
             $ip_address = $request->ip();
-            $response = Http::get("http://192.168.12.143:8005/api/superadmin/get/{$ip_address}");
+            $response = Http::get("http://192.168.1.14:8005/api/superadmin/get/{$ip_address}");
             $keyData = $response->json();
             if ($keyData[$ip_address] == $ip_address && $keyData['verified'] == 1) {
                 $databasename = $keyData['database'];
@@ -82,7 +82,7 @@ class AdminController extends Controller
     public function dashboardPage(Request $request)
     {
         $ip_address = $request->ip();
-        $response = Http::get("http://192.168.12.143:8005/api/superadmin/get/{$ip_address}");
+        $response = Http::get("http://192.168.1.14:8005/api/superadmin/get/{$ip_address}");
         $keyData = $response->json();
         // if ($keyData[$ip_address] == $ip_address && $keyData['verified'] == 1) {
         // dd($keyData);

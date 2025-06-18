@@ -31,7 +31,7 @@
                                                 title="Change avatar">
                                                 <i class="bi bi-pencil-fill fs-7"></i>
                                                 <input type="file" name="avatar" accept=".png, .jpg, .jpeg" />
-                                                <input type="hidden" name="avatar_remove" />
+                                               <input type="hidden" name="avatar_remove" id="avatar_remove" />
                                             </label>
                                             <span
                                                 class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
@@ -78,3 +78,9 @@
 @php
     $pageTitle = 'Profile';
 @endphp
+
+<script>
+    document.querySelector('[data-kt-image-input-action="remove"]').addEventListener('click', function () {
+        document.getElementById('avatar_remove').value = 1; // Mark for removal
+    });
+</script>

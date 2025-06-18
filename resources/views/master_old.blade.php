@@ -10,6 +10,7 @@
     <meta property="og:title" content="Metronic - Bootstrap 5 HTML, VueJS, React, Angular & Laravel Admin Dashboard Theme" />
     <meta property="og:url" content="https://keenthemes.com/metronic" />
     <meta property="og:site_name" content="Keenthemes | Metronic" />
+    	<link rel="icon" href="{{ asset('elsner_favicon.svg') }}" type="image/x-icon">
     <link rel="canonical" href="https://preview.keenthemes.com/metronic8" />
     {{-- @if (config('carlicense.is_valid', false)) --}}
     <link rel="shortcut icon" href="assets/media/logos/favicon.ico" />
