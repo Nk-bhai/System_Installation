@@ -38,13 +38,13 @@ class RoleController extends Controller
     public function index()
     {
         // Debug: Log the entire session
-    \Log::info('Session data in index method:', session()->all());
+        \Log::info('Session data in index method:', session()->all());
         $roleData = RoleModel::paginate(5);
         $add_message = session()->get('add_message');
         $delete_message = session()->get('delete_message');
         $update_message = session()->get('update_message');
-   // Debug: Log the retrieved messages
-    \Log::info("Retrieved messages - add: {$add_message}, update: {$update_message}, delete: {$delete_message}");
+        // Debug: Log the retrieved messages
+        \Log::info("Retrieved messages - add: {$add_message}, update: {$update_message}, delete: {$delete_message}");
         return view('Role', ['roleData' => $roleData, 'add_message' => $add_message, 'delete_message' => $delete_message, 'update_message' => $update_message]);
     }
 
@@ -68,10 +68,12 @@ class RoleController extends Controller
         ]);
         $role_name = $request->input('role_name');
         $permissions = $request->input('permissions');
-        $permissions_string = "";
-        foreach ($permissions as $p) {
-            $permissions_string .= $p . ',';
-        }
+        // $permissions_string = "";
+        // foreach ($permissions as $p) {
+        //     $permissions_string .= $p . ',';
+        // }
+        $permissions_string = implode(',', $permissions);
+
         RoleModel::insert([
             'role_name' => $role_name,
             'permissions' => $permissions_string
@@ -127,11 +129,11 @@ class RoleController extends Controller
 
         // role_name change globally in all table
         UserModel::where('role', $old_role_name)->update(['role' => $new_role_name]);
-        $redirect= redirect()->route('role.index')->with(['update_message' => "role Update Successfully"]);
+        $redirect = redirect()->route('role.index')->with(['update_message' => "role Update Successfully"]);
         // Debug: Log the session data immediately after setting it
-    \Log::info('Session data after setting update_message:', session()->all());
+        \Log::info('Session data after setting update_message:', session()->all());
 
-    return $redirect;
+        return $redirect;
     }
 
     /**
