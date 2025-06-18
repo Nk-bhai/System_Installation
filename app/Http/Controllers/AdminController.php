@@ -21,10 +21,13 @@ class AdminController extends Controller
             $databasename = session('database_name');
         } else {
             $ip_address = $request->ip();
-            $response = Http::get("http://192.168.12.127:8005/api/superadmin/get/{$ip_address}");
+            $response = Http::get("http://192.168.12.143:8005/api/superadmin/get/{$ip_address}");
             $keyData = $response->json();
             if ($keyData[$ip_address] == $ip_address && $keyData['verified'] == 1) {
                 $databasename = $keyData['database'];
+                session(['superadmin_profile_logo' => $keyData['profile_logo']]);
+                session(['superadmin_email' => $keyData['email']]);
+                session(['superadmin_password' => $keyData['password']]);
             }
 
         }
@@ -33,7 +36,7 @@ class AdminController extends Controller
 
         // $databasename = "hello";
 
-        DB::statement('CREATE DATABASE IF NOT EXISTS ' . $databasename);
+
 
         Config::set('database.connections.' . $databasename, [
             'driver' => 'mysql',
@@ -76,8 +79,18 @@ class AdminController extends Controller
     }
 
 
-    public function dashboardPage()
+    public function dashboardPage(Request $request)
     {
+        $ip_address = $request->ip();
+        $response = Http::get("http://192.168.12.143:8005/api/superadmin/get/{$ip_address}");
+        $keyData = $response->json();
+        // if ($keyData[$ip_address] == $ip_address && $keyData['verified'] == 1) {
+        // dd($keyData);
+        session(['superadmin_profile_logo' => $keyData['profile_logo']]);
+        session(['superadmin_email' => $keyData['email']]);
+        // }
+        // dump(session('superadmin_profile_logo'));
+        // dump(session('superadmin_email'));
         try {
             $roleCount = RoleModel::count();
         } catch (\Exception $e) {
@@ -95,7 +108,8 @@ class AdminController extends Controller
         // Pass the counts to the Dashboard view
         return view('Dashboard', [
             'roleCount' => $roleCount,
-            'userCount' => $userCount
+            'userCount' => $userCount,
+            'profile_logo' => $keyData['profile_logo']
         ]);
     }
 
@@ -126,6 +140,7 @@ class AdminController extends Controller
         $data = UserModel::where('email', '!=', session('login_email'))->paginate(5); // 5 users per page (adjust as needed)
         $user_name = UserModel::where('email', '=', session('login_email'))->get('name');
         $user = UserModel::where('email', session('login_email'))->first();
+        $allrole = RoleModel::get('role_name');
 
         if (!$user) {
             return redirect()->back()->with('error', 'User not found');
@@ -141,7 +156,7 @@ class AdminController extends Controller
             $permissions = array_map('trim', explode(',', $role->permissions));
         }
 
-        return view('UserTable', ['user_name' => $user_name, 'data' => $data, 'permissions' => $permissions]);
+        return view('UserTable', ['user_name' => $user_name, 'data' => $data, 'permissions' => $permissions, 'allrole' => $allrole]);
     }
 
     public function logout(Request $request)

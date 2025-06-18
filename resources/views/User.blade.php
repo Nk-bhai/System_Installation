@@ -377,7 +377,7 @@
                     if (email == "") {
                         $("#email_error").html("Email cannot be empty");
                         return false;
-                    } else if (!/^[A-Za-z0-9.]+@[A-Za-z]{2,7}\.[A-Za-z]{2,100}$/.test(email)) {
+                    } else if (!/^[A-Za-z0-9.]+@[A-Za-z]{2,7}\.[A-Za-z]{2,3}$/.test(email)) {
                         $("#email_error").html("Email must be valid");
                         return false;
                     } else {
@@ -434,7 +434,7 @@
                     if (email == "") {
                         $("#edit_email_error").html("Email cannot be empty");
                         return false;
-                    } else if (!/^[A-Za-z0-9.]+@[A-Za-z]{2,7}\.[A-Za-z]{2,100}$/.test(email)) {
+                    } else if (!/^[A-Za-z0-9.]+@[A-Za-z]{2,7}\.[A-Za-z]{2,3}$/.test(email)) {
                         $("#edit_email_error").html("Email must be valid");
                         return false;
                     } else {

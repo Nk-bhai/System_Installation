@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\UserController;
@@ -30,4 +31,8 @@ Route::post('admin', [AdminController::class, 'admin'])->name('admin');
     Route::resource('user', UserController::class);
     Route::put('admin_update', [UserController::class, 'admin_update'])->name('admin_update');
     Route::post('UserTableEdit', [UserController::class, 'User_Table_edit'])->name('User_Table_edit');
+
+     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+   
 // });
