@@ -41,7 +41,11 @@
                                             <th class="min-w-150px">Name</th>
                                             <th class="min-w-200px">Email</th>
                                             <th class="min-w-150px">Role</th>
-                                            <th class="min-w-150px text-center">Actions</th>
+                                            @if(!in_array('Delete', $permissions) && !in_array('Update', $permissions))
+                                                <th class="min-w-150px text-center" style="display: none">Actions</th>
+                                            @else
+                                                <th class="min-w-150px text-center">Actions</th>
+                                            @endif
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -117,21 +121,23 @@
 
                             </div>
                             <div class="mb-5">
-                                <label class="form-label fw-bolder text-dark fs-6">Assign Role</label>
-                                <select name="role" id="edit_role" class="form-select form-select-solid"
-                                    data-placeholder="Select a role">
-                                    <option value="assign">--Assign Role--</option>
-                                    @foreach ($allrole as $r)
-                                        <option value="{{ $r->role_name }}" {{ $r->role_name == $dt->role ? "selected" : ""}}>
-                                            {{ $r->role_name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <span id="edit_role_error" style="color:red">
+                                @foreach ($data as $dt)
+                                        <label class="form-label fw-bolder text-dark fs-6">Assign Role</label>
+                                        <select name="role" id="edit_role" class="form-select form-select-solid"
+                                            data-placeholder="Select a role">
+                                            <option value="assign">--Assign Role--</option>
+                                            @foreach ($allrole as $r)
+                                                <option value="{{ $r->role_name }}" {{ $r->role_name == $dt->role ? "selected" : ""}}>
+                                                    {{ $r->role_name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <span id="edit_role_error" style="color:red">
 
-                                </span>
-                            </div>
-                            <div>
+                                        </span>
+                                    </div>
+                                    <div>
+                                @endforeach
                                 <button type="submit" class="btn btn-primary w-100">Update</button>
                             </div>
                         </form>

@@ -2490,7 +2490,7 @@
             "dist": {
                 "type": "path",
                 "url": "C:/nk-system-auth",
-                "reference": "bbdbdfe48b70d1fd4ead497594eeba997867a3e5"
+                "reference": "936a97da9c1ed242355b78e72bf2307ce97f7449"
             },
             "require": {
                 "illuminate/database": "^9.0|^10.0|^11.0|^12.0",
@@ -2509,8 +2509,7 @@
             },
             "autoload": {
                 "psr-4": {
-                    "Nk\\SystemAuth\\": "src/",
-                    "Nk\\SystemAuth\\Database\\Seeders\\": "database/seeders/"
+                    "Nk\\SystemAuth\\": "src/"
                 },
                 "files": [
                     "src/helpers.php"

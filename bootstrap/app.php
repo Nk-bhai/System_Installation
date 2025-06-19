@@ -23,10 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(XssSanitization::class);
         $middleware->append(EnsurePackagePresent::class);
         $middleware->append(EnsureKeyVerified::class);
-        // $middleware->append(CheckLogin::class);
-        // $middleware->alias([
-        //     'checklogin' => CheckLogin::class,
-        // ]);
+        
 
     })
     ->withExceptions(function (Exceptions $exceptions) {

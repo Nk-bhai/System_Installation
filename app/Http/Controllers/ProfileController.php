@@ -12,7 +12,7 @@ class ProfileController extends Controller
     public function show(Request $request)
     {
         $ip_address = $request->ip();
-        $response = Http::get("http://192.168.1.14:8005/api/superadmin/get/{$ip_address}");
+        $response = Http::get("http://192.168.12.79:8005/api/superadmin/get/{$ip_address}");
         $keyData = $response->json();
         session(['superadmin_email' => $keyData['email']]);
         session(['profile_logo' => $keyData['profile_logo']]);
@@ -43,7 +43,7 @@ class ProfileController extends Controller
             $ip_address = $request->ip();
 
             try {
-                $response = Http::post("http://192.168.1.14:8005/api/superadmin/remove_profile_logo/{$ip_address}");
+                $response = Http::post("http://192.168.12.79:8005/api/superadmin/remove_profile_logo/{$ip_address}");
 
                 if ($response->successful()) {
                     session(['profile_logo' => 'blank.png']);
@@ -71,7 +71,7 @@ class ProfileController extends Controller
                     'avatar',
                     file_get_contents($filePath),
                     $fileName
-                )->post("http://192.168.1.14:8005/api/superadmin/profile_logo/{$ip_address}");
+                )->post("http://192.168.12.79:8005/api/superadmin/profile_logo/{$ip_address}");
 
 
                 // Check if the API request was successful

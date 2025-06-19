@@ -4,7 +4,7 @@
     <div class="container-fluid py-10">
         <div class="row">
             <div class="col-lg-6 mb-10">
-                <div class="card" onclick="window.location='{{ route('role.index') }}'">
+                <div class="card" onclick="window.location='{{ route('roleInstall') }}'">
                     <div class="card-body p-3">
                         <div class="d-flex align-items-center">
                             <div class="col bg-light-primary px-6 py-8 rounded-2">
@@ -24,7 +24,7 @@
                 </div>
             </div>
             <div class="col-lg-6 mb-10">
-                <div class="card" onclick="window.location='{{ route('user.index') }}'">
+                <div class="card" onclick="window.location='{{ route('UserCrudInstall') }}'">
                     <div class="card-body p-3">
                         <div class="d-flex align-items-center">
                             <div class="col bg-light-danger px-6 py-8 rounded-2">

@@ -7,6 +7,7 @@ use App\Models\UserModel;
 use Config;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class RoleController extends Controller
 {
@@ -14,6 +15,7 @@ class RoleController extends Controller
     {
         // dd(session('dynamic_db'));
         $dynamicDb = session('dynamic_db');
+        // dd($dynamicDb);
         if ($dynamicDb) {
             Config::set('database.connections.' . $dynamicDb, [
                 'driver' => 'mysql',
@@ -128,10 +130,10 @@ class RoleController extends Controller
         ]);
 
         // role_name change globally in all table
+        if (Schema::hasTable('user')) {
         UserModel::where('role', $old_role_name)->update(['role' => $new_role_name]);
+        }
         $redirect = redirect()->route('role.index')->with(['update_message' => "role Update Successfully"]);
-        // Debug: Log the session data immediately after setting it
-        \Log::info('Session data after setting update_message:', session()->all());
 
         return $redirect;
     }
@@ -147,3 +149,5 @@ class RoleController extends Controller
         return redirect()->route('role.index');
     }
 }
+
+// i have build a laravel package to verify the key and login credentials and now i want to secure the developed package such that user who install my package cannot alter the package code from the vendor folder. if any alterations is found die or abort the application.
