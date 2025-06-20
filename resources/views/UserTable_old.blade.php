@@ -17,7 +17,7 @@
                         <div class="card-header border-0 pt-5 d-flex justify-content-between align-items-center">
                             <div>
                                 <h3 class="card-title align-items-start flex-column">
-                                    <span class="card-label fw-bold fs-3 mb-1">User List</span>
+                                    <span class="card-label fw-bold fs-3 mb-1">Users List</span>
                                 </h3>
                             </div>
 

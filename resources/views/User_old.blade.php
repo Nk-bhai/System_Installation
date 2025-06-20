@@ -168,7 +168,7 @@
             <div class="col-lg-8">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">User List</h3>
+                        <h3 class="card-title">Users List</h3>
                     </div>
                     <div class="card-body">
                         @if ($data->isEmpty())

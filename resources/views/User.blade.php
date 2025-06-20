@@ -11,7 +11,7 @@
             <div class="col-lg-12">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h3 class="card-title">User List</h3>
+                        <h3 class="card-title">Users List</h3>
                         <div class="search-bar">
                             <input type="text" id="searchInput" class="form-control form-control-solid"
                                 placeholder="Search by name, email, or role..." style="width: 300px;">
@@ -224,6 +224,7 @@
                 </div>
             </div>
         </div>
+    </div>
         <script>
             // password show hide
             function Password_Show_hide() {
@@ -458,5 +459,5 @@
 @endsection
 
     @php
-        $pageTitle = 'Users';
+        $pageTitle = 'User Management';
     @endphp

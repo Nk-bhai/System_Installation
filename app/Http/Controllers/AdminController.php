@@ -162,16 +162,18 @@ class AdminController extends Controller
 
     public function logout(Request $request)
     {
+        // dd("reach");
         if (Schema::hasTable('user')) {
-        $user = UserModel::where('email', session('login_email'))->first();
-
+            $user = UserModel::where('email', session('login_email'))->first();
+            
         if ($user) {
             $user->last_logout_at = now();
             $user->save();
         }
+    }
         $request->session()->forget('login_email');
         $request->session()->forget('user_logged_in');
-    }
+        // dd(session('user_logged_in'));
         return redirect()->route('system.auth.login')->with('message', 'Logged out successfully');
     }
 }

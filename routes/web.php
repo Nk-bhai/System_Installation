@@ -23,7 +23,8 @@ Route::post('admin', [AdminController::class, 'admin'])->name('admin');
     Route::get('UserTable', [AdminController::class, 'UserTable'])->name('UserTable');
     Route::get('dashboard', [AdminController::class, 'dashboardPage'])->name('dashboard');
     Route::get('UserCrudInstall', [AdminController::class, 'UserCrudInstall'])->name('UserCrudInstall');
-    Route::any('roleinstall', [AdminController::class, 'roleInstall'])->name('roleInstall');
+    // Route::any('roleinstall', [AdminController::class, 'roleInstall'])->name('roleInstall');
+    Route::get('roleInstall', [AdminController::class, 'roleInstall'])->name('roleInstall');
     Route::get('logout', [AdminController::class, 'logout'])->name('logout');
 
     Route::resource('role', RoleController::class);

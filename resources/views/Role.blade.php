@@ -28,7 +28,7 @@
             <div class="col-lg-12">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h3 class="card-title">Role List</h3>
+                        <h3 class="card-title">Roles List</h3>
                         <div class="search-bar">
                             <input type="text" id="searchInput" class="form-control form-control-solid"
                                 placeholder="Search by role name or permissions..." style="width: 300px;">
