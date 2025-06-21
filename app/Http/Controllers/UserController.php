@@ -6,6 +6,7 @@ use App\Models\RoleModel;
 use App\Models\UserModel;
 use Config;
 use DB;
+use Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
@@ -42,8 +43,9 @@ class UserController extends Controller
         try {
             $role = RoleModel::get('role_name');
             $data = UserModel::paginate(5);
+            $userCount = UserModel::count();
 
-            return view('User', ['data' => $data, 'role' => $role]);
+            return view('User', ['data' => $data, 'role' => $role, 'userCount' => $userCount]);
         } catch (\Illuminate\Database\QueryException $e) {
             return redirect()->back()->with('error', 'Assign the role First');
         }
@@ -68,14 +70,25 @@ class UserController extends Controller
             'password' => ['required', 'min:2', 'max:8'],
             'role' => ['required']
         ]);
-        UserModel::insert([
-            'name' => $request->input('name'),
-            'email' => $request->input('email'),
-            'password' => $request->input('password'),
-            'role' => $request->input('role'),
-            'created_at' => Carbon::now()
-        ]);
-        return redirect()->route('user.index');
+        $seed_email = DB::table('users')->where('email' , '=' , $request->input('email'))->value('email');
+        
+                
+
+        if($seed_email !== $request->input('email')){
+            $hashpassword = Hash::make($request->input('password'));
+            UserModel::insert([
+                'name' => $request->input('name'),
+                'email' => $request->input('email'),
+                'password' => $hashpassword,
+                'role' => $request->input('role'),
+                'created_at' => Carbon::now()
+            ]);
+            return redirect()->route('user.index');
+        }else{
+                // dd($seed_email);
+            return redirect()->back()->with('error' , 'cannot set credentials of Super Admin');
+
+        }
     }
 
     /**

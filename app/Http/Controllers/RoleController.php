@@ -42,12 +42,12 @@ class RoleController extends Controller
         // Debug: Log the entire session
         \Log::info('Session data in index method:', session()->all());
         $roleData = RoleModel::paginate(5);
+        $roleCount = RoleModel::count();
         $add_message = session()->get('add_message');
         $delete_message = session()->get('delete_message');
         $update_message = session()->get('update_message');
         // Debug: Log the retrieved messages
-        \Log::info("Retrieved messages - add: {$add_message}, update: {$update_message}, delete: {$delete_message}");
-        return view('Role', ['roleData' => $roleData, 'add_message' => $add_message, 'delete_message' => $delete_message, 'update_message' => $update_message]);
+        return view('Role', ['roleData' => $roleData, 'add_message' => $add_message, 'delete_message' => $delete_message, 'update_message' => $update_message , 'roleCount' => $roleCount]);
     }
 
     /**
@@ -131,7 +131,7 @@ class RoleController extends Controller
 
         // role_name change globally in all table
         if (Schema::hasTable('user')) {
-        UserModel::where('role', $old_role_name)->update(['role' => $new_role_name]);
+            UserModel::where('role', $old_role_name)->update(['role' => $new_role_name]);
         }
         $redirect = redirect()->route('role.index')->with(['update_message' => "role Update Successfully"]);
 

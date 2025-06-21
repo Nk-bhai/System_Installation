@@ -1,6 +1,8 @@
 @extends('master')
 
 @section('contents')
+
+@section('title', 'Profile Details')
     <div class="container-fluid">
         <div class="card">
             <div class="card-header" style="border-bottom: 1px solid #ebedf2;">

@@ -2,7 +2,7 @@
 
 @section('contents')
 
-
+@section('title', 'Role Management')
 {{-- popup --}}
    @if (!empty($delete_message))
   <div id="messagePopup" class="popup">
@@ -86,8 +86,9 @@
                                         @endforeach
                                     </tbody>
                                 </table>
-                                <div class="d-flex justify-content-center mt-4">
-                                    {{ $roleData->links() }}
+                                 <div class="d-flex justify-content-between align-items-center">
+                                    <div>Total Roles: {{ $roleCount ?? '0' }}</div>
+                                    <div>{{ $roleData->links() }}</div>
                                 </div>
                             </div>
                         @endif

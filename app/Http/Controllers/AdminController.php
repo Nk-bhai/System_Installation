@@ -7,6 +7,7 @@ use App\Models\UserModel;
 use Artisan;
 use Config;
 use DB;
+use Hash;
 use Http;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -24,7 +25,7 @@ class AdminController extends Controller
             $ip_address = $request->ip();
             $response = Http::get("http://192.168.12.79:8005/api/superadmin/get/{$ip_address}");
             $keyData = $response->json();
-            if ($keyData[$ip_address] == $ip_address && $keyData['verified'] == 1) {
+            if ($keyData['ip_address'] == $ip_address && $keyData['verified'] == 1) {
                 $databasename = $keyData['database'];
                 session(['superadmin_profile_logo' => $keyData['profile_logo']]);
                 session(['superadmin_email' => $keyData['email']]);
@@ -32,12 +33,6 @@ class AdminController extends Controller
             }
 
         }
-
-
-
-        // $databasename = "hello";
-
-
 
         Config::set('database.connections.' . $databasename, [
             'driver' => 'mysql',
@@ -65,8 +60,8 @@ class AdminController extends Controller
 
         try {
             $user = UserModel::where('email', $email)->first();
-
-            if (!$user || !$user->password === $password) {
+         // if (!$user || !$user->password === $password) {
+            if (!$user || !Hash::check($password, $user->password) === $password) {
                 return false; // Authentication failed
             }
 
@@ -85,13 +80,9 @@ class AdminController extends Controller
         $ip_address = $request->ip();
         $response = Http::get("http://192.168.12.79:8005/api/superadmin/get/{$ip_address}");
         $keyData = $response->json();
-        // if ($keyData[$ip_address] == $ip_address && $keyData['verified'] == 1) {
-        // dd($keyData);
-        session(['superadmin_profile_logo' => $keyData['profile_logo']]);
+
         session(['superadmin_email' => $keyData['email']]);
-        // }
-        // dump(session('superadmin_profile_logo'));
-        // dump(session('superadmin_email'));
+
         try {
             $roleCount = RoleModel::count();
         } catch (\Exception $e) {
@@ -103,14 +94,12 @@ class AdminController extends Controller
         } catch (\Exception $e) {
             $userCount = 0;
         }
-        // $roleCount = RoleModel::count();
-        // $userCount = UserModel::count();
 
         // Pass the counts to the Dashboard view
         return view('Dashboard', [
             'roleCount' => $roleCount,
             'userCount' => $userCount,
-            'profile_logo' => $keyData['profile_logo']
+
         ]);
     }
 
@@ -165,12 +154,12 @@ class AdminController extends Controller
         // dd("reach");
         if (Schema::hasTable('user')) {
             $user = UserModel::where('email', session('login_email'))->first();
-            
-        if ($user) {
-            $user->last_logout_at = now();
-            $user->save();
+
+            if ($user) {
+                $user->last_logout_at = now();
+                $user->save();
+            }
         }
-    }
         $request->session()->forget('login_email');
         $request->session()->forget('user_logged_in');
         // dd(session('user_logged_in'));
