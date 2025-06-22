@@ -9,6 +9,7 @@ use DB;
 use Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Log;
 
 class UserController extends Controller
 {
@@ -41,15 +42,70 @@ class UserController extends Controller
     {
 
         try {
-            $role = RoleModel::get('role_name');
-            $data = UserModel::paginate(5);
+            // $role = RoleModel::get('role_name');
+            $role = RoleModel::all();
+            // $data = UserModel::paginate(5);
+            $data = UserModel::with('role')->paginate(5);
             $userCount = UserModel::count();
-
             return view('User', ['data' => $data, 'role' => $role, 'userCount' => $userCount]);
         } catch (\Illuminate\Database\QueryException $e) {
             return redirect()->back()->with('error', 'Assign the role First');
         }
     }
+    public function search(Request $request)
+    {
+        $query = $request->get('query', '');
+
+        $users = UserModel::where('name', 'like', "%{$query}%")
+        ->join('role', 'user.role_id', '=', 'role.id') // Join with roles
+        ->where('user.name', 'like', "%{$query}%")
+        ->orWhere('user.email', 'like', "%{$query}%")
+        ->orWhere('role.role_name', 'like', "%{$query}%") // Search role name from roles table
+        ->with('role')
+            ->paginate(5);
+
+        // Render the HTML manually (blade in controller)
+        $html = '';
+        foreach ($users as $dt) {
+            $html .= '
+            <tr>
+                <td><span class="text-dark fw-bold d-block fs-6">' . $dt->name . '</span></td>
+                <td><span class="text-dark fw-bold d-block">' . $dt->email . '</span></td>
+                <td><span class="text-dark fw-bold d-block">' . $dt->role->role_name . '</span></td>
+                <td><span class="text-dark fw-bold d-block">' .
+                ($dt->last_logout_at
+                    ? \Carbon\Carbon::parse($dt->last_logout_at)->timezone("Asia/Kolkata")->format("d-m-Y h:i A")
+                    : '-') .
+                '</span></td>
+                <td>
+                    <div class="d-flex gap-3 align-items-center">
+                        <button type="button" class="btn btn-sm btn-light-primary editUserButton"
+                            data-bs-toggle="modal" data-bs-target="#editUserModal"
+                            data-id="' . $dt->id . '" data-name="' . $dt->name . '"
+                            data-email="' . $dt->email . '" data-role="' . $dt->role->role_name . '"
+                            data-url="' . route('user.update', $dt->id) . '">Edit</button>
+    
+                        <button type="button" class="btn btn-sm btn-light-danger deleteUserButton"
+                            data-bs-toggle="modal" data-bs-target="#deleteUserModal"
+                            data-id="' . $dt->id . '" data-name="' . $dt->name . '"
+                            data-url="' . route('user.destroy', $dt->id) . '">Delete</button>
+                    </div>
+                </td>
+            </tr>';
+        }
+
+        if ($users->isEmpty()) {
+            $html = '<tr><td colspan="5" class="text-center text-muted">No search result found</td></tr>';
+        }
+
+        return response()->json([
+            'html' => $html,
+            'pagination' => $users->appends(['query' => $query])->links()->render(),
+            'count' => $users->total(),
+        ]);
+    }
+
+
 
     /**
      * Show the form for creating a new resource.
@@ -62,33 +118,66 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'name' => ['required', 'min:2'],
+    //         'email' => ['required', 'min:2', 'email'],
+    //         'password' => ['required', 'min:2', 'max:8'],
+    //         'role' => ['required']
+    //     ]);
+    //     $seed_email = DB::table('users')->where('email' , '=' , $request->input('email'))->value('email');
+
+
+
+    //     if($seed_email !== $request->input('email')){
+    //         $hashpassword = Hash::make($request->input('password'));
+    //         UserModel::insert([
+    //             'name' => $request->input('name'),
+    //             'email' => $request->input('email'),
+    //             'password' => $hashpassword,
+    //             'role' => $request->input('role'),
+    //             'created_at' => Carbon::now()
+    //         ]);
+    //         return redirect()->route('user.index');
+    //     }else{
+    //             // dd($seed_email);
+    //         return redirect()->back()->with('error' , 'cannot set credentials of Super Admin');
+
+    //     }
+    // }
+
+
     public function store(Request $request)
     {
+        // dd($request->all());
         $request->validate([
             'name' => ['required', 'min:2'],
             'email' => ['required', 'min:2', 'email'],
             'password' => ['required', 'min:2', 'max:8'],
             'role' => ['required']
         ]);
-        $seed_email = DB::table('users')->where('email' , '=' , $request->input('email'))->value('email');
-        
-                
 
-        if($seed_email !== $request->input('email')){
-            $hashpassword = Hash::make($request->input('password'));
-            UserModel::insert([
-                'name' => $request->input('name'),
-                'email' => $request->input('email'),
-                'password' => $hashpassword,
-                'role' => $request->input('role'),
-                'created_at' => Carbon::now()
-            ]);
-            return redirect()->route('user.index');
-        }else{
-                // dd($seed_email);
-            return redirect()->back()->with('error' , 'cannot set credentials of Super Admin');
+        $emailExists = DB::table('users')->where('email', $request->input('email'))->exists();
 
+        if ($emailExists) {
+            // Flash the error message
+            session()->flash('errorss', 'Cannot set credentials of Super Admin');
+            // Debug: Log or dump session to verify
+            Log::info('Session data after flash: ', session()->all());
+            return redirect()->back()->withInput();
         }
+
+        $hashpassword = Hash::make($request->input('password'));
+        UserModel::insert([
+            'name' => $request->input('name'),
+            'email' => $request->input('email'),
+            'password' => $hashpassword,
+            'role_id' => $request->input('role'),
+            'created_at' => Carbon::now()
+        ]);
+
+        return redirect()->route('user.index');
     }
 
     /**
@@ -126,7 +215,7 @@ class UserController extends Controller
         UserModel::where('id', '=', $id)->update([
             'name' => $request->input('name'),
             'email' => $request->input('email'),
-            'role' => $request->input('role'),
+            'role_id' => $request->input('role'),
         ]);
         return redirect()->route('user.index');
     }

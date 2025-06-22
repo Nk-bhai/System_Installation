@@ -6,7 +6,7 @@ use App\Http\Middleware\XssSanitization;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Nand\License\Http\Middleware\VerifyLicense;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Nk\SystemAuth\Http\Middleware\EnsureKeyVerified;
 use Nk\SystemAuth\Http\Middleware\EnsurePackagePresent;
 use \Illuminate\Session\Middleware\StartSession;
@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->append(StartSession::class);
+        $middleware->append(ShareErrorsFromSession::class);
         $middleware->append(XssSanitization::class);
         $middleware->append(EnsurePackagePresent::class);
         $middleware->append(EnsureKeyVerified::class);

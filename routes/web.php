@@ -14,12 +14,13 @@ Route::get('/', function () {
 });
 
 
-
-// Route::view('/key', 'Key')->name('key');
-// Route::post('key', [AdminController::class, 'key'])->name('key');
-// Route::get('admin', [AdminController::class, 'adminPage'])->name('adminPage');
-Route::post('admin', [AdminController::class, 'admin'])->name('admin');
-// Route::middleware(['checklogin'])->group(function () {
+Route::get('/test-error', function () {
+    session()->flash('error', 'Test error message');
+    \Log::info('Session after test flash: ', session()->all());
+    return redirect()->route('user.index');
+});
+Route::group(['middleware' => ['web']], function () {
+    Route::post('admin', [AdminController::class, 'admin'])->name('admin');
     Route::get('UserTable', [AdminController::class, 'UserTable'])->name('UserTable');
     Route::get('dashboard', [AdminController::class, 'dashboardPage'])->name('dashboard');
     Route::get('UserCrudInstall', [AdminController::class, 'UserCrudInstall'])->name('UserCrudInstall');
@@ -28,12 +29,14 @@ Route::post('admin', [AdminController::class, 'admin'])->name('admin');
     Route::get('logout', [AdminController::class, 'logout'])->name('logout');
 
     Route::resource('role', RoleController::class);
+    Route::get('/roles/search', [RoleController::class, 'search'])->name('role.search');
 
     Route::resource('user', UserController::class);
     Route::put('admin_update', [UserController::class, 'admin_update'])->name('admin_update');
     Route::post('UserTableEdit', [UserController::class, 'User_Table_edit'])->name('User_Table_edit');
+    Route::get('/users/search', [UserController::class, 'search'])->name('user.search');
 
-     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-   
-// });
+
+});

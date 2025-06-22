@@ -3,20 +3,20 @@
 @section('contents')
 
 @section('title', 'Role Management')
-{{-- popup --}}
-   @if (!empty($delete_message))
-  <div id="messagePopup" class="popup">
-    <h2>{{$delete_message}}</h2>
-  </div>
-@elseif (!empty($update_message))
-  <div id="messagePopup" class="popup">
-    <h2>{{$update_message}}</h2>
-  </div>
-@elseif (!empty($add_message))
-  <div id="messagePopup" class="popup">
-    <h2>{{$add_message}}</h2>
-  </div>
-@endif
+    {{-- popup --}}
+    @if (!empty($delete_message))
+        <div id="messagePopup" class="popup">
+            <h2>{{$delete_message}}</h2>
+        </div>
+    @elseif (!empty($update_message))
+        <div id="messagePopup" class="popup">
+            <h2>{{$update_message}}</h2>
+        </div>
+    @elseif (!empty($add_message))
+        <div id="messagePopup" class="popup">
+            <h2>{{$add_message}}</h2>
+        </div>
+    @endif
 
     <div class="container-fluid">
         <div class="d-flex justify-content-end mb-5 gap-5 mt-n10">
@@ -48,15 +48,11 @@
                                             <th class="min-w-150px">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="roleTableBody">
                                         @foreach ($roleData as $rd)
                                             <tr>
-                                                <td>
-                                                    <span class="text-dark fw-bold d-block fs-6">{{ $rd->role_name }}</span>
-                                                </td>
-                                                <td>
-                                                    <span class="text-dark fw-bold d-block">{{ $rd->permissions }}</span>
-                                                </td>
+                                                <td><span class="text-dark fw-bold d-block fs-6">{{ $rd->role_name }}</span></td>
+                                                <td><span class="text-dark fw-bold d-block">{{ $rd->permissions }}</span></td>
                                                 <td>
                                                     <div class="d-flex gap-3 align-items-center">
                                                         <button type="button" class="btn btn-sm btn-light-primary editRoleButton"
@@ -66,29 +62,31 @@
                                                             data-url="{{ route('role.update', $rd->id) }}">
                                                             Edit
                                                         </button>
-                                                        {{-- <form action="{{ route('role.destroy', $rd->id) }}" method="post"
-                                                            class="d-inline-flex align-items-center m-0 p-0"
-                                                            onsubmit="return confirm('Are you sure you want to delete this role?');">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn btn-sm btn-light-danger">
+
+                                                        {{-- <button type="button" class="btn btn-sm btn-light-danger deleteRoleButton"
+                                                            data-bs-toggle="modal" data-bs-target="#deleteRoleModal"
+                                                            data-id="{{ $rd->id }}" data-role-name="{{ $rd->role_name }}"
+                                                            data-url="{{ route('role.destroy', $rd->id) }}">
+                                                            Delete
+                                                        </button> --}}
+                                                         @if ($rd->users->count() == 0)
+                                                            <button type="button" class="btn btn-sm btn-light-danger deleteRoleButton"
+                                                                data-bs-toggle="modal" data-bs-target="#deleteRoleModal"
+                                                                data-id="{{ $rd->id }}" data-role-name="{{ $rd->role_name }}"
+                                                                data-url="{{ route('role.destroy', $rd->id) }}">
                                                                 Delete
                                                             </button>
-                                                        </form> --}}
-                                                        <button type="button" class="btn btn-sm btn-light-danger deleteRoleButton"
-                                                                data-bs-toggle="modal" data-bs-target="#deleteRoleModal"
-                                                                data-id="{{ $rd->id }}"
-                                                                data-role-name="{{ $rd->role_name }}"
-                                                                data-url="{{ route('role.destroy', $rd->id) }}">Delete</button>
+                                                        @endif
                                                     </div>
+
                                                 </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
                                 </table>
-                                 <div class="d-flex justify-content-between align-items-center">
-                                    <div>Total Roles: {{ $roleCount ?? '0' }}</div>
-                                    <div>{{ $roleData->links() }}</div>
+                                <div class="d-flex justify-content-between align-items-center mt-4">
+                                    <div id="roleCountText">Total Roles: {{ $roleCount ?? '0' }}</div>
+                                    <div id="paginationLinks">{{ $roleData->links() }}</div>
                                 </div>
                             </div>
                         @endif
@@ -155,7 +153,7 @@
             </div>
         </div>
     </div>
-   
+
 
     <!-- Edit Role Modal -->
     <div class="modal fade" id="editRoleModal" tabindex="-1" aria-labelledby="editRoleModalLabel" aria-hidden="true">
@@ -238,35 +236,54 @@
         </div>
     </div>
     <script>
-        
-  // popup script
-  document.addEventListener('DOMContentLoaded', function () {
-    const messagePopup = document.getElementById('messagePopup');
 
-    if (messagePopup) {
-      // Show the popup
-      messagePopup.classList.add('show');
+        // popup script
+        // document.addEventListener('DOMContentLoaded', function () {
+        //     const messagePopup = document.getElementById('messagePopup');
 
-      setTimeout(function () {
-        messagePopup.classList.remove('show');
-        setTimeout(() => {
-          messagePopup.remove();
-        }, 500);
-      }, 2500); // 1.5 seconds
-    }
-  });
+        //     if (messagePopup) {
+        //         // Show the popup
+        //         messagePopup.classList.add('show');
+
+        //         setTimeout(function () {
+        //             messagePopup.classList.remove('show');
+        //             setTimeout(() => {
+        //                 messagePopup.remove();
+        //             }, 500);
+        //         }, 2500); // 1.5 seconds
+        //     }
+        // });
+
+        function fetchUsers(query = '', page = 1) {
+            $.ajax({
+                url: "{{ route('role.search') }}",
+                type: "GET",
+                data: { query: query, page: page },
+                success: function (response) {
+                    $('#roleTableBody').html(response.html);
+                    $('#paginationLinks').html(response.pagination);
+                    $('#roleCountText').text('Total Users: ' + response.count);
+                },
+                error: function () {
+                    alert('Error fetching data.');
+                }
+            });
+        }
 
         $(document).ready(function () {
-            // Search functionality
-            $("#searchInput").on("keyup", function () {
-                let value = $(this).val().toLowerCase();
-                $("#roleTable tbody tr").filter(function () {
-                    $(this).toggle(
-                        $(this).find("td:eq(0)").text().toLowerCase().indexOf(value) > -1 || // Role Name
-                        $(this).find("td:eq(1)").text().toLowerCase().indexOf(value) > -1   // Permissions
-                    );
-                });
+            $('#searchInput').on('keyup', function () {
+                let query = $(this).val();
+                fetchUsers(query);
             });
+
+            $(document).on('click', '#paginationLinks a', function (e) {
+                e.preventDefault();
+                let page = $(this).attr('href').split('page=')[1];
+                let query = $('#searchInput').val();
+                fetchUsers(query, page);
+            });
+
+
 
             // Prevent double submission
             // $('#role_assign_form').on('submit', function (e) {
@@ -308,7 +325,7 @@
             });
 
             // Populate Edit Modal
-            $('.editRoleButton').on('click', function () {
+            $(document).on('click', '.editRoleButton', function () {
                 let id = $(this).data('id');
                 let role_name = $(this).data('role-name');
                 let permissions = $(this).data('permissions').split(',');
@@ -337,7 +354,8 @@
                     console.error("Error opening edit modal:", e);
                 }
             });
-            $('.deleteRoleButton').on('click', function () {
+
+            $(document).on('click', '.deleteRoleButton', function () {
                 let id = $(this).data('id');
                 let role_name = $(this).data('role-name');
                 let url = $(this).data('url');

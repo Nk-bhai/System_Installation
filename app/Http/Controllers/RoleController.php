@@ -39,16 +39,62 @@ class RoleController extends Controller
      */
     public function index()
     {
-        // Debug: Log the entire session
-        \Log::info('Session data in index method:', session()->all());
-        $roleData = RoleModel::paginate(5);
+        // $roleData = RoleModel::paginate(5);
+        $roleData = RoleModel::with('users')->paginate(5); // or whatever pagination you're using
+
         $roleCount = RoleModel::count();
         $add_message = session()->get('add_message');
         $delete_message = session()->get('delete_message');
         $update_message = session()->get('update_message');
-        // Debug: Log the retrieved messages
         return view('Role', ['roleData' => $roleData, 'add_message' => $add_message, 'delete_message' => $delete_message, 'update_message' => $update_message , 'roleCount' => $roleCount]);
     }
+
+    public function search(Request $request)
+{
+    $query = $request->get('query', '');
+
+    $roles = RoleModel::where('role_name', 'like', "%{$query}%")
+        ->orWhere('permissions', 'like', "%{$query}%")
+        ->paginate(5);
+
+    $html = '';
+    foreach ($roles as $rd) {
+        $permissions = is_array($rd->permissions) ? implode(',', $rd->permissions) : $rd->permissions;
+
+        $html .= '
+        <tr>
+            <td><span class="text-dark fw-bold d-block fs-6">' . $rd->role_name . '</span></td>
+            <td><span class="text-dark fw-bold d-block">' . $permissions . '</span></td>
+            <td>
+                <div class="d-flex gap-3 align-items-center">
+                    <button type="button" class="btn btn-sm btn-light-primary editRoleButton"
+                        data-bs-toggle="modal" data-bs-target="#editRoleModal"
+                        data-id="' . $rd->id . '"
+                        data-role-name="' . $rd->role_name . '"
+                        data-permissions="' . $permissions . '"
+                        data-url="' . route('role.update', $rd->id) . '">Edit</button>
+
+                    <button type="button" class="btn btn-sm btn-light-danger deleteRoleButton"
+                        data-bs-toggle="modal" data-bs-target="#deleteRoleModal"
+                        data-id="' . $rd->id . '"
+                        data-role-name="' . $rd->role_name . '"
+                        data-url="' . route('role.destroy', $rd->id) . '">Delete</button>
+                </div>
+            </td>
+        </tr>';
+    }
+
+    if ($roles->isEmpty()) {
+        $html = '<tr><td colspan="3" class="text-center text-muted">No search result found</td></tr>';
+    }
+
+    return response()->json([
+        'html' => $html,
+        'pagination' => $roles->appends(['query' => $query])->links()->render(),
+        'count' => $roles->total(),
+    ]);
+}
+
 
     /**
      * Show the form for creating a new resource.
@@ -150,4 +196,3 @@ class RoleController extends Controller
     }
 }
 
-// i have build a laravel package to verify the key and login credentials and now i want to secure the developed package such that user who install my package cannot alter the package code from the vendor folder. if any alterations is found die or abort the application.

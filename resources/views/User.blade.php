@@ -2,6 +2,7 @@
 
 @section('contents')
 @section('title', 'User Management')
+<?php //dd(session()->all());  ?>
     <div class="container-fluid">
         <div class="d-flex justify-content-end mb-5 gap-5 mt-n10">
             {{-- <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a> --}}
@@ -34,37 +35,23 @@
                                             <th class="min-w-150px">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        @foreach ($data as $dt)
+                                    <tbody id="userTableBody">
+                                        @forelse ($data as $dt)
                                             <tr>
-                                                <td>
-                                                    <span class="text-dark fw-bold d-block fs-6">{{ $dt->name }}</span>
-                                                </td>
-                                                <td>
-                                                    <span class="text-dark fw-bold d-block">{{ $dt->email }}</span>
-                                                </td>
-                                                <td>
-                                                    <span class="text-dark fw-bold d-block">{{ $dt->role }}</span>
-                                                </td>
-                                                <td>
-                                                    {{-- <span class="text-dark fw-bold d-block">{{ $dt->last_logout_at ?
-                                                        \Carbon\Carbon::parse($dt->last_logout_at)->diffForHumans() : 'Never'
-                                                        }}</span> --}}
-                                                    {{-- <span class="text-dark fw-bold d-block">{{ $dt->last_logout_at ?
-                                                        $dt->last_logout_at : '-' }}</span> --}}
-                                                    <span class="text-dark fw-bold d-block">
+                                                <td><span class="text-dark fw-bold d-block fs-6">{{ $dt->name }}</span></td>
+                                                <td><span class="text-dark fw-bold d-block">{{ $dt->email }}</span></td>
+                                                <td><span class="text-dark fw-bold d-block">{{ $dt->role->role_name ?? 'N/A' }}</span></td>
+                                                <td><span class="text-dark fw-bold d-block">
                                                         {{ $dt->last_logout_at ? \Carbon\Carbon::parse($dt->last_logout_at)->timezone('Asia/Kolkata')->format('d-m-Y h:i A') : '-' }}
-                                                    </span>
-
-                                                </td>
+                                                    </span></td>
                                                 <td>
                                                     <div class="d-flex gap-3 align-items-center">
                                                         <button type="button" class="btn btn-sm btn-light-primary editUserButton"
                                                             data-bs-toggle="modal" data-bs-target="#editUserModal"
                                                             data-id="{{ $dt->id }}" data-name="{{ $dt->name }}"
-                                                            data-email="{{ $dt->email }}" data-role="{{ $dt->role }}"
+                                                            data-email="{{ $dt->email }}" data-role="{{ $dt->role->id }}"
                                                             data-url="{{ route('user.update', $dt->id) }}">Edit</button>
-                                                        
+
                                                         <button type="button" class="btn btn-sm btn-light-danger deleteUserButton"
                                                             data-bs-toggle="modal" data-bs-target="#deleteUserModal"
                                                             data-id="{{ $dt->id }}" data-name="{{ $dt->name }}"
@@ -72,18 +59,24 @@
                                                     </div>
                                                 </td>
                                             </tr>
-                                        @endforeach
+                                        @empty
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted">No Role assigned to user Yet.</td>
+                                            </tr>
+                                        @endforelse
                                     </tbody>
+
+
                                 </table>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>Total Users: {{ $userCount ?? '0' }}</div>
-                                    <div>{{ $data->links() }}</div>
+                                <div class="d-flex justify-content-between align-items-center mt-4">
+                                    <div id="userCountText">Total Users: {{ $userCount ?? '0' }}</div>
+                                    <div id="paginationLinks">{{ $data->links() }}</div>
                                 </div>
                             </div>
                         @endif
-                        @if (session('error'))
+                        @if (session('errorss'))
                             <div class="alert alert-danger">
-                                {{ session('error') }}
+                                {{ session('errorss') }}
                             </div>
                         @endif
                     </div>
@@ -139,7 +132,8 @@
                                 data-placeholder="Select a role">
                                 <option value="assign">--Assign Role--</option>
                                 @foreach ($role as $r)
-                                    <option value="{{ $r->role_name }}">{{ $r->role_name }}</option>
+                                    {{-- <option value="{{ $r->role_name }}">{{ $r->role_name }}</option> --}}
+                                    <option value="{{ $r->id }}">{{ $r->role_name }}</option>
                                 @endforeach
                             </select>
                             <span id="role_error" style="color: red">
@@ -191,7 +185,7 @@
                                 data-placeholder="Select a role">
                                 <option value="assign">--Assign Role--</option>
                                 @foreach ($role as $r)
-                                    <option value="{{ $r->role_name }}">{{ $r->role_name }}</option>
+                                    <option value="{{ $r->id }}">{{ $r->role_name }}</option>
                                 @endforeach
                             </select>
                             <span id="edit_role_error" style="color:red">
@@ -257,42 +251,34 @@
         //             );
         //         });
         //     });
-        $(document).ready(function () {
-            $("#searchInput").on("keyup", function () {
-                let value = $(this).val().toLowerCase();
-                let hasVisibleRow = false;
-
-                $("#userTable tbody tr").each(function () {
-                    // Skip the "No search result" row from being filtered
-                    if ($(this).attr("id") === "noResultsRow") {
-                        return;
-                    }
-
-                    let match =
-                        $(this).find("td:eq(0)").text().toLowerCase().indexOf(value) > -1 || // Name
-                        $(this).find("td:eq(1)").text().toLowerCase().indexOf(value) > -1 || // Email
-                        $(this).find("td:eq(2)").text().toLowerCase().indexOf(value) > -1;   // Role
-
-                    $(this).toggle(match);
-                    if (match) hasVisibleRow = true;
-                });
-
-                // Show/hide "No search result found"
-                if (!hasVisibleRow) {
-                    if ($("#noResultsRow").length === 0) {
-                        $("#userTable tbody").append(`
-                            <tr id="noResultsRow">
-                                <td colspan="5" class="text-center text-muted">No search result found</td>
-                            </tr>
-                        `);
-                    }
-                } else {
-                    $("#noResultsRow").remove();
+        function fetchUsers(query = '', page = 1) {
+            $.ajax({
+                url: "{{ route('user.search') }}",
+                type: "GET",
+                data: { query: query, page: page },
+                success: function (response) {
+                    $('#userTableBody').html(response.html);
+                    $('#paginationLinks').html(response.pagination);
+                    $('#userCountText').text('Total Users: ' + response.count);
+                },
+                error: function () {
+                    alert('Error fetching data.');
                 }
             });
+        }
 
+        $(document).ready(function () {
+            $('#searchInput').on('keyup', function () {
+                let query = $(this).val();
+                fetchUsers(query);
+            });
 
-
+            $(document).on('click', '#paginationLinks a', function (e) {
+                e.preventDefault();
+                let page = $(this).attr('href').split('page=')[1];
+                let query = $('#searchInput').val();
+                fetchUsers(query, page);
+            });
 
 
             // Add User Validations
@@ -326,7 +312,8 @@
             });
 
             // Populate Edit Modal
-            $('.editUserButton').on('click', function () {
+            // Edit Modal Binding (delegated)
+            $(document).on('click', '.editUserButton', function () {
                 let id = $(this).data('id');
                 let name = $(this).data('name');
                 let email = $(this).data('email');
@@ -338,22 +325,12 @@
                 $('#edit_email').val(email);
                 $('#edit_role').val(role);
 
-                // Ensure modal opens
-                try {
-                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                        let modal = new bootstrap.Modal(document.getElementById('editUserModal'));
-                        modal.show();
-                    } else {
-                        console.error("Bootstrap JS is not loaded. Using fallback.");
-                        $("#editUserModal").addClass("show").css("display", "block");
-                        $("body").addClass("modal-open").append('<div class="modal-backdrop fade show"></div>');
-                    }
-                } catch (e) {
-                    console.error("Error opening edit modal:", e);
-                }
+                let modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+                modal.show();
             });
 
-            $('.deleteUserButton').on('click', function () {
+            // Delete Modal Binding (delegated)
+            $(document).on('click', '.deleteUserButton', function () {
                 let id = $(this).data('id');
                 let name = $(this).data('name');
                 let url = $(this).data('url');
@@ -361,18 +338,8 @@
                 $('#deleteUserModal').find('form').attr('action', url);
                 $('#delete_user_name').text(name);
 
-                try {
-                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                        let modal = new bootstrap.Modal(document.getElementById('deleteUserModal'));
-                        modal.show();
-                    } else {
-                        console.error("Bootstrap JS is not loaded. Using fallback.");
-                        $("#deleteUserModal").addClass("show").css("display", "block");
-                        $("body").addClass("modal-open").append('<div class="modal-backdrop fade show"></div>');
-                    }
-                } catch (e) {
-                    console.error("Error opening delete modal:", e);
-                }
+                let modal = new bootstrap.Modal(document.getElementById('deleteUserModal'));
+                modal.show();
             });
 
             // Fallback to manually trigger add modal if Bootstrap JS is not loaded
