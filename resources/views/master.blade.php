@@ -16,7 +16,7 @@
 	<meta property="og:url" content="https://keenthemes.com/metronic" />
 	<meta property="og:site_name" content="Keenthemes | Metronic" />
 	<link rel="canonical" href="https://preview.keenthemes.com/metronic8" />
-	<link rel="icon" href="{{ asset('elsner_favicon.svg') }}" type="image/x-icon">
+	<link rel="icon" href="{{ session('favicon') ? asset('storage/favicons/'.session('favicon')): asset('elsner_favicon.svg') }}" type="image/x-icon">
 	<!--begin::Fonts-->
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
 	<!--end::Fonts-->
@@ -164,7 +164,7 @@
 				<div class="aside-logo flex-column-auto" id="kt_aside_logo">
 					<!--begin::Logo-->
 					<a href="/dashboard">
-						<img alt="Logo" src="{{ asset('dist/assets/media/logos/elsner-logo.svg') }}"
+						<img alt="Logo" src="{{ session('sidebar_logo') ? asset('storage/sidebar_logos/'. session('sidebar_logo')) : asset('dist/assets/media/logos/elsner-logo.svg') }}"
 							class="h-25px logo" />
 					</a>
 					<!--end::Logo-->
@@ -253,30 +253,22 @@
 								</div>
 							@endunless
 							<div class="menu-item">
-								{{-- <a class="menu-link {{ Request::is('profile') ? 'active' : '' }}" href="/profile">
-									--}}
-									<a class="menu-link {{ Request::is('profile') ? 'active' : '' }}"
-										href="{{ route('profile.show') }}">
-										<span class="menu-icon">
-											<!--begin::Svg Icon | path: icons/duotune/art/art002.svg-->
-											<span class="svg-icon svg-icon-2">
-												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-													viewBox="0 0 24 24" fill="none">
-													<path
-														d="M6.28548 15.0861C7.34369 13.1814 9.35142 12 11.5304 12H12.4696C14.6486 12 16.6563 13.1814 17.7145 15.0861L19.3493 18.0287C20.0899 19.3618 19.1259 21 17.601 21H6.39903C4.87406 21 3.91012 19.3618 4.65071 18.0287L6.28548 15.0861Z"
-														fill="black" />
-													<rect opacity="0.3" x="8" y="3" width="8" height="8" rx="4"
-														fill="black" />
-												</svg>
+									{{-- <a class="menu-link {{ Request::is('user') ? 'active' : '' }}" href="/user"> --}}
+										<a class="menu-link {{ Request::is('site_control') ? 'active' : '' }}"
+											href="{{ route('SiteControlPage') }}">
+											<span class="menu-icon">
+												<!--begin::Svg Icon | path: icons/duotune/art/art002.svg-->
+												<span class="svg-icon svg-icon-2">
+													<i class="fa-solid fa-users"></i>
+												</span>
+												<!--end::Svg Icon-->
 											</span>
-											<!--end::Svg Icon-->
-										</span>
-										<span class="menu-title">Profile Details</span>
-									</a>
-							</div>
-
+											<span class="menu-title">Site Control</span>
+										</a>
+								</div>
 						</div>
 						<!--end::Menu-->
+						
 					</div>
 					<!--end::Aside Menu-->
 				</div>
@@ -304,7 +296,7 @@
 							<h1 class="text-dark fw-bolder fs-3">{{ $pageTitle ?? 'Dashboard' }}</h1>
 						</div>
 						<div class="d-flex align-items-center">
-							<a href="{{ route('logout') }}" class="btn btn-danger">Logout</a>
+							{{-- <a href="{{ route('logout') }}" class="btn btn-danger">Logout</a> --}}
 							<div class="d-flex align-items-center ms-1 ms-lg-3" id="kt_header_user_menu_toggle">
 								<!--begin::Menu wrapper-->
 								<div class="cursor-pointer symbol symbol-30px symbol-md-40px"
@@ -324,13 +316,7 @@
 									@endphp
 
 									<img src="{{ asset($profileLogo) }}" alt="user" />
-
-									{{-- <img
-										src="{{asset('storage/avatars/' . session('profile_logo') ?? 'dist/assets/media/avatars/blank.png') }}"
-										alt="user" /> --}}
-
 								</div>
-								<!--begin::Menu-->
 								<div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg menu-state-primary fw-bold py-4 fs-6 w-275px"
 									data-kt-menu="true">
 									<!--begin::Menu item-->
@@ -338,25 +324,42 @@
 										<div class="menu-content d-flex align-items-center px-3">
 											<!--begin::Avatar-->
 											<div class="symbol symbol-50px me-5">
-
+												{{-- <img alt="Logo"
+													src="{{ asset('storage/avatars/' . session('profile_logo') ?? 'dist/assets/media/avatars/blank.png') }}" /> --}}
 												<img alt="Logo"
-													src="{{ asset('storage/avatars/' . session('profile_logo') ?? 'dist/assets/media/avatars/blank.png') }}" />
+													src="{{ asset($profileLogo ?? 'dist/assets/media/avatars/blank.png') }}" />
 											</div>
 											<!--end::Avatar-->
 											<!--begin::Username-->
 											<div class="d-flex flex-column">
-												<div class="fw-bolder d-flex align-items-center fs-5">
-													{{ session('superadmin_name') ?? 'Super Admin' }}
-													<!-- <span class="badge badge-light-success fw-bolder fs-8 px-2 py-1 ms-2">Pro</span> -->
+												<div class="fw-bolder d-flex align-items-center fs-5">Super Admin
 												</div>
-												<a href="#" class="fw-bold text-muted text-hover-primary fs-7">
-													{{ session('superadmin_email') ?? 'user@example.com' }}
-												</a>
+												<a href="#"
+													class="fw-bold text-muted text-hover-primary fs-7">{{ session('superadmin_email') ?? 'Super Admin' }}</a>
 											</div>
 											<!--end::Username-->
 										</div>
 									</div>
 									<!--end::Menu item-->
+									<!--begin::Menu separator-->
+									<div class="separator my-2"></div>
+									<!--end::Menu separator-->
+									<!--begin::Menu item-->
+									<div class="menu-item px-5">
+										<a href="{{ route('profile.show') }}" class="menu-link px-5">My Profile</a>
+									</div>
+									<!--end::Menu item-->
+
+									<!--end::Menu item-->
+									<!--begin::Menu item-->
+									<div class="menu-item px-5">
+										<a href="{{ route('logout') }}" class="menu-link px-5">Sign Out</a>
+									</div>
+									<!--end::Menu item-->
+									<!--begin::Menu separator-->
+									<div class="separator my-2"></div>
+									<!--end::Menu separator-->
+
 								</div>
 								<!--end::Menu-->
 							</div>

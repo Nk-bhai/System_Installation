@@ -15,11 +15,6 @@ Route::get('/', function () {
 });
 
 
-// Route::get('/test-error', function () {
-//     session()->flash('error', 'Test error message');
-//     \Log::info('Session after test flash: ', session()->all());
-//     return redirect()->route('user.index');
-// });
 Route::group(['middleware' => ['web']], function () {
     Route::post('admin', [AdminController::class, 'admin'])->name('admin');
     Route::get('UserTable', [AdminController::class, 'UserTable'])->name('UserTable');
@@ -37,12 +32,14 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::resource('user', UserController::class);
     Route::put('admin_update', [UserController::class, 'admin_update'])->name('admin_update');
-    Route::post('UserTableEdit', [UserController::class, 'User_Table_edit'])->name('User_Table_edit');
     Route::get('/users/search', [UserController::class, 'search'])->name('user.search');
     Route::post('/user/check-email', [UserController::class, 'checkEmailExists'])->name('user.checkEmail');
-
-
+    
+    
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/change_password', [ProfileController::class, 'PasswordUpdate'])->name('user.changepassword');
+    Route::get('/site_control', [ProfileController::class, 'SiteControlPage'])->name('SiteControlPage');
+    Route::patch('/site_control', [ProfileController::class, 'SiteControl'])->name('SiteControl');
 
 });

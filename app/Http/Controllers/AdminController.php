@@ -23,7 +23,7 @@ class AdminController extends Controller
             $databasename = session('database_name');
         } else {
             $ip_address = $request->ip();
-            $response = Http::get("http://192.168.12.79:8005/api/superadmin/get/{$ip_address}");
+            $response = Http::get("http://192.168.1.4:8005/api/superadmin/get/{$ip_address}");
             $keyData = $response->json();
             if ($keyData['ip_address'] == $ip_address && $keyData['verified'] == 1) {
                 $databasename = $keyData['database'];
@@ -60,7 +60,7 @@ class AdminController extends Controller
 
         try {
             $user = UserModel::where('email', $email)->first();
-         // if (!$user || !$user->password === $password) {
+            // if (!$user || !$user->password === $password) {
             if (!$user || !Hash::check($password, $user->password) === $password) {
                 return false; // Authentication failed
             }
@@ -77,12 +77,6 @@ class AdminController extends Controller
 
     public function dashboardPage(Request $request)
     {
-        // $ip_address = $request->ip();
-        // $response = Http::get("http://192.168.12.79:8005/api/superadmin/get/{$ip_address}");
-        // $keyData = $response->json();
-
-        // session(['superadmin_email' => $keyData['email']]);
-        
         try {
             $roleCount = RoleModel::count();
         } catch (\Exception $e) {
@@ -92,10 +86,10 @@ class AdminController extends Controller
         try {
             // $userCount = UserModel::count();
             if (session('login_email')) {
-            $userCount = UserModel::where('created_by', session('login_email'))->count();
-        } else {
-            $userCount = UserModel::count();
-        }
+                $userCount = UserModel::where('created_by', session('login_email'))->count();
+            } else {
+                $userCount = UserModel::count();
+            }
         } catch (\Exception $e) {
             $userCount = 0;
         }
@@ -111,7 +105,7 @@ class AdminController extends Controller
     public function UserCrudInstall()
     {
 
-        if(session('login_email')){
+        if (session('login_email')) {
             return redirect()->route('UserTable');
         }
         Artisan::call('migrate', [
@@ -134,10 +128,19 @@ class AdminController extends Controller
         return redirect()->route('role.index');
     }
 
-    public function UserTable()
+    public function UserTable(Request $request)
     {
-        // $data = UserModel::where('email', '!=', session('login_email'))->paginate(5); // 5 users per page (adjust as needed)
-        $data = UserModel::where('created_by', session('login_email'))->paginate(5);
+        $perPage = $request->input('per_page');
+        $allowed = [10, 20, 50];
+        if (!in_array($perPage, $allowed)) {
+            $perPage = 5;
+        }
+        if ($perPage) {
+            $data = UserModel::where('created_by', session('login_email'))->paginate($perPage);
+        } else {
+            $data = UserModel::where('created_by', session('login_email'))->paginate(5);
+        }
+        // $data = UserModel::where('created_by', session('login_email'))->paginate(5);
 
         $user_name = UserModel::where('email', '=', session('login_email'))->get('name');
         $user = UserModel::where('email', session('login_email'))->first();
@@ -158,87 +161,88 @@ class AdminController extends Controller
         // Check if user has Create permission
         if (!in_array('Create', $permissions)) {
             session(['without_create' => "1"]);
-        return redirect()->route('dashboard')->with('error', 'You do not have permission to access the User Management page.');
-    }
+            return redirect()->route('dashboard')->with('error', 'You do not have permission to access the User Management page.');
+        }
 
         return view('UserTable', ['user_name' => $user_name, 'data' => $data, 'permissions' => $permissions, 'allrole' => $allrole]);
     }
-public function search(Request $request)
-{
-    $query = $request->get('query', '');
 
-    $users = UserModel::query()
-        ->join('role', 'user.role_id', '=', 'role.id')
-        ->where('user.created_by', session('login_email')) // Restrict to users created by the logged-in user
-        ->where(function ($q) use ($query) {
-            if (!empty($query)) { // Apply search filters only if query is not empty
-                $q->where('user.name', 'like', "%{$query}%")
-                  ->orWhere('user.email', 'like', "%{$query}%")
-                  ->orWhere('role.role_name', 'like', "%{$query}%");
-            }
-        })
-        ->select('user.*') // Avoid column ambiguity
-        ->with('role') // Eager load role
-        ->paginate(5);
+    public function search(Request $request)
+    {
+        $query = $request->get('query', '');
 
-    // Get permissions for the logged-in user
-    $user = UserModel::where('email', session('login_email'))->first();
-    $permissions = $user && $user->role && $user->role->permissions 
-        ? array_map('trim', explode(',', $user->role->permissions)) 
-        : [];
+        $users = UserModel::query()
+            ->join('role', 'user.role_id', '=', 'role.id')
+            ->where('user.created_by', session('login_email')) // Restrict to users created by the logged-in user
+            ->where(function ($q) use ($query) {
+                if (!empty($query)) { // Apply search filters only if query is not empty
+                    $q->where('user.name', 'like', "%{$query}%")
+                        ->orWhere('user.email', 'like', "%{$query}%")
+                        ->orWhere('role.role_name', 'like', "%{$query}%");
+                }
+            })
+            ->select('user.*') // Avoid column ambiguity
+            ->with('role') // Eager load role
+            ->paginate(5);
 
-    // Generate HTML for table rows
-    $html = '';
-    foreach ($users as $dt) {
-        $html .= '
+        // Get permissions for the logged-in user
+        $user = UserModel::where('email', session('login_email'))->first();
+        $permissions = $user && $user->role && $user->role->permissions
+            ? array_map('trim', explode(',', $user->role->permissions))
+            : [];
+
+        // Generate HTML for table rows
+        $html = '';
+        foreach ($users as $dt) {
+            $html .= '
         <tr>
             <td><span class="text-dark fw-bold d-block fs-6">' . htmlspecialchars($dt->name) . '</span></td>
             <td><span class="text-dark fw-bold d-block">' . htmlspecialchars($dt->email) . '</span></td>
             <td><span class="text-dark fw-bold d-block">' . htmlspecialchars($dt->role->role_name) . '</span></td>
             <td><span class="text-dark fw-bold d-block">' . (empty($dt->created_by) ? 'Super Admin' : htmlspecialchars($dt->created_by)) . '</span></td>
             <td><span class="text-dark fw-bold d-block">' .
-            ($dt->last_logout_at
-                ? \Carbon\Carbon::parse($dt->last_logout_at)->timezone("Asia/Kolkata")->format("d-m-Y h:i A")
-                : '-') .
-            '</span></td>
+                ($dt->last_logout_at
+                    ? \Carbon\Carbon::parse($dt->last_logout_at)->timezone("Asia/Kolkata")->format("d-m-Y h:i A")
+                    : '-') .
+                '</span></td>
             <td class="text-center">
                 <div class="d-flex gap-3 align-items-center justify-content-center">';
-        
-        // Include Edit button only if user has Update permission
-        if (in_array('Update', $permissions)) {
-            $html .= '
+
+            // Include Edit button only if user has Update permission
+            if (in_array('Update', $permissions)) {
+                $html .= '
                     <button type="button" class="btn btn-sm btn-light-primary editUserButton"
                         data-bs-toggle="modal" data-bs-target="#editUserModal"
                         data-id="' . $dt->id . '" data-name="' . htmlspecialchars($dt->name) . '"
                         data-email="' . htmlspecialchars($dt->email) . '" data-role="' . $dt->role->id . '"
                         data-url="' . route('admin_update', $dt->id) . '">Edit</button>';
-        }
+            }
 
-        // Include Delete button only if user has Delete permission
-        if (in_array('Delete', $permissions)) {
-            $html .= '
+            // Include Delete button only if user has Delete permission
+            if (in_array('Delete', $permissions)) {
+                $html .= '
                     <button type="button" class="btn btn-sm btn-light-danger deleteUserButton"
                         data-bs-toggle="modal" data-bs-target="#deleteUserModal"
                         data-id="' . $dt->id . '" data-name="' . htmlspecialchars($dt->name) . '"
                         data-url="' . route('user.destroy', $dt->id) . '">Delete</button>';
-        }
+            }
 
-        $html .= '
+            $html .= '
                 </div>
             </td>
         </tr>';
-    }
+        }
 
-    if ($users->isEmpty()) {
-        $html = '<tr><td colspan="6" class="text-center text-muted">No search result found</td></tr>';
-    }
+        if ($users->isEmpty()) {
+            $html = '<tr><td colspan="6" class="text-center text-muted">No search result found</td></tr>';
+        }
 
-    return response()->json([
-        'html' => $html,
-        'pagination' => $users->appends(['query' => $query])->links()->render(),
-        'count' => $users->total(),
-    ]);
-}
+        return response()->json([
+            'html' => $html,
+            'pagination' => $users->appends(['query' => $query])->links()->render(),
+            'count' => $users->total(),
+        ]);
+    }
 
 
     public function logout(Request $request)
@@ -256,6 +260,7 @@ public function search(Request $request)
         $request->session()->forget('user_logged_in');
         $request->session()->forget('without_create');
         $request->session()->forget('profile_logo');
+        $request->session()->forget('superadmin_email');
         // dd(session('user_logged_in'));
         return redirect()->route('system.auth.login')->with('message', 'Logged out successfully');
     }

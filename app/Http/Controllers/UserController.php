@@ -38,14 +38,29 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
 
         try {
+            $perPage = $request->input('per_page');
+            $allowed = [10, 20, 50];
+            if (!in_array($perPage, $allowed)) {
+                $perPage = 5;
+            }
+            if ($perPage) {
+                $data = UserModel::with('role')->paginate($perPage);
+            } else {
+                $data = UserModel::with('role')->paginate(5);
+
+            }
+
+            // Fetch paginated data
+
+
             // $role = RoleModel::get('role_name');
             $role = RoleModel::all();
             // $data = UserModel::paginate(5);
-            $data = UserModel::with('role')->paginate(5);
+            // $data = UserModel::with('role')->paginate(5);
             $userCount = UserModel::count();
             return view('User', ['data' => $data, 'role' => $role, 'userCount' => $userCount]);
         } catch (\Illuminate\Database\QueryException $e) {
@@ -118,37 +133,31 @@ class UserController extends Controller
         //
     }
 
-//     public function checkEmailExists(Request $request)
-// {
-//     $email = $request->input('email');
-//     $exists = DB::table('users')->where('email', $email)->exists();
 
-//     return response()->json(['exists' => $exists]);
-// }
 
-public function checkEmailExists(Request $request)
-{
-    $email = $request->input('email');
-    $userId = $request->input('user_id'); // null for create
+    public function checkEmailExists(Request $request)
+    {
+        $email = $request->input('email');
+        $userId = $request->input('user_id'); // null for create
 
-    // Check in 'users' table
-    $usersQuery = DB::table('users')->where('email', $email);
-    if ($userId) {
-        $usersQuery->where('id', '!=', $userId);
+        // Check in 'users' table
+        $usersQuery = DB::table('users')->where('email', $email);
+        if ($userId) {
+            $usersQuery->where('id', '!=', $userId);
+        }
+        $existsInUsers = $usersQuery->exists();
+
+        // Check in 'user' table
+        $userQuery = DB::table('user')->where('email', $email);
+        if ($userId) {
+            $userQuery->where('id', '!=', $userId);
+        }
+        $existsInUser = $userQuery->exists();
+
+        $exists = $existsInUsers || $existsInUser;
+
+        return response()->json(['exists' => $exists]);
     }
-    $existsInUsers = $usersQuery->exists();
-
-    // Check in 'user' table
-    $userQuery = DB::table('user')->where('email', $email);
-    if ($userId) {
-        $userQuery->where('id', '!=', $userId);
-    }
-    $existsInUser = $userQuery->exists();
-
-    $exists = $existsInUsers || $existsInUser;
-
-    return response()->json(['exists' => $exists]);
-}
 
     public function store(Request $request)
     {
@@ -165,7 +174,7 @@ public function checkEmailExists(Request $request)
         if ($emailExists) {
             // dd("he");
             return redirect()->back()->withErrors(['email' => 'This email is already taken.']);
-            
+
         }
         $hashpassword = Hash::make($request->input('password'));
 
@@ -194,24 +203,6 @@ public function checkEmailExists(Request $request)
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        $data = UserModel::where('id', '=', $id)->get();
-        $role = RoleModel::get('role_name');
-
-        return view('UserEdit', ['data' => $data, 'role' => $role]);
-    }
-    public function User_Table_edit(Request $request)
-    {
-        $id = $request->input('id');
-        $data = UserModel::where('id', '=', $id)->get();
-        $role = RoleModel::get('role_name');
-
-        return view('UserTableEdit', ['data' => $data, 'role' => $role]);
-    }
 
     /**
      * Update the specified resource in storage.
@@ -222,12 +213,6 @@ public function checkEmailExists(Request $request)
             'name' => ['required', 'min:2'],
             'email' => ['required', 'min:2', 'email'],
             'role' => ['required'],
-        ]);
-
-        Log::info('UPDATE REQUEST', [
-            'id' => $id,
-            'method' => $request->method(),
-            'data' => $request->all(),
         ]);
 
         $user = UserModel::findOrFail($id);
