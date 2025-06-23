@@ -1,13 +1,10 @@
-@extends('master_old')
+@extends('master')
 
 @section('contents')
-    <div class="container-fluid">
-        <!-- Logout Button -->
-        <div class="d-flex justify-content-end mb-3">
-            <a href="{{ route('logout') }}" class="btn btn-danger">Logout</a>
-        </div>
-
+@section('title', 'User Table Page')
+    <div class="container-fluid py-1">
         <!-- Welcome Message -->
+
         @foreach ($user_name as $name)
             <h1 class="text-center mb-5">Welcome Mr. {{ $name->name }}</h1>
         @endforeach
@@ -15,7 +12,8 @@
         <!-- Create User Button -->
         @if (in_array('Create', $permissions))
             <div class="d-flex justify-content-end mb-5">
-                <a href="{{ route('user.index') }}" class="btn btn-primary">Create User</a>
+                <button type="button" class="btn btn-primary" id="addUserButton" data-bs-toggle="modal"
+                    data-bs-target="#addUserModal">Create User</button>
             </div>
         @endif
 
@@ -41,6 +39,7 @@
                                             <th class="min-w-150px">Name</th>
                                             <th class="min-w-200px">Email</th>
                                             <th class="min-w-150px">Role</th>
+                                            <th class="min-w-150px">Last Logout</th>
                                             @if(!in_array('Delete', $permissions) && !in_array('Update', $permissions))
                                                 <th class="min-w-150px text-center" style="display: none">Actions</th>
                                             @else
@@ -48,7 +47,7 @@
                                             @endif
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="userTableBody">
                                         @foreach ($data as $dt)
                                             <tr>
                                                 <td>
@@ -58,15 +57,18 @@
                                                     <span class="text-dark fw-bold d-block">{{ $dt->email }}</span>
                                                 </td>
                                                 <td>
-                                                    <span class="text-dark fw-bold d-block">{{ $dt->role }}</span>
+                                                    <span class="text-dark fw-bold d-block">{{ $dt->role->role_name }}</span>
                                                 </td>
+                                                <td><span class="text-dark fw-bold d-block">
+                                                        {{ $dt->last_logout_at ? \Carbon\Carbon::parse($dt->last_logout_at)->timezone('Asia/Kolkata')->format('d-m-Y h:i A') : '-' }}
+                                                    </span></td>
                                                 <td class="text-center">
                                                     <div class="d-flex justify-content-center gap-3">
                                                         @if (in_array('Update', $permissions))
                                                             <button type="button" class="btn btn-sm btn-light-primary editUserButton"
                                                                 data-bs-toggle="modal" data-bs-target="#editUserModal"
                                                                 data-id="{{ $dt->id }}" data-name="{{ $dt->name }}"
-                                                                data-email="{{ $dt->email }}" data-role="{{ $dt->role }}"
+                                                                data-email="{{ $dt->email }}" data-role="{{ $dt->role->id }}"
                                                                 data-url="{{ route('admin_update') }}">Edit</button>
                                                         @endif
                                                         @if (in_array('Delete', $permissions))
@@ -81,12 +83,78 @@
                                         @endforeach
                                     </tbody>
                                 </table>
-                                <div class="d-flex justify-content-center mt-4">
-                                    {{ $data->links() }}
+                                <div class="d-flex justify-content-between align-items-center mt-4">
+                                    <div id="userCountText">Total Users: {{ $data->total() }}</div>
+                                    <div id="paginationLinks">{{ $data->links() }}</div>
                                 </div>
                             </div>
                         @endif
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalLabel">Assign Role</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ route('user.store') }}" method="post" id="user_role_assign">
+                        @csrf
+                        <div class="mb-5">
+                            <label class="form-label fs-6 fw-bolder text-dark">Name</label>
+                            <input class="form-control form-control-solid" type="text" name="name" id="name" />
+                            <span id="name_error" style="color:red"></span>
+                            @error('name')
+                                {{ $message }}
+                            @enderror
+                        </div>
+                        <div class="mb-5">
+                            <label class="form-label fs-6 fw-bolder text-dark">Email</label>
+                            <input class="form-control form-control-solid" type="email" name="email" id="email" />
+                            <span id="email_error" style="color:red"></span>
+                            @error('email')
+                                {{ $message }}
+                            @enderror
+                        </div>
+                        <div class="mb-5">
+                            <label class="form-label fs-6 fw-bolder text-dark">Password</label>
+                            <div class="password-wrapper">
+                                <input class="form-control form-control-solid" type="password" name="password"
+                                    id="password" />
+                                <span class="password-toggle-icon" onclick="Password_Show_hide()">
+                                    <i class="fas fa-eye"></i>
+                                </span>
+                            </div>
+                            <div id="password_error" style="color:red"></div>
+                            @error('password')
+                                {{ $message }}
+                            @enderror
+                        </div>
+                        <div class="mb-5">
+                            <label class="form-label fw-bolder text-dark fs-5">Assign Role</label>
+                            <select name="role" id="role" class="form-select form-select-solid"
+                                data-placeholder="Select a role">
+                                <option value="assign">--Assign Role--</option>
+                                @foreach ($allrole as $r)
+                                    <option value="{{ $r->id }}">{{ $r->role_name }}</option>
+                                @endforeach
+                            </select>
+                            <span id="role_error" style="color: red">
+                                @error('role')
+                                    {{ $message }}
+                                @enderror
+                            </span>
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-primary w-100">Submit</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -110,34 +178,24 @@
                                 <label class="form-label fs-6 fw-bolder text-dark">Name</label>
                                 <input class="form-control form-control-solid" type="text" name="name" id="edit_name" />
                                 <span id="edit_name_error" style="color:red"></span>
-                                @error('name')
-                                    {{ $message }}
-                                @enderror
                             </div>
                             <div class="mb-5">
                                 <label class="form-label fs-6 fw-bolder text-dark">Email</label>
                                 <input class="form-control form-control-solid" type="email" name="email" id="edit_email" />
                                 <span id="edit_email_error" style="color:red"></span>
-
                             </div>
                             <div class="mb-5">
-                                @foreach ($data as $dt)
-                                        <label class="form-label fw-bolder text-dark fs-6">Assign Role</label>
-                                        <select name="role" id="edit_role" class="form-select form-select-solid"
-                                            data-placeholder="Select a role">
-                                            <option value="assign">--Assign Role--</option>
-                                            @foreach ($allrole as $r)
-                                                <option value="{{ $r->role_name }}" {{ $r->role_name == $dt->role ? "selected" : ""}}>
-                                                    {{ $r->role_name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        <span id="edit_role_error" style="color:red">
-
-                                        </span>
-                                    </div>
-                                    <div>
-                                @endforeach
+                                <label class="form-label fw-bolder text-dark fs-6">Assign Role</label>
+                                <select name="role" id="edit_role" class="form-select form-select-solid"
+                                    data-placeholder="Select a role">
+                                    <option value="assign">--Assign Role--</option>
+                                    @foreach ($allrole as $r)
+                                        <option value="{{ $r->id }}">{{ $r->role_name }}</option>
+                                    @endforeach
+                                </select>
+                                <span id="edit_role_error" style="color:red"></span>
+                            </div>
+                            <div>
                                 <button type="submit" class="btn btn-primary w-100">Update</button>
                             </div>
                         </form>
@@ -173,17 +231,50 @@
     @endif
 
     <script>
+        function fetchUsers(query = '', page = 1) {
+            $.ajax({
+                url: "{{ route('usertable.search') }}",
+                type: "GET",
+                data: { query: query, page: page },
+                success: function (response) {
+                    $('#userTableBody').html(response.html);
+                    $('#paginationLinks').html(response.pagination);
+                    $('#userCountText').text('Total Users: ' + response.count);
+                },
+                error: function () {
+                    alert('Error fetching data.');
+                }
+            });
+        }
+
         $(document).ready(function () {
-            // Search functionality
-            $("#searchInput").on("keyup", function () {
-                let value = $(this).val().toLowerCase();
-                $("#userTable tbody tr").filter(function () {
-                    $(this).toggle(
-                        $(this).find("td:eq(0)").text().toLowerCase().indexOf(value) > -1 || // Name
-                        $(this).find("td:eq(1)").text().toLowerCase().indexOf(value) > -1 || // Email
-                        $(this).find("td:eq(2)").text().toLowerCase().indexOf(value) > -1   // Role
-                    );
-                });
+            $('#searchInput').on('keyup', function () {
+                let query = $(this).val();
+                fetchUsers(query);
+            });
+
+            $(document).on('click', '#paginationLinks a', function (e) {
+                e.preventDefault();
+                let page = $(this).attr('href').split('page=')[1];
+                let query = $('#searchInput').val();
+                fetchUsers(query, page);
+            });
+
+
+            // Add User Validations
+            $("#name").on('input', ValidateName);
+            $("#email").on('input', ValidateEmail);
+            $("#password").on('input', ValidatePassword);
+            $("#role").on('change', ValidateRole);
+
+            $("#user_role_assign").submit(function (e) {
+                let name = ValidateName();
+                let email = ValidateEmail();
+                let password = ValidatePassword();
+                let role = ValidateRole();
+                if (!name || !email || !password || !role) {
+                    e.preventDefault();
+                }
             });
 
             // Edit User Validations
@@ -201,7 +292,7 @@
             });
 
             // Populate Edit Modal
-            $('.editUserButton').on('click', function () {
+            $(document).on('click', '.editUserButton', function () {
                 let id = $(this).data('id');
                 let name = $(this).data('name');
                 let email = $(this).data('email');
@@ -216,7 +307,7 @@
             });
 
             // Populate Delete Modal
-            $('.deleteUserButton').on('click', function () {
+            $(document).on('click', '.deleteUserButton', function () {
                 let id = $(this).data('id');
                 let name = $(this).data('name');
                 let url = $(this).data('url');
@@ -225,7 +316,108 @@
                 $('#delete_user_name').text(name);
             });
 
-            // Validation Functions
+            // Password show/hide functionality
+            window.Password_Show_hide = function () {
+                var x = document.getElementById("password");
+                let icon = document.querySelector(".password-toggle-icon i");
+                if (x.type === "password") {
+                    x.type = "text";
+                    icon.classList.remove("fa-eye");
+                    icon.classList.add("fa-eye-slash");
+                } else {
+                    x.type = "password";
+                    icon.classList.remove("fa-eye-slash");
+                    icon.classList.add("fa-eye");
+                }
+            };
+
+            // Add User Validation Functions
+            function ValidateName() {
+                let name = $("#name").val();
+                if (name == "") {
+                    $("#name_error").html("Name cannot be empty");
+                    return false;
+                } else if (/^[ ]{1,100}$/.test(name)) {
+                    $("#name_error").html("Name cannot contain spaces only");
+                    return false;
+                } else if (!/^[A-Za-z ]{1,100}$/.test(name)) {
+                    $("#name_error").html("Name should contain characters and spaces only");
+                    return false;
+                } else {
+                    $("#name_error").html("");
+                    return true;
+                }
+            }
+
+            function ValidateEmail() {
+                let email = $("#email").val().trim();
+                let emailError = $("#email_error");
+
+                if (email === "") {
+                    emailError.text("Email is required.");
+                    return false;
+                }
+
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(email)) {
+                    emailError.text("Please enter a valid email.");
+                    return false;
+                }
+
+                let isValid = false;
+
+                $.ajax({
+                    url: "{{ route('user.checkEmail') }}",
+                    type: "POST",
+                    data: {
+                        email: email,
+                        _token: "{{ csrf_token() }}"
+                    },
+                    async: false,
+                    success: function (response) {
+                        if (response.exists) {
+                            emailError.text("This email is already taken.");
+                            isValid = false;
+                        } else {
+                            emailError.text("");
+                            isValid = true;
+                        }
+                    },
+                    error: function () {
+                        emailError.text("Server error. Please try again.");
+                    }
+                });
+
+                return isValid;
+            }
+
+
+            function ValidatePassword() {
+                let password = $("#password").val();
+                if (password == "") {
+                    $("#password_error").html("Password cannot be empty");
+                    return false;
+                } else if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8}$/.test(password)) {
+                    $("#password_error").html("Password must contain at least 1 uppercase, 1 lowercase, 1 digit, 1 special character and must be 8 characters");
+                    return false;
+                } else {
+                    $("#password_error").html("");
+                    return true;
+                }
+            }
+
+            function ValidateRole() {
+                let role = $("#role").val();
+                if (role === "assign") {
+                    $("#role_error").html("Please select a role");
+                    return false;
+                } else {
+                    $("#role_error").html("");
+                    return true;
+                }
+            }
+
+            // Edit User Validation Functions
             function ValidateEditName() {
                 let name = $("#edit_name").val();
                 if (name == "") {
@@ -244,17 +436,47 @@
             }
 
             function ValidateEditEmail() {
-                let email = $("#edit_email").val();
-                if (email == "") {
-                    $("#edit_email_error").html("Email cannot be empty");
+                let email = $("#edit_email").val().trim();
+                let userId = $("#edit_id").val();
+                let emailError = $("#edit_email_error");
+
+                if (email === "") {
+                    emailError.text("Email cannot be empty");
                     return false;
-                } else if (!/^[A-Za-z0-9.]+@[A-Za-z]{2,7}\.[A-Za-z]{2,3}$/.test(email)) {
-                    $("#edit_email_error").html("Email must be valid");
-                    return false;
-                } else {
-                    $("#edit_email_error").html("");
-                    return true;
                 }
+
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(email)) {
+                    emailError.text("Invalid email format");
+                    return false;
+                }
+
+                let isValid = false;
+
+                $.ajax({
+                    url: "{{ route('user.checkEmail') }}",
+                    type: "POST",
+                    data: {
+                        email: email,
+                        user_id: userId,
+                        _token: "{{ csrf_token() }}"
+                    },
+                    async: false,
+                    success: function (response) {
+                        if (response.exists) {
+                            emailError.text("This email is already taken.");
+                            isValid = false;
+                        } else {
+                            emailError.text("");
+                            isValid = true;
+                        }
+                    },
+                    error: function () {
+                        emailError.text("Server error. Please try again.");
+                    }
+                });
+
+                return isValid;
             }
 
             function ValidateEditRole() {
@@ -270,3 +492,7 @@
         });
     </script>
 @endsection
+
+@php
+    $pageTitle = 'User Table';
+@endphp

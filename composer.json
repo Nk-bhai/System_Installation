@@ -11,8 +11,8 @@
     "license": "MIT",
     "repositories": [
     {
-        "type": "path",
-        "url": "C:/nk-system-auth"
+        "type": "vcs",
+        "url": "https://github.com/Nk-bhai/Laravel-Authentication-Package.git"
     }
 ],
     "require": {

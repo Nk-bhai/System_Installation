@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\CheckLogin;
+use App\Http\Middleware\RestrictLoggedIn;
 use App\Http\Middleware\VerifyAccessKey;
 use App\Http\Middleware\XssSanitization;
 use Illuminate\Foundation\Application;
@@ -24,7 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(XssSanitization::class);
         $middleware->append(EnsurePackagePresent::class);
         $middleware->append(EnsureKeyVerified::class);
-        
+        $middleware->alias([
+            'restrict.login' => RestrictLoggedIn::class,
+        ]);
 
     })
     ->withExceptions(function (Exceptions $exceptions) {

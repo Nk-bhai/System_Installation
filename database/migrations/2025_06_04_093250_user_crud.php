@@ -16,7 +16,9 @@ return new class extends Migration {
             $table->string('email')->unique();
             $table->string('password');
             $table->unsignedBigInteger('role_id');
+            $table->string('created_by')->nullable();   
             $table->timestamp('last_logout_at')->nullable();
+            $table->string('profile_logo')->default('blank.png'); 
             $table->timestamps();
 
             $table->foreign('role_id')->references('id')->on('role')->onDelete('cascade');

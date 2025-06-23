@@ -1,21 +1,9 @@
-{{-- <form action="{{ route('key') }}" method="post">
-    @csrf
-    <label>Enter Key</label>
-    <input type="text" name="key">
-
-    <br><br>
-
-    <input type="submit" value="submit">
-
-    {{ session('error') }}
-</form> --}}
-
 @extends('master')
 @section('contents')
 
 
     <div class="d-flex flex-column flex-root">
-            
+            <?php dd("hello") ?>
         <div class="d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed"
             style="background-image: url(dist/assets/media/illustrations/dozzy-1/14.png">
             <div class="d-flex flex-center flex-column flex-column-fluid p-10 pb-lg-20">

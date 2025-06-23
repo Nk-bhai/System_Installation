@@ -18,8 +18,8 @@
         </div>
     @endif
 
-    <div class="container-fluid">
-        <div class="d-flex justify-content-end mb-5 gap-5 mt-n10">
+    <div class="container-fluid py-1">
+        <div class="d-flex justify-content-end mb-5 gap-5">
             {{-- <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a> --}}
             <button type="button" class="btn btn-primary" id="addRoleButton" data-bs-toggle="modal"
                 data-bs-target="#addRoleModal">Add</button>
@@ -69,14 +69,18 @@
                                                             data-url="{{ route('role.destroy', $rd->id) }}">
                                                             Delete
                                                         </button> --}}
-                                                         @if ($rd->users->count() == 0)
-                                                            <button type="button" class="btn btn-sm btn-light-danger deleteRoleButton"
-                                                                data-bs-toggle="modal" data-bs-target="#deleteRoleModal"
-                                                                data-id="{{ $rd->id }}" data-role-name="{{ $rd->role_name }}"
-                                                                data-url="{{ route('role.destroy', $rd->id) }}">
-                                                                Delete
-                                                            </button>
-                                                        @endif
+                                                         {{-- @if ($rd->users->count() == 0) --}}
+                                                               @php
+                                                                    $hasUsers = !Schema::hasTable('user') || (isset($rd->users) && $rd->users->isEmpty());
+                                                                @endphp
+                                                                @if ($hasUsers)                                                            
+                                                                    <button type="button" class="btn btn-sm btn-light-danger deleteRoleButton"
+                                                                        data-bs-toggle="modal" data-bs-target="#deleteRoleModal"
+                                                                        data-id="{{ $rd->id }}" data-role-name="{{ $rd->role_name }}"
+                                                                        data-url="{{ route('role.destroy', $rd->id) }}">
+                                                                        Delete
+                                                                    </button>
+                                                                @endif
                                                     </div>
 
                                                 </td>
@@ -167,6 +171,7 @@
                     <form action="" method="post" id="role_update_form">
                         @csrf
                         @method('PUT')
+                        <input type="hidden" id="edit_role_id" name="role_id" />
                         <div class="mb-5">
                             <label class="form-label fs-6 fw-bolder text-dark">Role Name</label>
                             <input class="form-control form-control-solid" type="text" name="role_name" id="edit_role_name"
@@ -333,6 +338,7 @@
 
                 $('#editRoleModal').find('form').attr('action', url);
                 $('#edit_role_name').val(role_name);
+                $('#edit_role_id').val(id);
 
                 // Reset all checkboxes
                 $("input[name='permissions[]']").prop('checked', false);
@@ -405,17 +411,43 @@
         // Add Role Validation Functions
         function Validate_Role_name() {
             let role_name = $("#role_name").val().trim();
+            let roleError = $("#role_name_error");
+
             if (role_name === "") {
-                $("#role_name_error").html("Role name cannot be empty");
+                roleError.html("Role name cannot be empty");
                 return false;
             } else if (!/^[A-Za-z ]{1,100}$/.test(role_name)) {
-                $("#role_name_error").html("Role name must contain only letters and spaces");
+                roleError.html("Role name must contain only letters and spaces");
                 return false;
-            } else {
-                $("#role_name_error").html("");
-                return true;
             }
+
+            let isValid = false;
+
+            $.ajax({
+                url: "{{ route('role.checkRoleName') }}",
+                type: "POST",
+                data: {
+                    role_name: role_name,
+                    _token: "{{ csrf_token() }}"
+                },
+                async: false,
+                success: function (response) {
+                    if (response.exists) {
+                        roleError.html("This role name is already taken.");
+                        isValid = false;
+                    } else {
+                        roleError.html("");
+                        isValid = true;
+                    }
+                },
+                error: function () {
+                    roleError.html("Server error while checking role name.");
+                }
+            });
+
+            return isValid;
         }
+
 
         function Validate_Permissions() {
             if ($("input[name='permissions[]']:checked").length === 0) {
@@ -428,19 +460,47 @@
         }
 
         // Edit Role Validation Functions
-        function Validate_Edit_Role_name() {
-            let role_name = $("#edit_role_name").val().trim();
-            if (role_name === "") {
-                $("#edit_role_name_error").html("Role name cannot be empty");
-                return false;
-            } else if (!/^[A-Za-z ]{1,100}$/.test(role_name)) {
-                $("#edit_role_name_error").html("Role name must contain only letters and spaces");
-                return false;
-            } else {
-                $("#edit_role_name_error").html("");
-                return true;
-            }
+    function Validate_Edit_Role_name() {
+        let role_name = $("#edit_role_name").val().trim();
+        let roleId = $("#edit_role_id").val();
+        let roleError = $("#edit_role_name_error");
+
+        if (role_name === "") {
+            roleError.html("Role name cannot be empty");
+            return false;
+        } else if (!/^[A-Za-z ]{1,100}$/.test(role_name)) {
+            roleError.html("Role name must contain only letters and spaces");
+            return false;
         }
+
+        let isValid = false;
+
+        $.ajax({
+            url: "{{ route('role.checkRoleName') }}",
+            type: "POST",
+            data: {
+                role_name: role_name,
+                role_id: roleId,
+                _token: "{{ csrf_token() }}"
+            },
+            async: false,
+            success: function (response) {
+                if (response.exists) {
+                    roleError.html("This role name is already taken.");
+                    isValid = false;
+                } else {
+                    roleError.html("");
+                    isValid = true;
+                }
+            },
+            error: function () {
+                roleError.html("Server error while checking role name.");
+            }
+        });
+
+        return isValid;
+}
+
 
         function Validate_Edit_Permissions() {
             if ($("input[name='permissions[]']:checked").length === 0) {

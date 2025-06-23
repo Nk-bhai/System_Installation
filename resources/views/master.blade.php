@@ -120,6 +120,29 @@
 		.footer {
 			flex-shrink: 0;
 		}
+
+		h1,
+		h2,
+		h3,
+		h4 {
+			font-size: calc(1.2rem + 0.5vw);
+		}
+
+		/* Sidebar scroll fix on mobile */
+		@media (max-width: 991.98px) {
+			#kt_aside_menu_wrapper {
+				max-height: 80vh;
+				overflow-y: auto;
+			}
+		}
+
+		/* Responsive wrapper for buttons and headers */
+		@media (max-width: 576px) {
+			.d-flex.align-items-center.justify-content-between {
+				flex-direction: column;
+				align-items: flex-start !important;
+			}
+		}
 	</style>
 </head>
 <!--end::Head-->
@@ -197,34 +220,38 @@
 									<span class="menu-title">Dashboard</span>
 								</a>
 							</div>
-							<div class="menu-item">
-								{{-- <a class="menu-link {{ Request::is('user') ? 'active' : '' }}" href="/user"> --}}
-									<a class="menu-link {{ Request::is('roleInstall') ? 'active' : '' }}"
-										href="{{ route('roleInstall') }}">
-										<span class="menu-icon">
-											<!--begin::Svg Icon | path: icons/duotune/art/art002.svg-->
-											<span class="svg-icon svg-icon-2">
-												<i class='fas fa-user-cog'></i>
+							@unless(session('login_email'))
+								<div class="menu-item">
+									{{-- <a class="menu-link {{ Request::is('user') ? 'active' : '' }}" href="/user"> --}}
+										<a class="menu-link {{ Request::is('role') ? 'active' : '' }}"
+											href="{{ route('roleInstall') }}">
+											<span class="menu-icon">
+												<!--begin::Svg Icon | path: icons/duotune/art/art002.svg-->
+												<span class="svg-icon svg-icon-2">
+													<i class='fas fa-user-cog'></i>
+												</span>
+												<!--end::Svg Icon-->
 											</span>
-											<!--end::Svg Icon-->
-										</span>
-										<span class="menu-title">Role Management</span>
-									</a>
-							</div>
-							<div class="menu-item">
-								{{-- <a class="menu-link {{ Request::is('user') ? 'active' : '' }}" href="/user"> --}}
-									<a class="menu-link {{ Request::is('user') ? 'active' : '' }}"
-										href="{{ route('UserCrudInstall') }}">
-										<span class="menu-icon">
-											<!--begin::Svg Icon | path: icons/duotune/art/art002.svg-->
-											<span class="svg-icon svg-icon-2">
-												<i class="fa-solid fa-users" ></i>
+											<span class="menu-title">Role Management</span>
+										</a>
+								</div>
+							@endunless
+							@unless(session('without_create'))
+								<div class="menu-item">
+									{{-- <a class="menu-link {{ Request::is('user') ? 'active' : '' }}" href="/user"> --}}
+										<a class="menu-link {{ Request::is('user') ? 'active' : '' }}"
+											href="{{ route('UserCrudInstall') }}">
+											<span class="menu-icon">
+												<!--begin::Svg Icon | path: icons/duotune/art/art002.svg-->
+												<span class="svg-icon svg-icon-2">
+													<i class="fa-solid fa-users"></i>
+												</span>
+												<!--end::Svg Icon-->
 											</span>
-											<!--end::Svg Icon-->
-										</span>
-										<span class="menu-title">User Management</span>
-									</a>
-							</div>
+											<span class="menu-title">User Management</span>
+										</a>
+								</div>
+							@endunless
 							<div class="menu-item">
 								{{-- <a class="menu-link {{ Request::is('profile') ? 'active' : '' }}" href="/profile">
 									--}}
@@ -261,6 +288,18 @@
 				<!--begin::Header-->
 				<div id="kt_header" class="header align-items-stretch">
 					<div class="container-fluid d-flex align-items-stretch justify-content-between">
+						<div class="d-lg-none align-items-center">
+							<button class="btn btn-icon btn-active-light-primary me-2" id="kt_aside_mobile_toggle">
+								<!--begin::Svg Icon | path: icons/duotune/abstract/abs015.svg-->
+								<span class="svg-icon svg-icon-2x">
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+										<path d="M4 5h16M4 12h16M4 19h16" stroke="black" stroke-width="2"
+											stroke-linecap="round" />
+									</svg>
+								</span>
+								<!--end::Svg Icon-->
+							</button>
+						</div>
 						<div class="d-flex align-items-center">
 							<h1 class="text-dark fw-bolder fs-3">{{ $pageTitle ?? 'Dashboard' }}</h1>
 						</div>
@@ -271,17 +310,24 @@
 								<div class="cursor-pointer symbol symbol-30px symbol-md-40px"
 									data-kt-menu-trigger="click" data-kt-menu-attach="parent"
 									data-kt-menu-placement="bottom-end">
+									@php
+										$profileLogo = 'dist/assets/media/avatars/blank.png'; // Default image
+
+										if (session('login_email')) {
+											$user = \App\Models\UserModel::where('email', session('login_email'))->first();
+											if ($user && $user->profile_logo) {
+												$profileLogo = 'storage/avatars/' . $user->profile_logo;
+											}
+										} elseif (session('profile_logo')) {
+											$profileLogo = 'storage/avatars/' . session('profile_logo');
+										}
+									@endphp
+
+									<img src="{{ asset($profileLogo) }}" alt="user" />
+
 									{{-- <img
-										src="{{ asset('storage/avatars/'.session('profile_logo') ?? 'dist/assets/media/avatars/blank.png') }}"
+										src="{{asset('storage/avatars/' . session('profile_logo') ?? 'dist/assets/media/avatars/blank.png') }}"
 										alt="user" /> --}}
-									{{-- @if (session('profile_logo'))
-									<?php //  dd(session('profile_logo'))  ?>
-									@endif --}}
-									{{-- <img
-										src="{{ asset(session('profile_logo') ? 'storage/avatars/' . session('profile_logo') : 'dist/assets/media/avatars/blank.png') }}"
-										alt="user" /> --}}
-									<img src="{{asset('storage/avatars/' . session('profile_logo') ?? 'dist/assets/media/avatars/blank.png') }}"
-										alt="user" />
 
 								</div>
 								<!--begin::Menu-->

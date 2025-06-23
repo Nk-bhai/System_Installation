@@ -56,7 +56,10 @@
                                         <span class="text-dark fw-bold d-block fs-6">Email</span>
                                     </td>
                                     <td class="min-w-200px">
-                                        <span class="text-dark fw-bold d-block">{{ session('superadmin_email') }}</span>
+                                        {{-- <span class="text-dark fw-bold d-block">{{ session('superadmin_email') }}</span> --}}
+                                         <span class="text-dark fw-bold d-block">
+                                            {{ session('login_email') ?? session('superadmin_email') ?? 'No email available' }}
+                                        </span>
                                     </td>
                                 </tr>
                                 <tr>

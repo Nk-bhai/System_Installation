@@ -2,15 +2,18 @@
 
 @section('contents')
 @section('title', 'User Management')
-<?php //dd(session()->all());  ?>
-    <div class="container-fluid">
-        <div class="d-flex justify-content-end mb-5 gap-5 mt-n10">
+    {{-- @dump(session('errorss')); --}}
+
+
+    <div class="container-fluid py-1">
+        <div class="d-flex justify-content-end mb-5 gap-5">
             {{-- <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a> --}}
             <button type="button" class="btn btn-primary" id="addUserButton" data-bs-toggle="modal"
                 data-bs-target="#addUserModal">Add</button>
         </div>
         <div class="row">
             <div class="col-lg-12">
+
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h3 class="card-title">Users List</h3>
@@ -31,6 +34,7 @@
                                             <th class="min-w-150px">Name</th>
                                             <th class="min-w-200px">Email</th>
                                             <th class="min-w-150px">Role</th>
+                                            <th class="min-w-150px">Created By</th>
                                             <th class="min-w-150px">Last Logout</th>
                                             <th class="min-w-150px">Actions</th>
                                         </tr>
@@ -40,7 +44,12 @@
                                             <tr>
                                                 <td><span class="text-dark fw-bold d-block fs-6">{{ $dt->name }}</span></td>
                                                 <td><span class="text-dark fw-bold d-block">{{ $dt->email }}</span></td>
-                                                <td><span class="text-dark fw-bold d-block">{{ $dt->role->role_name ?? 'N/A' }}</span></td>
+                                                <td><span
+                                                        class="text-dark fw-bold d-block">{{ $dt->role->role_name ?? 'N/A' }}</span>
+                                                </td>
+                                                <td><span
+                                                        class="text-dark fw-bold d-block">{{ $dt->created_by ?? 'Super Admin' }}</span>
+                                                </td>
                                                 <td><span class="text-dark fw-bold d-block">
                                                         {{ $dt->last_logout_at ? \Carbon\Carbon::parse($dt->last_logout_at)->timezone('Asia/Kolkata')->format('d-m-Y h:i A') : '-' }}
                                                     </span></td>
@@ -163,6 +172,7 @@
                     <form action="" method="post" id="user_update">
                         @csrf
                         @method('PUT')
+                        <input type="hidden" name="user_id" id="edit_user_id" />
                         <div class="mb-5">
                             <label class="form-label fs-6 fw-bolder text-dark">Name</label>
                             <input class="form-control form-control-solid" type="text" name="name" id="edit_name" />
@@ -239,18 +249,7 @@
                 icon.classList.add("fa-eye");
             }
         }
-        // $(document).ready(function () {
-        //     // Search functionality
-        //     $("#searchInput").on("keyup", function () {
-        //         let value = $(this).val().toLowerCase();
-        //         $("#userTable tbody tr").filter(function () {
-        //             $(this).toggle(
-        //                 $(this).find("td:eq(0)").text().toLowerCase().indexOf(value) > -1 || // Name
-        //                 $(this).find("td:eq(1)").text().toLowerCase().indexOf(value) > -1 || // Email
-        //                 $(this).find("td:eq(2)").text().toLowerCase().indexOf(value) > -1   // Role
-        //             );
-        //         });
-        //     });
+
         function fetchUsers(query = '', page = 1) {
             $.ajax({
                 url: "{{ route('user.search') }}",
@@ -303,6 +302,8 @@
             $("#edit_role").on('change', ValidateEditRole);
 
             $("#user_update").submit(function (e) {
+                console.log('Form Submission:', { action, formData });
+
                 let name = ValidateEditName();
                 let email = ValidateEditEmail();
                 let role = ValidateEditRole();
@@ -324,6 +325,7 @@
                 $('#edit_name').val(name);
                 $('#edit_email').val(email);
                 $('#edit_role').val(role);
+                $('#edit_user_id').val(id);
 
                 let modal = new bootstrap.Modal(document.getElementById('editUserModal'));
                 modal.show();
@@ -382,19 +384,60 @@
                 }
             }
 
+            // function ValidateEmail() {
+            //     let email = $("#email").val();
+            //     if (email == "") {
+            //         $("#email_error").html("Email cannot be empty");
+            //         return false;
+            //     } else if (!/^[A-Za-z0-9.]+@[A-Za-z]{2,7}\.[A-Za-z]{2,3}$/.test(email)) {
+            //         $("#email_error").html("Email must be valid");
+            //         return false;
+            //     } else {
+            //         $("#email_error").html("");
+            //         return true;
+            //     }
+            // }
             function ValidateEmail() {
-                let email = $("#email").val();
-                if (email == "") {
-                    $("#email_error").html("Email cannot be empty");
-                    return false;
-                } else if (!/^[A-Za-z0-9.]+@[A-Za-z]{2,7}\.[A-Za-z]{2,3}$/.test(email)) {
-                    $("#email_error").html("Email must be valid");
-                    return false;
-                } else {
-                    $("#email_error").html("");
-                    return true;
+                    let email = $("#email").val().trim();
+                    let emailError = $("#email_error");
+
+                    if (email === "") {
+                        emailError.text("Email is required.");
+                        return false;
+                    }
+
+                    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailPattern.test(email)) {
+                        emailError.text("Please enter a valid email.");
+                        return false;
+                    }
+
+                    let isValid = false;
+
+                    $.ajax({
+                        url: "{{ route('user.checkEmail') }}",
+                        type: "POST",
+                        data: {
+                            email: email,
+                            _token: "{{ csrf_token() }}"
+                        },
+                        async: false,
+                        success: function (response) {
+                            if (response.exists) {
+                                emailError.text("This email is already taken.");
+                                isValid = false;
+                            } else {
+                                emailError.text("");
+                                isValid = true;
+                            }
+                        },
+                        error: function () {
+                            emailError.text("Server error. Please try again.");
+                        }
+                    });
+
+                    return isValid;
                 }
-            }
 
             function ValidatePassword() {
                 let password = $("#password").val();
@@ -438,19 +481,49 @@
                     return true;
                 }
             }
-
+            
             function ValidateEditEmail() {
-                let email = $("#edit_email").val();
-                if (email == "") {
-                    $("#edit_email_error").html("Email cannot be empty");
+                let email = $("#edit_email").val().trim();
+                let userId = $("#edit_user_id").val();
+                let emailError = $("#edit_email_error");
+
+                if (email === "") {
+                    emailError.text("Email cannot be empty");
                     return false;
-                } else if (!/^[A-Za-z0-9.]+@[A-Za-z]{2,7}\.[A-Za-z]{2,3}$/.test(email)) {
-                    $("#edit_email_error").html("Email must be valid");
-                    return false;
-                } else {
-                    $("#edit_email_error").html("");
-                    return true;
                 }
+
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(email)) {
+                    emailError.text("Invalid email format");
+                    return false;
+                }
+
+                let isValid = false;
+
+                $.ajax({
+                    url: "{{ route('user.checkEmail') }}",
+                    type: "POST",
+                    data: {
+                        email: email,
+                        user_id: userId,
+                        _token: "{{ csrf_token() }}"
+                    },
+                    async: false,
+                    success: function (response) {
+                        if (response.exists) {
+                            emailError.text("This email is already taken.");
+                            isValid = false;
+                        } else {
+                            emailError.text("");
+                            isValid = true;
+                        }
+                    },
+                    error: function () {
+                        emailError.text("Server error. Please try again.");
+                    }
+                });
+
+                return isValid;
             }
 
             function ValidateEditRole() {
@@ -468,5 +541,5 @@
 @endsection
 
 @php
-    $pageTitle = 'User Management';
+$pageTitle = 'User Management';
 @endphp
