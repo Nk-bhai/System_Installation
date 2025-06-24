@@ -9,8 +9,8 @@ use DB;
 use Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Log;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Yajra\DataTables\DataTables;
 
 class UserController extends Controller
 {
@@ -43,6 +43,7 @@ class UserController extends Controller
         try {
             return decrypt($encryptedId);
         } catch (DecryptException $e) {
+            abort(404, 'Invalid ID');
             return false;
         }
     }
@@ -50,108 +51,50 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index()
     {
-        try {
-            $perPage = $request->input('per_page', 5);
-            $allowed = [10, 20, 50];
-            if (!in_array($perPage, $allowed)) {
-                $perPage = 5;
-            }
-
-            $data = UserModel::with('role')->paginate($perPage);
-
-            $roleData = RoleModel::all(['id', 'role_name']);
-            $userCount = UserModel::count();
-
-            return view('User', ['data' => $data, 'role' => $roleData, 'userCount' => $userCount]);
-        } catch (\Illuminate\Database\QueryException $e) {
-            return redirect()->back()->with('error', 'Assign the role first');
-        }
+        $roleData = RoleModel::all(['id', 'role_name']);
+        return view('User', ['role' => $roleData]);
     }
 
     /**
-     * Search users with pagination and sorting
+     * Get data for DataTable
      */
-    public function search(Request $request)
+    public function getData(Request $request)
     {
-        $query = $request->get('query', '');
-        $sortColumn = $request->get('sort_column', 'name');
-        $sortDirection = $request->get('sort_direction', 'asc');
+        $query = UserModel::with('role');
 
-        $allowedColumns = ['name', 'email', 'role_name', 'created_by'];
-        if (!in_array($sortColumn, $allowedColumns)) {
-            $sortColumn = 'name';
-        }
-
-        if (!in_array($sortDirection, ['asc', 'desc'])) {
-            $sortDirection = 'asc';
-        }
-
-        $users = UserModel::query()
-            ->join('role', 'user.role_id', '=', 'role.id')
-            ->where(function ($q) use ($query) {
-                $q->where('user.name', 'like', "%{$query}%")
-                ->orWhere('user.email', 'like', "%{$query}%")
-                ->orWhere('role_name', 'like', "%{$query}%")
-                ->orWhere('user.created_by', 'like', "%{$query}%");
+        return DataTables::of($query)
+            ->addColumn('role_name', function ($row) {
+                return $row->role ? $row->role->role_name : 'N/A';
             })
-            ->select('user.*')
-            ->with('role');
-
-        if ($sortColumn === 'role_name') {
-            $users->orderBy('role.role_name', $sortDirection);
-        } else {
-            $users->orderBy("user.{$sortColumn}", $sortDirection);
-        }
-
-        $users = $users->paginate(5);
-
-        $html = '';
-        foreach ($users as $user) {
-            $html .= '
-            <tr>
-                <td><span class="text-dark fw-bold d-block fs-6">' . htmlspecialchars($user->name) . '</span></td>
-                <td><span class="text-dark fw-bold d-block">' . htmlspecialchars($user->email) . '</span></td>
-                <td><span class="text-dark fw-bold d-block">' . htmlspecialchars($user->role->role_name ?? 'N/A') . '</span></td>
-                <td><span class="text-dark fw-bold d-block">' . htmlspecialchars($user->created_by ?? 'Super Admin') . '</span></td>
-                <td><span class="text-dark fw-bold d-block">' .
-                    ($user->last_logout_at
-                        ? \Carbon\Carbon::parse($user->last_logout_at)->timezone('Asia/Kolkata')->format('d-m-Y h:i A')
-                        : '-') .
-                    '</span></td>
-                <td>
-                    <div class="d-flex gap-3 align-items-center">
-                        <button type="button" class="btn btn-sm btn-light-primary editUserButton"
-                            data-bs-toggle="modal" data-bs-target="#editUserModal"
-                            data-id="' . encrypt($user->id) . '"
-                            data-name="' . htmlspecialchars($user->name) . '"
-                            data-email="' . htmlspecialchars($user->email) . '"
-                            data-role="' . ($user->role ? $user->role->id : '') . '"
-                            data-url="' . route('user.update', encrypt($user->id)) . '">Edit</button>
-                        <button type="button" class="btn btn-sm btn-light-danger deleteUserButton"
-                            data-bs-toggle="modal" data-bs-target="#deleteUserModal"
-                            data-id="' . encrypt($user->id) . '"
-                            data-name="' . htmlspecialchars($user->name) . '"
-                            data-url="' . route('user.destroy', encrypt($user->id)) . '">Delete</button>
-                    </div>
-                </td>
-            </tr>';
-        }
-
-        if ($users->isEmpty()) {
-            $html = '<tr><td colspan="6" class="text-center text-muted">No search result found</td></tr>';
-        }
-
-        return response()->json([
-            'html' => $html,
-            'pagination' => $users->appends([
-                'query' => $query,
-                'sort_column' => $sortColumn,
-                'sort_direction' => $sortDirection
-            ])->links()->render(),
-            'count' => $users->total(),
-        ]);
+            ->addColumn('created_by', function ($row) {
+                return $row->created_by ?? 'Super Admin';
+            })
+            ->addColumn('last_logout_at', function ($row) {
+                return $row->last_logout_at
+                    ? Carbon::parse($row->last_logout_at)->timezone('Asia/Kolkata')->format('d-m-Y h:i A')
+                    : '-';
+            })
+            ->addColumn('actions', function ($row) {
+                $id = encrypt($row->id);
+                $editBtn = "<button type='button' class='btn btn-sm btn-light-primary editUserButton'
+                            data-bs-toggle='modal' data-bs-target='#editUserModal'
+                            data-id='{$id}' data-name='{$row->name}'
+                            data-email='{$row->email}' data-role='{$row->role_id}'
+                            data-url='" . route('user.update', $id) . "'>
+                            Edit
+                        </button>";
+                $deleteBtn = "<button type='button' class='btn btn-sm btn-light-danger deleteUserButton'
+                            data-bs-toggle='modal' data-bs-target='#deleteUserModal'
+                            data-id='{$id}' data-name='{$row->name}'
+                            data-url='" . route('user.destroy', $id) . "'>
+                            Delete
+                        </button>";
+                return "<div class='d-flex gap-3 align-items-center'>{$editBtn}{$deleteBtn}</div>";
+            })
+            ->rawColumns(['actions'])
+            ->make(true);
     }
 
     /**
@@ -197,7 +140,7 @@ class UserController extends Controller
             'role' => ['required', 'exists:role,id'],
         ]);
 
-        $emailExists = DB::table('users')->where('email', $request->input('email'))->exists() || 
+        $emailExists = DB::table('users')->where('email', $request->input('email'))->exists() ||
                        DB::table('user')->where('email', $request->input('email'))->exists();
 
         if ($emailExists) {
@@ -215,7 +158,8 @@ class UserController extends Controller
             'created_by' => $createdBy,
             'created_at' => Carbon::now()
         ]);
-          if ($createdBy === session('login_email')) {
+
+        if ($createdBy === session('login_email')) {
             return redirect()->route('UserTable');
         }
         return redirect()->route('user.index')->with('success', 'User added successfully');

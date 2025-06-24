@@ -23,6 +23,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('roleInstall', [AdminController::class, 'roleInstall'])->name('roleInstall')->middleware('restrict.login');
     Route::get('logout', [AdminController::class, 'logout'])->name('logout');
     Route::get('/usertable/search', [AdminController::class, 'search'])->name('usertable.search');
+    Route::get('/usertable/data', [AdminController::class, 'getUserTableData'])->name('usertables.data');
 
 
 
@@ -36,8 +37,10 @@ Route::group(['middleware' => ['web']], function () {
     Route::put('admin_update', [UserController::class, 'admin_update'])->name('admin_update');
     Route::get('/users/search', [UserController::class, 'search'])->name('user.search');
     Route::post('/user/check-email', [UserController::class, 'checkEmailExists'])->name('user.checkEmail');
-    
-    
+    Route::get('users/data', [UserController::class, 'getData'])->name('users.data');
+
+
+
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/change_password', [ProfileController::class, 'PasswordUpdate'])->name('user.changepassword');

@@ -1,101 +1,33 @@
 @extends('master')
 
-@section('contents')
-
 @section('title', 'Role Management')
 
+@section('contents')
     <div class="container-fluid py-1">
-        <div class="d-flex justify-content-end mb-5 gap-5">
+        <div class="d-flex justify-content-end mb-5">
             <button type="button" class="btn btn-primary" id="addRoleButton" data-bs-toggle="modal"
-                data-bs-target="#addRoleModal">Add</button>
+                data-bs-target="#addRoleModal">Add Role</button>
         </div>
         <div class="row">
             <div class="col-lg-12">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h3 class="card-title">Roles List</h3>
-                        {{-- <div class="search-bar">
-                            <input type="text" id="searchInput" class="form-control form-control-solid"
-                                placeholder="Search by role name or permissions..." style="width: 300px;">
-                        </div> --}}
                     </div>
                     <div class="card-body">
-                        {{-- @if ($roleData->isEmpty())
-                            <div class="alert alert-warning">No roles assigned yet.</div>
-                        @else --}}
-                            <div class="table-responsive">
-                                {{-- <table class="table table-row-bordered table-row-black-100 align-middle gs-0 gy-3"
-                                    id="roleTable">
-                                    <thead>
-                                        <tr class="fw-bold text-muted">
-                                            <th class="min-w-150px">
-                                                <a href="#" class="sort-column" data-column="role_name">Role Name
-                                                    <span class="sort-icon" data-column="role_name"></span>
-                                                </a>
-                                            </th>
-                                            <th class="min-w-200px">
-                                                <a href="#" class="sort-column" data-column="permissions">Permissions
-                                                    <span class="sort-icon" data-column="permissions"></span>
-                                                </a>
-                                            </th>
-                                            <th class="min-w-150px">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="roleTableBody">
-                                        @foreach ($roleData as $rd)
-                                            <tr>
-                                                <td><span class="text-dark fw-bold d-block fs-6">{{ $rd->role_name }}</span></td>
-                                                <td><span class="text-dark fw-bold d-block">{{ $rd->permissions }}</span></td>
-                                                <td>
-                                                    <div class="d-flex gap-3 align-items-center">
-                                                        <button type="button" class="btn btn-sm btn-light-primary editRoleButton"
-                                                            data-bs-toggle="modal" data-bs-target="#editRoleModal"
-                                                            data-id="{{ encrypt($rd->id) }}" data-role-name="{{ $rd->role_name }}"
-                                                            data-permissions="{{ is_array($rd->permissions) ? implode(',', $rd->permissions) : $rd->permissions }}"
-                                                            data-url="{{ route('role.update', encrypt($rd->id)) }}">
-                                                            Edit
-                                                        </button>
-                                                        @php
-                                                            $hasUsers = !Schema::hasTable('user') || (isset($rd->users) && $rd->users->isEmpty());
-                                                        @endphp
-                                                        @if($hasUsers)
-                                                            <button type="button" class="btn btn-sm btn-light-danger deleteRoleButton"
-                                                                data-bs-toggle="modal" data-bs-target="#deleteRoleModal"
-                                                                data-id="{{ encrypt($rd->id) }}" data-role-name="{{ $rd->role_name }}"
-                                                                data-url="{{ route('role.destroy', encrypt($rd->id)) }}">
-                                                                Delete
-                                                            </button>
-                                                        @endif
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table> --}}
-
-                                <table class="table table-bordered" id="roleTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Role Name</th>
-                                            <th>Permissions</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                </table>
-                                {{-- <div class="d-flex justify-content-between align-items-center mt-4">
-                                    <div id="roleCountText">Total Roles: {{ $roleCount ?? '0' }}</div>
-                                    <div id="paginationLinks">{{ $roleData->links() }}</div>
-                                    <form method="GET" action="{{ route('role.index') }}">
-                                        <select name="per_page" class="form-select form-select-sm w-auto" onchange="this.form.submit()" id="perPageSelect">
-                                            <option value="" disabled {{ !request('per_page') ? 'selected' : '' }}>Select per page</option>
-                                            <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10 per page</option>
-                                            <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20 per page</option>
-                                            <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 per page</option>
-                                        </select>
-                                    </form>
-                                </div> --}}
-                            </div>
-                        {{-- @endif --}}
+                        <div class="table-responsive">
+                            <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3"
+                                id="roleTable">
+                                <thead>
+                                    <tr class="fw-bold text-muted">
+                                        <th class="min-w-150px">Role Name</th>
+                                        <th class="min-w-200px">Permissions</th>
+                                        <th class="min-w-150px">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -243,79 +175,60 @@
         </div>
     </div>
 
-    <style>
-        .sort-column {
-            color: inherit;
-            text-decoration: none;
-        }
-        .sort-column:hover {
-            text-decoration: underline;
-        }
-        .sort-icon.asc::after {
-            content: ' ↑';
-        }
-        .sort-icon.desc::after {
-            content: ' ↓';
-        }
-    </style>
-
     <script>
-       $(document).ready(function () {
-        $('#roleTable').DataTable({
-            processing: true,
-            serverSide: true,
-            ajax: '{{ route('roles.data') }}', // adjust to your route
-            columns: [
-                { data: 'role_name', name: 'role_name' },
-                { data: 'permissions', name: 'permissions' },
-                { data: 'actions', name: 'actions', orderable: false, searchable: false }
-            ]
-        });
-    }); 
-        // Disable first option in select per page
-        // document.getElementById('perPageSelect').addEventListener('mousedown', function () {
-        //     const blankOption = this.querySelector('option[value=""]');
-        //     if (blankOption) blankOption.style.display = 'none';
-        // });
-
         $(document).ready(function () {
-            $('#searchInput').on('keyup', function () {
-                let query = $(this).val();
-                fetchUsers(query);
-            });
-
-            $(document).on('click', '#paginationLinks a', function (e) {
-                e.preventDefault();
-                let page = $(this).attr('href').split('page=')[1];
-                let query = $('#searchInput').val();
-                fetchUsers(query, page);
-            });
-
-            $(document).on('click', '.sort-column', function (e) {
-                e.preventDefault();
-                const column = $(this).data('column');
-
-                if (sortColumn === column) {
-                    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-                } else {
-                    sortColumn = column;
-                    sortDirection = 'asc';
+            $('#roleTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: '{{ route('roles.data') }}',
+                columns: [
+                    { data: 'role_name', name: 'role_name' },
+                    { data: 'permissions', name: 'permissions', orderable: true, searchable: true },
+                    { data: 'actions', name: 'actions', orderable: false, searchable: false }
+                ],
+                dom:
+                    "<'row mb-3'" +
+                    "<'col-sm-6 d-flex align-items-center'l>" +
+                    "<'col-sm-6 d-flex justify-content-end'f>" +
+                    ">" +
+                    "<'table-responsive't>" +
+                    "<'row mt-3'" +
+                    "<'col-sm-6'i>" +
+                    "<'col-sm-6 d-flex justify-content-end'p>" +
+                    ">",
+                language: {
+                    search: '',
+                    searchPlaceholder: 'Search roles...',
+                    lengthMenu: 'Show _MENU_',
+                    info: 'Showing _START_ to _END_ of _TOTAL_ roles',
+                    paginate: {
+                        previous: '<i class="fa fa-angle-left"></i>',
+                        next: '<i class="fa fa-angle-right"></i>'
+                    },
+                    processing: `
+                    <div class="d-flex justify-content-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>`
+                },
+                pageLength: 10,
+                lengthMenu: [10, 20, 50, 100],
+                responsive: true,
+                autoWidth: false,
+                order: [[0, 'asc']],
+                drawCallback: function () {
+                    if (typeof KTApp !== 'undefined') {
+                        KTApp.init();
+                    }
                 }
-
-                $('.sort-icon').removeClass('asc desc');
-                $(`.sort-icon[data-column="${column}"]`).addClass(sortDirection);
-
-                const query = $('#searchInput').val();
-                fetchUsers(query, 1);
             });
-
-            $('.sort-icon[data-column="role_name"]').addClass('asc');
 
             // Add Role Validations
             $("input[name='permissions[]']").on("change", Validate_Permissions);
 
             $("#role_assign_form").on("submit", function (e) {
-                let role_name_valid = Validate_Role_name();
+                let role_name_valid = Validate_RoleName();
                 let permissions_valid = Validate_Permissions();
                 if (!role_name_valid || !permissions_valid) {
                     e.preventDefault();
@@ -326,7 +239,7 @@
             $("input[name='permissions[]']").on("change", Validate_Edit_Permissions);
 
             $("#role_update_form").on("submit", function (e) {
-                let role_name_valid = Validate_Edit_Role_name();
+                let role_name_valid = Validate_Edit_RoleName();
                 let permissions_valid = Validate_Edit_Permissions();
                 if (!role_name_valid || !permissions_valid) {
                     e.preventDefault();
@@ -413,18 +326,17 @@
             });
 
             // Add Role Validation Functions
-            function Validate_Role_name() {
+            function Validate_RoleName() {
                 let role_name = $("#role_name").val().trim();
                 let roleError = $("#role_name_error");
 
                 roleError.text(""); // Clear previous errors
 
                 if (role_name === "") {
-                    roleError.text("Role name cannot be empty");
+                    roleError.text("Role name cannot be empty.");
                     return false;
-
-                } else if (!/^[A-Za-z ]{1,100}$/.test(role_name)) {
-                    roleError.text("Role name must contain only letters and spaces");
+                } else if (!/^[A-Za-z ]{1,64}$/.test(role_name)) {
+                    roleError.text("Role name must contain only letters and spaces.");
                     return false;
                 }
 
@@ -467,7 +379,7 @@
             }
 
             // Edit Role Validation Functions
-            function Validate_Edit_Role_name() {
+            function Validate_Edit_RoleName() {
                 let role_name = $("#edit_role_name").val().trim();
                 let roleId = $("#edit_role_id").val();
                 let roleError = $("#edit_role_name_error");
@@ -477,7 +389,7 @@
                 if (role_name === "") {
                     roleError.text("Role name cannot be empty");
                     return false;
-                } else if (!/^[A-Za-z ]{1,100}$/.test(role_name)) {
+                } else if (!/^[A-Za-z ]{1,64}$/.test(role_name)) {
                     roleError.text("Role name must only contain letters and spaces");
                     return false;
                 }
@@ -521,33 +433,10 @@
                 }
             }
         });
-
-        let sortColumn = 'role_name';
-        let sortDirection = 'asc';
-
-        function fetchUsers(query = '', page = 1) {
-            $.ajax({
-                url: "{{ route('role.search') }}",
-                type: "GET",
-                data: { 
-                    query: query, 
-                    page: page, 
-                    sort_column: sortColumn, 
-                    sort_direction: sortDirection 
-                },
-                success: function (response) {
-                    $('#roleTableBody').html(response.html);
-                    $('#paginationLinks').html(response.pagination);
-                    $('#roleCountText').text('Total Roles: ' + response.count);
-                },
-                error: function () {
-                    alert('Error fetching data.');
-                }
-            });
-        }
     </script>
-@endsection
 
-@php
-    $pageTitle = 'Role Management';
-@endphp
+
+    @php
+        $pageTitle = 'Role Management';
+    @endphp
+@endsection

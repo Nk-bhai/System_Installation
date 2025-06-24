@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\RoleModel;
 use App\Models\UserModel;
 use Artisan;
+use Carbon\Carbon;
 use Config;
 use DB;
 use Hash;
@@ -12,6 +13,7 @@ use Http;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
+use Yajra\DataTables\DataTables;
 
 
 class AdminController extends Controller
@@ -140,143 +142,79 @@ class AdminController extends Controller
         }
     }
 
-    public function UserTable(Request $request)
+ public function UserTable(Request $request)
     {
-        $perPage = $request->input('per_page');
-        $allowed = [10, 20, 50];
-        if (!in_array($perPage, $allowed)) {
-            $perPage = 5;
-        }
-        if ($perPage) {
-            $data = UserModel::where('created_by', session('login_email'))->paginate($perPage);
-        } else {
-            $data = UserModel::where('created_by', session('login_email'))->paginate(5);
-        }
-        // $data = UserModel::where('created_by', session('login_email'))->paginate(5);
-
-        $user_name = UserModel::where('email', '=', session('login_email'))->get('name');
+        $user_name = UserModel::where('email', session('login_email'))->get(['name']);
         $login_name = UserModel::where('email', session('login_email'))->value('name');
         session(['login_name' => $login_name]);
 
         $user = UserModel::where('email', session('login_email'))->first();
-        $allrole = RoleModel::all();
+        $allrole = RoleModel::all(['id', 'role_name']);
 
         if (!$user) {
             return redirect()->back()->with('error', 'User not found');
         }
 
         $role = $user->role;
+        $permissions = $role && $role->permissions ? array_map('trim', explode(',', $role->permissions)) : [];
 
-        $permissions = [];
-
-        if ($role && $role->permissions) {
-            $permissions = array_map('trim', explode(',', $role->permissions));
-        }
-
-        // Check if user has Create permission
         if (!in_array('Create', $permissions)) {
             session(['without_create' => "1"]);
             return redirect()->route('dashboard')->with('error', 'You do not have permission to access the User Management page.');
         }
 
-        return view('UserTable', ['user_name' => $user_name, 'data' => $data, 'permissions' => $permissions, 'allrole' => $allrole]);
+        return view('UserTable', compact('user_name', 'permissions', 'allrole'));
     }
 
-
-
-    public function search(Request $request)
+    /**
+     * Get data for UserTable DataTable
+     */
+    public function getUserTableData(Request $request)
     {
-        try {
-            $sortColumn = $request->input('sort_column', 'name');
-            $sortDirection = $request->input('sort_direction', 'asc');
+        $user = UserModel::where('email', session('login_email'))->first();
+        $permissions = $user && $user->role && $user->role->permissions
+            ? array_map('trim', explode(',', $user->role->permissions))
+            : [];
 
-            $allowedColumns = ['name', 'email', 'role_name', 'last_logout_at'];
-            if (!in_array($sortColumn, $allowedColumns)) {
-                $sortColumn = 'name';
-            }
-            if (!in_array($sortDirection, ['asc', 'desc'])) {
-                $sortDirection = 'asc';
-            }
-            $query = $request->get('query', '');
+        $query = UserModel::with('role')->where('created_by', session('login_email'));
 
-            $users = UserModel::query()
-                ->join('role', 'user.role_id', '=', 'role.id')
-                ->where('user.created_by', session('login_email'))
-                ->where(function ($q) use ($query) {
-                    if (!empty($query)) {
-                        $q->where('user.name', 'like', "%{$query}%")
-                            ->orWhere('user.email', 'like', "%{$query}%")
-                            ->orWhere('role.role_name', 'like', "%{$query}%");
-                    }
-                })
-                ->select('user.*')
-                ->with('role');
-
-            if ($sortColumn === 'role_name') {
-                $users = $users->orderBy('role.role_name', $sortDirection);
-            } else {
-                $users = $users->orderBy("user.$sortColumn", $sortDirection);
-            }
-
-            $users = $users->paginate(5);
-
-            $user = UserModel::where('email', session('login_email'))->first();
-            $permissions = $user && $user->role && $user->role->permissions
-                ? array_map('trim', explode(',', $user->role->permissions))
-                : [];
-
-            $html = '';
-            foreach ($users as $dt) {
-                $html .= '
-                <tr>
-                    <td><span class="text-dark fw-bold d-block fs-6">' . htmlspecialchars($dt->name) . '</span></td>
-                    <td><span class="text-dark fw-bold d-block">' . htmlspecialchars($dt->email) . '</span></td>
-                    <td><span class="text-dark fw-bold d-block">' . htmlspecialchars($dt->role->role_name ?? 'N/A') . '</span></td>
-                    <td><span class="text-dark fw-bold d-block">' .
-                    ($dt->last_logout_at
-                        ? \Carbon\Carbon::parse($dt->last_logout_at)->timezone("Asia/Kolkata")->format("d-m-Y h:i A")
-                        : '-') .
-                    '</span></td>
-                    <td class="text-center">
-                        <div class="d-flex gap-3 align-items-center justify-content-center">';
-
+        return DataTables::of($query)
+            ->addColumn('role_name', function ($row) {
+                return $row->role ? $row->role->role_name : 'N/A';
+            })
+            ->addColumn('last_logout_at', function ($row) {
+                return $row->last_logout_at
+                    ? Carbon::parse($row->last_logout_at)->timezone('Asia/Kolkata')->format('d-m-Y h:i A')
+                    : '-';
+            })
+            ->addColumn('actions', function ($row) use ($permissions) {
+                $id = encrypt($row->id);
+                $html = "<div class='d-flex gap-3 align-items-center justify-content-center'>";
                 if (in_array('Update', $permissions)) {
-                    $html .= '
-                        <button type="button" class="btn btn-sm btn-light-primary editUserButton"
-                            data-bs-toggle="modal" data-bs-target="#editUserModal"
-                            data-id="' . encrypt($dt->id) . '" data-name="' . htmlspecialchars($dt->name) . '"
-                            data-email="' . htmlspecialchars($dt->email) . '" data-role="' . ($dt->role ? $dt->role->id : '') . '"
-                            data-url="' . route('admin_update') . '">Edit</button>';
+                    $html .= "<button type='button' class='btn btn-sm btn-light-primary editUserButton'
+                              data-bs-toggle='modal' data-bs-target='#editUserModal'
+                              data-id='{$id}' data-name='{$row->name}'
+                              data-email='{$row->email}' data-role='{$row->role_id}'
+                              data-url='" . route('admin_update') . "'>
+                              Edit
+                          </button>";
                 }
-
                 if (in_array('Delete', $permissions)) {
-                    $html .= '
-                        <button type="button" class="btn btn-sm btn-light-danger deleteUserButton"
-                            data-bs-toggle="modal" data-bs-target="#deleteUserModal"
-                            data-id="' . encrypt($dt->id) . '" data-name="' . htmlspecialchars($dt->name) . '"
-                            data-url="' . route('user.destroy', encrypt($dt->id)) . '">Delete</button>';
+                    $html .= "<button type='button' class='btn btn-sm btn-light-danger deleteUserButton'
+                              data-bs-toggle='modal' data-bs-target='#deleteUserModal'
+                              data-id='{$id}' data-name='{$row->name}'
+                              data-url='" . route('user.destroy', $id) . "'>
+                              Delete
+                          </button>";
                 }
-
-                $html .= '
-                        </div>
-                    </td>
-                </tr>';
-            }
-
-            if ($users->isEmpty()) {
-                $html = '<tr><td colspan="5" class="text-center text-muted">No search result found</td></tr>';
-            }
-
-            return response()->json([
-                'html' => $html,
-                'pagination' => $users->appends(['query' => $query, 'sort_column' => $sortColumn, 'sort_direction' => $sortDirection])->links()->render(),
-                'count' => $users->total(),
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Search error: ' . $e->getMessage());
-            return response()->json(['error' => 'Server error occurred'], 500);
-        }
+                $html .= "</div>";
+                return $html;
+            })
+            ->rawColumns(['actions'])
+            ->make(true);
     }
+
+
 
 
     public function logout(Request $request)
