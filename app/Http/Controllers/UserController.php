@@ -68,37 +68,56 @@ class UserController extends Controller
         }
     }
 
+public function search(Request $request)
+{
+    $query = $request->get('query', '');
 
-    public function search(Request $request)
-    {
-        $query = $request->get('query', '');
+    $sortColumn = $request->get('sort_column', 'name');
+    $sortDirection = $request->get('sort_direction', 'asc');
 
-        $users = UserModel::query()
-            ->join('role', 'user.role_id', '=', 'role.id')
-            ->where(function ($q) use ($query) {
-                $q->where('user.name', 'like', "%{$query}%")
-                    ->orWhere('user.email', 'like', "%{$query}%")
-                    ->orWhere('role.role_name', 'like', "%{$query}%")
-                    ->orWhere('user.created_by', 'like', "%{$query}%");
-            })
-            ->select('user.*') // Select only user columns to avoid ambiguity
-            ->with('role')
-            ->paginate(5);
+    // Whitelist valid columns to prevent SQL injection
+    $allowedColumns = ['name', 'email', 'role_name', 'created_by'];
+    if (!in_array($sortColumn, $allowedColumns)) {
+        $sortColumn = 'name';
+    }
 
-        // Render the HTML for the table rows
-        $html = '';
-        foreach ($users as $dt) {
-            $html .= '
+    if (!in_array($sortDirection, ['asc', 'desc'])) {
+        $sortDirection = 'asc';
+    }
+
+    $users = UserModel::query()
+        ->join('role', 'user.role_id', '=', 'role.id')
+        ->where(function ($q) use ($query) {
+            $q->where('user.name', 'like', "%{$query}%")
+              ->orWhere('user.email', 'like', "%{$query}%")
+              ->orWhere('role.role_name', 'like', "%{$query}%")
+              ->orWhere('user.created_by', 'like', "%{$query}%");
+        })
+        ->select('user.*') // Avoid ambiguity
+        ->with('role');
+
+    // Apply sorting
+    if ($sortColumn === 'role_name') {
+        $users = $users->orderBy('role.role_name', $sortDirection);
+    } else {
+        $users = $users->orderBy("user.$sortColumn", $sortDirection);
+    }
+
+    $users = $users->paginate(5);
+
+    $html = '';
+    foreach ($users as $dt) {
+        $html .= '
         <tr>
             <td><span class="text-dark fw-bold d-block fs-6">' . htmlspecialchars($dt->name) . '</span></td>
             <td><span class="text-dark fw-bold d-block">' . htmlspecialchars($dt->email) . '</span></td>
             <td><span class="text-dark fw-bold d-block">' . htmlspecialchars($dt->role->role_name ?? 'N/A') . '</span></td>
             <td><span class="text-dark fw-bold d-block">' . htmlspecialchars($dt->created_by ?? 'Super Admin') . '</span></td>
             <td><span class="text-dark fw-bold d-block">' .
-                ($dt->last_logout_at
-                    ? \Carbon\Carbon::parse($dt->last_logout_at)->timezone("Asia/Kolkata")->format("d-m-Y h:i A")
-                    : '-') .
-                '</span></td>
+            ($dt->last_logout_at
+                ? \Carbon\Carbon::parse($dt->last_logout_at)->timezone("Asia/Kolkata")->format("d-m-Y h:i A")
+                : '-') .
+            '</span></td>
             <td>
                 <div class="d-flex gap-3 align-items-center">
                     <button type="button" class="btn btn-sm btn-light-primary editUserButton"
@@ -116,18 +135,23 @@ class UserController extends Controller
                 </div>
             </td>
         </tr>';
-        }
-
-        if ($users->isEmpty()) {
-            $html = '<tr><td colspan="6" class="text-center text-muted">No search result found</td></tr>';
-        }
-
-        return response()->json([
-            'html' => $html,
-            'pagination' => $users->appends(['query' => $query])->links()->render(),
-            'count' => $users->total(),
-        ]);
     }
+
+    if ($users->isEmpty()) {
+        $html = '<tr><td colspan="6" class="text-center text-muted">No search result found</td></tr>';
+    }
+
+    return response()->json([
+        'html' => $html,
+        'pagination' => $users->appends([
+            'query' => $query,
+            'sort_column' => $sortColumn,
+            'sort_direction' => $sortDirection
+        ])->links()->render(),
+        'count' => $users->total(),
+    ]);
+}
+
     public function create()
     {
         //

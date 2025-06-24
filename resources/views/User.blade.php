@@ -3,7 +3,24 @@
 @section('contents')
 @section('title', 'User Management')
     {{-- @dump(session('errorss')); --}}
+    <style>
+        .sort-column {
+            color: inherit;
+            text-decoration: none;
+        }
 
+        .sort-column:hover {
+            text-decoration: underline;
+        }
+
+        .sort-icon.asc::after {
+            content: ' ↑';
+        }
+
+        .sort-icon.desc::after {
+            content: ' ↓';
+        }
+    </style>
 
     <div class="container-fluid py-1">
         <div class="d-flex justify-content-end mb-5 gap-5">
@@ -31,14 +48,28 @@
                                     id="userTable">
                                     <thead>
                                         <tr class="fw-bold text-muted">
-                                            <th class="min-w-150px">Name</th>
-                                            <th class="min-w-200px">Email</th>
-                                            <th class="min-w-150px">Role</th>
-                                            <th class="min-w-150px">Created By</th>
+                                            <th class="min-w-150px">
+                                                <a href="#" class="sort-column" data-column="name">Name <span class="sort-icon"
+                                                        data-column="name"></span></a>
+                                            </th>
+                                            <th class="min-w-200px">
+                                                <a href="#" class="sort-column" data-column="email">Email <span
+                                                        class="sort-icon" data-column="email"></span></a>
+                                            </th>
+                                            <th class="min-w-150px">
+                                                <a href="#" class="sort-column" data-column="role_name">Role <span
+                                                        class="sort-icon" data-column="role_name"></span></a>
+                                            </th>
+                                            <th class="min-w-150px">
+                                                <a href="#" class="sort-column" data-column="created_by">
+                                                    Created By <span class="sort-icon" data-column="created_by"></span>
+                                                </a>
+                                            </th>
                                             <th class="min-w-150px">Last Logout</th>
                                             <th class="min-w-150px">Actions</th>
                                         </tr>
                                     </thead>
+
                                     <tbody id="userTableBody">
                                         @forelse ($data as $dt)
                                             <tr>
@@ -81,10 +112,16 @@
                                     <div id="userCountText">Total Users: {{ $userCount ?? '0' }}</div>
                                     <div id="paginationLinks">{{ $data->links() }}</div>
                                     <form method="GET" action="{{ route('user.index') }}">
-                                        <select name="per_page" onchange="this.form.submit()">
-                                            <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10 per page</option>
-                                            <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20 per page</option>
-                                            <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 per page</option>
+                                        <select name="per_page" class="form-select form-select-sm w-auto"
+                                            onchange="this.form.submit()" id="perPageSelect">
+                                            <option value="" disabled {{ !request('per_page') ? 'selected' : '' }}>Select per
+                                                page</option>
+                                            <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10 per page
+                                            </option>
+                                            <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20 per page
+                                            </option>
+                                            <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 per page
+                                            </option>
                                         </select>
                                     </form>
                                 </div>
@@ -242,6 +279,11 @@
         </div>
     </div>
     <script>
+        // first option disabled in select per page
+        // document.getElementById('perPageSelect').addEventListener('mousedown', function () {
+        //     const blankOption = this.querySelector('option[value=""]');
+        //     if (blankOption) blankOption.style.display = 'none';
+        // });
         $(document).ready(function () {
             $('#searchInput').on('keyup', function () {
                 let query = $(this).val();
@@ -254,6 +296,27 @@
                 let query = $('#searchInput').val();
                 fetchUsers(query, page);
             });
+
+            $(document).on('click', '.sort-column', function (e) {
+                e.preventDefault();
+                const column = $(this).data('column');
+
+                if (sortColumn === column) {
+                    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    sortColumn = column;
+                    sortDirection = 'asc';
+                }
+
+                $('.sort-icon').removeClass('asc desc');
+                $(`.sort-icon[data-column="${column}"]`).addClass(sortDirection);
+
+                const query = $('#searchInput').val();
+                fetchUsers(query, 1);
+            });
+
+            // Set initial sort icon
+            $('.sort-icon[data-column="name"]').addClass('asc');
 
             // Add User Validations
             $("#name").on('input', ValidateName);
@@ -338,6 +401,7 @@
 
             // Add User Validation Functions
             function ValidateName() {
+                console.log("ValidateName triggered"); // Debug
                 let name = $("#name").val().trim();
                 if (name === "") {
                     $("#name_error").text("Name cannot be empty");
@@ -516,11 +580,18 @@
             }
         }
 
+        let sortColumn = 'name';
+        let sortDirection = 'asc';
         function fetchUsers(query = '', page = 1) {
             $.ajax({
                 url: "{{ route('user.search') }}",
                 type: "GET",
-                data: { query: query, page: page },
+                data: {
+                    query: query,
+                    page: page,
+                    sort_column: sortColumn,
+                    sort_direction: sortDirection
+                },
                 success: function (response) {
                     $('#userTableBody').html(response.html);
                     $('#paginationLinks').html(response.pagination);

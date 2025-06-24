@@ -3,6 +3,15 @@
 @section('contents')
 
 @section('title', 'Profile Details')
+    <style>
+        .password-wrapper input {
+            background-color: #f5f8fa !important;
+            color: #181c32 !important;
+            font-weight: 500 !important;
+            transition: none !important;
+        }
+    </style>
+
     <div class="container-fluid">
         <div class="card">
             <div class="card-header" style="border-bottom: 1px solid #ebedf2;">
@@ -56,14 +65,11 @@
                                         <span class="text-dark fw-bold d-block fs-6">Email</span>
                                     </td>
                                     <td class="min-w-200px">
-                                        {{-- <span class="text-dark fw-bold d-block">{{ session('superadmin_email')
-                                            }}</span> --}}
                                         <span class="text-dark fw-bold d-block">
                                             {{ session('login_email') ?? session('superadmin_email') ?? 'No email available' }}
                                         </span>
                                     </td>
                                 </tr>
-                                {{-- @dd($keyData['password']); --}}
                                 <tr>
                                     <td class="min-w-150px">
                                         <span class="text-dark fw-bold d-block fs-6">Change Password</span>
@@ -78,7 +84,8 @@
                                                 <i class="fas fa-eye"></i>
                                             </span>
                                         </div>
-                                        <div id="password_error" class="text-danger fs-7 mt-1"></div>
+                                        <div id="password_error" class="text-danger fs-7 mt-1" style="max-width: 300px;">
+                                        </div>
                                     </td>
                                 </tr>
 
@@ -98,41 +105,68 @@
         </div>
     </div>
 
+
+    @php
+        $pageTitle = 'Profile';
+    @endphp
+
+    <script>
+        document.querySelector('[data-kt-image-input-action="remove"]').addEventListener('click', function () {
+            document.getElementById('avatar_remove').value = 1; // Mark for removal
+        });
+
+        function Password_Show_hide() {
+            let x = document.getElementById("password");
+            let icon = document.querySelector(".password-toggle-icon i");
+            if (x.type === "password") {
+                x.type = "text";
+                icon.classList.replace("fa-eye", "fa-eye-slash");
+            } else {
+                x.type = "password";
+                icon.classList.replace("fa-eye-slash", "fa-eye");
+            }
+        }
+
+        $(document).ready(function () {
+            $('#password').removeAttr('data-kt-password-meter');
+            // Real-time password check only when user types
+            $("#password").on('input', ValidatePassword);
+
+            // On form submit
+            $("#kt_account_profile_details_form").submit(function (e) {
+                const password = $("#password").val().trim();
+
+                if (password !== "") {
+                    if (!ValidatePassword()) {
+                        e.preventDefault(); // prevent if invalid
+                    } else {
+                        passwordUpdated = true; // mark password was changed
+                    }
+                }
+            });
+           
+            // Validation function
+            function ValidatePassword() {
+                const password = $("#password").val().trim();
+                const errorDiv = $("#password_error");
+
+                if (password === "") {
+                    errorDiv.text(""); // no error if password is blank (not changing)
+                    return true;
+                }
+
+                const isValid = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8}$/.test(password);
+
+                if (!isValid) {
+                    errorDiv.text("Password must be exactly 8 characters and include upper, lower, digit, and special character.");
+                    return false;
+                } else {
+                    errorDiv.text("");
+                    return true;
+                }
+            }
+        });
+    </script>
+
+
 @endsection
-
-@php
-    $pageTitle = 'Profile';
-@endphp
-
-<script>
-    document.querySelector('[data-kt-image-input-action="remove"]').addEventListener('click', function () {
-        document.getElementById('avatar_remove').value = 1; // Mark for removal
-    });
-
-    function Password_Show_hide() {
-        let x = document.getElementById("password");
-        let icon = document.querySelector(".password-toggle-icon i");
-        if (x.type === "password") {
-            x.type = "text";
-            icon.classList.replace("fa-eye", "fa-eye-slash");
-        } else {
-            x.type = "password";
-            icon.classList.replace("fa-eye-slash", "fa-eye");
-        }
-    }
-
-    // password validations
-    function ValidatePassword() {
-        let password = $("#password").val();
-        if (password === "") {
-            $("#password_error").html("Password cannot be empty");
-            return false;
-        } else if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8}$/.test(password)) {
-            $("#password_error").html("Password must be 8 chars, include upper, lower, digit, and special char");
-            return false;
-        } else {
-            $("#password_error").html("");
-            return true;
-        }
-    }
-</script>

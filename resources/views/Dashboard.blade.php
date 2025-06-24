@@ -4,7 +4,7 @@
 @section('title', 'Dashboard')
     <div class="container-fluid py-10">
         <pre>
-            <?php  print_r(session()->all());
+            <?php print_r(session()->all());
                 // session()->flush();
             ?>
         </pre>

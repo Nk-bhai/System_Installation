@@ -29,8 +29,16 @@
                                     id="roleTable">
                                     <thead>
                                         <tr class="fw-bold text-muted">
-                                            <th class="min-w-150px">Role Name</th>
-                                            <th class="min-w-200px">Permissions</th>
+                                            <th class="min-w-150px">
+                                                <a href="#" class="sort-column" data-column="role_name">Role Name
+                                                    <span class="sort-icon" data-column="role_name"></span>
+                                                </a>
+                                            </th>
+                                            <th class="min-w-200px">
+                                                <a href="#" class="sort-column" data-column="permissions">Permissions
+                                                    <span class="sort-icon" data-column="permissions"></span>
+                                                </a>
+                                            </th>
                                             <th class="min-w-150px">Actions</th>
                                         </tr>
                                     </thead>
@@ -51,7 +59,7 @@
                                                         @php
                                                             $hasUsers = !Schema::hasTable('user') || (isset($rd->users) && $rd->users->isEmpty());
                                                         @endphp
-                                                        @if ($hasUsers)                                                            
+                                                        @if($hasUsers)                                                        
                                                             <button type="button" class="btn btn-sm btn-light-danger deleteRoleButton"
                                                                 data-bs-toggle="modal" data-bs-target="#deleteRoleModal"
                                                                 data-id="{{ $rd->id }}" data-role-name="{{ $rd->role_name }}"
@@ -68,8 +76,9 @@
                                 <div class="d-flex justify-content-between align-items-center mt-4">
                                     <div id="roleCountText">Total Roles: {{ $roleCount ?? '0' }}</div>
                                     <div id="paginationLinks">{{ $roleData->links() }}</div>
-                                     <form method="GET" action="{{ route('role.index') }}">
-                                        <select name="per_page" onchange="this.form.submit()">
+                                      <form method="GET" action="{{ route('role.index') }}">
+                                        <select name="per_page" class="form-select form-select-sm w-auto" onchange="this.form.submit()" id="perPageSelect">
+                                            <option value="" disabled {{ !request('per_page') ? 'selected' : '' }}>Select per page</option>
                                             <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10 per page</option>
                                             <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20 per page</option>
                                             <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 per page</option>
@@ -224,244 +233,294 @@
             </div>
         </div>
     </div>
+    <style>
+        .sort-column {
+            color: inherit;
+            text-decoration: none;
+        }
+        .sort-column:hover {
+            text-decoration: underline;
+        }
+        .sort-icon.asc::after {
+            content: ' ↑';
+        }
+        .sort-icon.desc::after {
+            content: ' ↓';
+        }
+    </style>
     <script>
+        // first option disabled in select per page
+        document.getElementById('perPageSelect').addEventListener('mousedown', function () {
+        const blankOption = this.querySelector('option[value=""]');
+        if (blankOption) blankOption.style.display = 'none';
+    });
         $(document).ready(function () {
-    $('#searchInput').on('keyup', function () {
-        let query = $(this).val();
-        fetchUsers(query);
-    });
+            $('#searchInput').on('keyup', function () {
+            let query = $(this).val();
+            fetchUsers(query);
+        });
 
-    $(document).on('click', '#paginationLinks a', function (e) {
-        e.preventDefault();
-        let page = $(this).attr('href').split('page=')[1];
-        let query = $('#searchInput').val();
-        fetchUsers(query, page);
-    });
-
-    // Add Role Validations
-    $("input[name='permissions[]']").on("change", Validate_Permissions);
-
-    $("#role_assign_form").on("submit", function (e) {
-        let role_name_valid = Validate_Role_name();
-        let permissions_valid = Validate_Permissions();
-        if (!role_name_valid || !permissions_valid) {
+        $(document).on('click', '#paginationLinks a', function (e) {
             e.preventDefault();
-        }
-    });
+            let page = $(this).attr('href').split('page=')[1];
+            let query = $('#searchInput').val();
+            fetchUsers(query, page);
+        });
 
-    // Edit Role Validations
-    $("input[name='permissions[]']").on("change", Validate_Edit_Permissions);
-
-    $("#role_update_form").on("submit", function (e) {
-        let role_name_valid = Validate_Edit_Role_name();
-        let permissions_valid = Validate_Edit_Permissions();
-        if (!role_name_valid || !permissions_valid) {
+        $(document).on('click', '.sort-column', function (e) {
             e.preventDefault();
-        }
-    });
+            const column = $(this).data('column');
 
-    // Populate Edit Modal
-    $(document).on('click', '.editRoleButton', function () {
-        let id = $(this).data('id');
-        let role_name = $(this).data('role-name');
-        let permissions = $(this).data('permissions').split(',');
-        let url = $(this).data('url');
-
-        $('#editRoleModal').find('form').attr('action', url);
-        $('#edit_role_name').val(role_name);
-        $('#edit_role_id').val(id);
-
-        // Reset all checkboxes
-        $("input[name='permissions[]']").prop('checked', false);
-        // Check the appropriate permissions
-        permissions.forEach(function (perm) {
-            $("#edit_" + perm.toLowerCase().trim()).prop('checked', true);
-        });
-
-        try {
-            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                let modal = new bootstrap.Modal(document.getElementById('editRoleModal'));
-                modal.show();
+            if (sortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
             } else {
-                console.error("Bootstrap JS is not loaded. Using fallback.");
-                $("#editRoleModal").addClass("show").css("display", "block");
-                $("body").addClass("modal-open").append('<div class="modal-backdrop fade show"></div>');
+                sortColumn = column;
+                sortDirection = 'asc';
             }
-        } catch (e) {
-            console.error("Error opening edit modal:", e);
-        }
-    });
 
-    $(document).on('click', '.deleteRoleButton', function () {
-        let id = $(this).data('id');
-        let role_name = $(this).data('role-name');
-        let url = $(this).data('url');
+            $('.sort-icon').removeClass('asc desc');
+            $(`.sort-icon[data-column="${column}"]`).addClass(sortDirection);
 
-        $('#deleteRoleModal').find('form').attr('action', url);
-        $('#delete_role_name').text(role_name);
+            const query = $('#searchInput').val();
+            fetchUsers(query, 1);
+        });
 
-        try {
-            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                let modal = new bootstrap.Modal(document.getElementById('deleteRoleModal'));
-                modal.show();
-            } else {
-                console.error("Bootstrap JS is not loaded. Using fallback.");
-                $("#deleteRoleModal").addClass("show").css("display", "block");
-                $("body").addClass("modal-open").append('<div class="modal-backdrop fade show"></div>');
-            }
-        } catch (e) {
-            console.error("Error opening delete modal:", e);
-        }
-    });
+        // Optional: Default sort icon on first load
+        $('.sort-icon[data-column="role_name"]').addClass('asc');
+    
 
-    // Fallback to manually trigger add modal if Bootstrap JS is not loaded
-    $("#addRoleButton").on("click", function () {
-        try {
-            if (typeof bootstrap === 'undefined' || !bootstrap.Modal) {
-                console.error("Bootstrap JS is not loaded. Check your master layout.");
-                $("#addRoleModal").addClass("show").css("display", "block");
-                $("body").addClass("modal-open").append('<div class="modal-backdrop fade show"></div>');
-            }
-        } catch (e) {
-            console.error("Error triggering modal:", e);
-        }
-    });
+            // Add Role Validations
+            $("input[name='permissions[]']").on("change", Validate_Permissions);
 
-    // Handle manual modal close
-    $(".btn-close, [data-bs-dismiss='modal']").on("click", function () {
-        $("#addRoleModal").removeClass("show").css("display", "none");
-        $("#editRoleModal").removeClass("show").css("display", "none");
-        $("#deleteRoleModal").removeClass("show").css("display", "none");
-        $("body").removeClass("modal-open");
-        $(".modal-backdrop").remove();
-        $('#submitRoleForm').prop('disabled', false).text('Submit');
-        $('.editRoleButton').blur(); // Remove focus from Edit button
-    });
-
-    // Add Role Validation Functions
-    function Validate_Role_name() {
-        let role_name = $("#role_name").val().trim();
-        let roleError = $("#role_name_error");
-
-        roleError.text(""); // Clear previous errors
-
-        if (role_name === "") {
-            roleError.text("Role name cannot be empty");
-            return false;
-        } else if (!/^[A-Za-z ]{1,100}$/.test(role_name)) {
-            roleError.text("Role name must contain only letters and spaces");
-            return false;
-        }
-
-        let isValid = false;
-
-        $.ajax({
-            url: "{{ route('role.checkRoleName') }}",
-            type: "POST",
-            data: {
-                role_name: role_name,
-                _token: "{{ csrf_token() }}"
-            },
-            async: false,
-            success: function (response) {
-                if (response.exists) {
-                    roleError.text("This role name is already taken.");
-                    isValid = false;
-                } else {
-                    roleError.text("");
-                    isValid = true;
+            $("#role_assign_form").on("submit", function (e) {
+                let role_name_valid = Validate_Role_name();
+                let permissions_valid = Validate_Permissions();
+                if (!role_name_valid || !permissions_valid) {
+                    e.preventDefault();
                 }
-            },
-            error: function () {
-                roleError.text("Server error while checking role name.");
-                isValid = false;
+            });
+
+            // Edit Role Validations
+            $("input[name='permissions[]']").on("change", Validate_Edit_Permissions);
+
+            $("#role_update_form").on("submit", function (e) {
+                let role_name_valid = Validate_Edit_Role_name();
+                let permissions_valid = Validate_Edit_Permissions();
+                if (!role_name_valid || !permissions_valid) {
+                    e.preventDefault();
+                }
+            });
+
+            // Populate Edit Modal
+            $(document).on('click', '.editRoleButton', function () {
+                let id = $(this).data('id');
+                let role_name = $(this).data('role-name');
+                let permissions = $(this).data('permissions').split(',');
+                let url = $(this).data('url');
+
+                $('#editRoleModal').find('form').attr('action', url);
+                $('#edit_role_name').val(role_name);
+                $('#edit_role_id').val(id);
+
+                // Reset all checkboxes
+                $("input[name='permissions[]']").prop('checked', false);
+                // Check the appropriate permissions
+                permissions.forEach(function (perm) {
+                    $("#edit_" + perm.toLowerCase().trim()).prop('checked', true);
+                });
+
+                try {
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        let modal = new bootstrap.Modal(document.getElementById('editRoleModal'));
+                        modal.show();
+                    } else {
+                        console.error("Bootstrap JS is not loaded. Using fallback.");
+                        $("#editRoleModal").addClass("show").css("display", "block");
+                        $("body").addClass("modal-open").append('<div class="modal-backdrop fade show"></div>');
+                    }
+                } catch (e) {
+                    console.error("Error opening edit modal:", e);
+                }
+            });
+
+            $(document).on('click', '.deleteRoleButton', function () {
+                let id = $(this).data('id');
+                let role_name = $(this).data('role-name');
+                let url = $(this).data('url');
+
+                $('#deleteRoleModal').find('form').attr('action', url);
+                $('#delete_role_name').text(role_name);
+
+                try {
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        let modal = new bootstrap.Modal(document.getElementById('deleteRoleModal'));
+                        modal.show();
+                    } else {
+                        console.error("Bootstrap JS is not loaded. Using fallback.");
+                        $("#deleteRoleModal").addClass("show").css("display", "block");
+                        $("body").addClass("modal-open").append('<div class="modal-backdrop fade show"></div>');
+                    }
+                } catch (e) {
+                    console.error("Error opening delete modal:", e);
+                }
+            });
+
+            // Fallback to manually trigger add modal if Bootstrap JS is not loaded
+            $("#addRoleButton").on("click", function () {
+                try {
+                    if (typeof bootstrap === 'undefined' || !bootstrap.Modal) {
+                        console.error("Bootstrap JS is not loaded. Check your master layout.");
+                        $("#addRoleModal").addClass("show").css("display", "block");
+                        $("body").addClass("modal-open").append('<div class="modal-backdrop fade show"></div>');
+                    }
+                } catch (e) {
+                    console.error("Error triggering modal:", e);
+                }
+            });
+
+            // Handle manual modal close
+            $(".btn-close, [data-bs-dismiss='modal']").on("click", function () {
+                $("#addRoleModal").removeClass("show").css("display", "none");
+                $("#editRoleModal").removeClass("show").css("display", "none");
+                $("#deleteRoleModal").removeClass("show").css("display", "none");
+                $("body").removeClass("modal-open");
+                $(".modal-backdrop").remove();
+                $('#submitRoleForm').prop('disabled', false).text('Submit');
+                $('.editRoleButton').blur(); // Remove focus from Edit button
+            });
+
+            // Add Role Validation Functions
+            function Validate_Role_name() {
+                let role_name = $("#role_name").val().trim();
+                let roleError = $("#role_name_error");
+
+                roleError.text(""); // Clear previous errors
+
+                if (role_name === "") {
+                    roleError.text("Role name cannot be empty");
+                    return false;
+                } else if (!/^[A-Za-z ]{1,100}$/.test(role_name)) {
+                    roleError.text("Role name must contain only letters and spaces");
+                    return false;
+                }
+
+                let isValid = false;
+
+                $.ajax({
+                    url: "{{ route('role.checkRoleName') }}",
+                    type: "POST",
+                    data: {
+                        role_name: role_name,
+                        _token: "{{ csrf_token() }}"
+                    },
+                    async: false,
+                    success: function (response) {
+                        if (response.exists) {
+                            roleError.text("This role name is already taken.");
+                            isValid = false;
+                        } else {
+                            roleError.text("");
+                            isValid = true;
+                        }
+                    },
+                    error: function () {
+                        roleError.text("Server error while checking role name.");
+                        isValid = false;
+                    }
+                });
+
+                return isValid;
+            }
+
+            function Validate_Permissions() {
+                if ($("input[name='permissions[]']:checked").length === 0) {
+                    $("#permissions_error").text("At least one permission must be selected");
+                    return false;
+                } else {
+                    $("#permissions_error").text("");
+                    return true;
+                }
+            }
+
+            // Edit Role Validation Functions
+            function Validate_Edit_Role_name() {
+                let role_name = $("#edit_role_name").val().trim();
+                let roleId = $("#edit_role_id").val();
+                let roleError = $("#edit_role_name_error");
+
+                roleError.text(""); // Clear previous errors
+
+                if (role_name === "") {
+                    roleError.text("Role name cannot be empty");
+                    return false;
+                } else if (!/^[A-Za-z ]{1,100}$/.test(role_name)) {
+                    roleError.text("Role name must contain only letters and spaces");
+                    return false;
+                }
+
+                let isValid = false;
+
+                $.ajax({
+                    url: "{{ route('role.checkRoleName') }}",
+                    type: "POST",
+                    data: {
+                        role_name: role_name,
+                        role_id: roleId,
+                        _token: "{{ csrf_token() }}"
+                    },
+                    async: false,
+                    success: function (response) {
+                        if (response.exists) {
+                            roleError.text("This role name is already taken.");
+                            isValid = false;
+                        } else {
+                            roleError.text("");
+                            isValid = true;
+                        }
+                    },
+                    error: function () {
+                        roleError.text("Server error while checking role name.");
+                        isValid = false;
+                    }
+                });
+
+                return isValid;
+            }
+
+            function Validate_Edit_Permissions() {
+                if ($("input[name='permissions[]']:checked").length === 0) {
+                    $("#edit_permissions_error").text("At least one permission must be selected");
+                    return false;
+                } else {
+                    $("#edit_permissions_error").text("");
+                    return true;
+                }
             }
         });
 
-        return isValid;
-    }
+        let sortColumn = 'role_name';
+        let sortDirection = 'asc';
 
-    function Validate_Permissions() {
-        if ($("input[name='permissions[]']:checked").length === 0) {
-            $("#permissions_error").text("At least one permission must be selected");
-            return false;
-        } else {
-            $("#permissions_error").text("");
-            return true;
-        }
-    }
-
-    // Edit Role Validation Functions
-    function Validate_Edit_Role_name() {
-        let role_name = $("#edit_role_name").val().trim();
-        let roleId = $("#edit_role_id").val();
-        let roleError = $("#edit_role_name_error");
-
-        roleError.text(""); // Clear previous errors
-
-        if (role_name === "") {
-            roleError.text("Role name cannot be empty");
-            return false;
-        } else if (!/^[A-Za-z ]{1,100}$/.test(role_name)) {
-            roleError.text("Role name must contain only letters and spaces");
-            return false;
-        }
-
-        let isValid = false;
-
-        $.ajax({
-            url: "{{ route('role.checkRoleName') }}",
-            type: "POST",
-            data: {
-                role_name: role_name,
-                role_id: roleId,
-                _token: "{{ csrf_token() }}"
-            },
-            async: false,
-            success: function (response) {
-                if (response.exists) {
-                    roleError.text("This role name is already taken.");
-                    isValid = false;
-                } else {
-                    roleError.text("");
-                    isValid = true;
+        function fetchUsers(query = '', page = 1) {
+            $.ajax({
+                url: "{{ route('role.search') }}",
+                type: "GET",
+                data: { 
+                    query: query, 
+                    page: page, 
+                    sort_column: sortColumn, 
+                    sort_direction: sortDirection 
+                },
+                success: function (response) {
+                    $('#roleTableBody').html(response.html);
+                    $('#paginationLinks').html(response.pagination);
+                    $('#roleCountText').text('Total Roles: ' + response.count);
+                },
+                error: function () {
+                    alert('Error fetching data.');
                 }
-            },
-            error: function () {
-                roleError.text("Server error while checking role name.");
-                isValid = false;
-            }
-        });
-
-        return isValid;
-    }
-
-    function Validate_Edit_Permissions() {
-        if ($("input[name='permissions[]']:checked").length === 0) {
-            $("#edit_permissions_error").text("At least one permission must be selected");
-            return false;
-        } else {
-            $("#edit_permissions_error").text("");
-            return true;
+            });
         }
-    }
-});
-
-function fetchUsers(query = '', page = 1) {
-    $.ajax({
-        url: "{{ route('role.search') }}",
-        type: "GET",
-        data: { query: query, page: page },
-        success: function (response) {
-            $('#roleTableBody').html(response.html);
-            $('#paginationLinks').html(response.pagination);
-            $('#roleCountText').text('Total Users: ' + response.count);
-        },
-        error: function () {
-            alert('Error fetching data.');
-        }
-    });
-}
     </script>
 @endsection
 

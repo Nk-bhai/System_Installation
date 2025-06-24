@@ -28,6 +28,8 @@ class AdminController extends Controller
             if ($keyData['ip_address'] == $ip_address && $keyData['verified'] == 1) {
                 $databasename = $keyData['database'];
                 session(['superadmin_profile_logo' => $keyData['profile_logo']]);
+                session(['sidebar_logo' => $keyData['sidebar_logo']]);
+                session(['favicon' => $keyData['favicon']]);
                 session(['superadmin_email' => $keyData['email']]);
                 session(['superadmin_password' => $keyData['password']]);
             }
@@ -60,8 +62,7 @@ class AdminController extends Controller
 
         try {
             $user = UserModel::where('email', $email)->first();
-            // if (!$user || !$user->password === $password) {
-            if (!$user || !Hash::check($password, $user->password) === $password) {
+            if (!$user || !Hash::check($password, $user->password)) {
                 return false; // Authentication failed
             }
 
@@ -143,6 +144,9 @@ class AdminController extends Controller
         // $data = UserModel::where('created_by', session('login_email'))->paginate(5);
 
         $user_name = UserModel::where('email', '=', session('login_email'))->get('name');
+        $login_name = UserModel::where('email', session('login_email'))->value('name');
+        session(['login_name' => $login_name]);
+        
         $user = UserModel::where('email', session('login_email'))->first();
         $allrole = RoleModel::all();
 
@@ -169,6 +173,17 @@ class AdminController extends Controller
 
     public function search(Request $request)
     {
+        $sortColumn = $request->input('sort_column', 'name');
+        $sortDirection = $request->input('sort_direction', 'asc');
+
+        // Whitelist allowed columns
+        $allowedColumns = ['name', 'email', 'role_name', 'last_logout_at'];
+        if (!in_array($sortColumn, $allowedColumns)) {
+            $sortColumn = 'name';
+        }
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'asc';
+        }
         $query = $request->get('query', '');
 
         $users = UserModel::query()
@@ -182,8 +197,16 @@ class AdminController extends Controller
                 }
             })
             ->select('user.*') // Avoid column ambiguity
-            ->with('role') // Eager load role
-            ->paginate(5);
+            ->with('role'); // Eager load role
+
+        // Apply sorting logic
+        if ($sortColumn === 'role_name') {
+            $users = $users->orderBy('role.role_name', $sortDirection);
+        } else {
+            $users = $users->orderBy("user.$sortColumn", $sortDirection);
+        }
+
+        $users = $users->paginate(5);
 
         // Get permissions for the logged-in user
         $user = UserModel::where('email', session('login_email'))->first();
@@ -199,7 +222,6 @@ class AdminController extends Controller
             <td><span class="text-dark fw-bold d-block fs-6">' . htmlspecialchars($dt->name) . '</span></td>
             <td><span class="text-dark fw-bold d-block">' . htmlspecialchars($dt->email) . '</span></td>
             <td><span class="text-dark fw-bold d-block">' . htmlspecialchars($dt->role->role_name) . '</span></td>
-            <td><span class="text-dark fw-bold d-block">' . (empty($dt->created_by) ? 'Super Admin' : htmlspecialchars($dt->created_by)) . '</span></td>
             <td><span class="text-dark fw-bold d-block">' .
                 ($dt->last_logout_at
                     ? \Carbon\Carbon::parse($dt->last_logout_at)->timezone("Asia/Kolkata")->format("d-m-Y h:i A")

@@ -2,8 +2,15 @@
 
 @section('contents')
 @section('title', 'User Table Page')
+<style>
+    .sort-column { color: inherit; text-decoration: none; }
+    .sort-column:hover { text-decoration: underline; }
+    .sort-icon.asc::after { content: ' ↑'; }
+    .sort-icon.desc::after { content: ' ↓'; }
+</style>
     <div class="container-fluid py-1">
         <!-- Welcome Message -->
+
 
         @foreach ($user_name as $name)
             <h1 class="text-center mb-5">Welcome Mr. {{ $name->name }}</h1>
@@ -36,10 +43,26 @@
                                     id="userTable">
                                     <thead>
                                         <tr class="fw-bold text-muted">
-                                            <th class="min-w-150px">Name</th>
-                                            <th class="min-w-200px">Email</th>
-                                            <th class="min-w-150px">Role</th>
-                                            <th class="min-w-150px">Last Logout</th>
+                                            <th class="min-w-150px">
+                                                <a href="#" class="sort-column" data-column="name">Name
+                                                    <span class="sort-icon" data-column="name"></span>
+                                                </a>
+                                            </th>
+                                            <th class="min-w-200px">
+                                                <a href="#" class="sort-column" data-column="email">Email
+                                                    <span class="sort-icon" data-column="email"></span>
+                                                </a>
+                                            </th>
+                                            <th class="min-w-150px">
+                                                <a href="#" class="sort-column" data-column="role_name">Role
+                                                    <span class="sort-icon" data-column="role_name"></span>
+                                                </a>
+                                            </th>
+                                            <th class="min-w-150px">
+                                                <a href="#" class="sort-column" data-column="last_logout_at">Last Logout
+                                                    <span class="sort-icon" data-column="last_logout_at"></span>
+                                                </a>
+                                            </th>
                                             @if(!in_array('Delete', $permissions) && !in_array('Update', $permissions))
                                                 <th class="min-w-150px text-center" style="display: none">Actions</th>
                                             @else
@@ -47,6 +70,7 @@
                                             @endif
                                         </tr>
                                     </thead>
+
                                     <tbody id="userTableBody">
                                         @foreach ($data as $dt)
                                             <tr>
@@ -86,8 +110,9 @@
                                 <div class="d-flex justify-content-between align-items-center mt-4">
                                     <div id="userCountText">Total Users: {{ $data->total() }}</div>
                                     <div id="paginationLinks">{{ $data->links() }}</div>
-                                    <form method="GET" action="{{ route('role.index') }}">
-                                        <select name="per_page" onchange="this.form.submit()">
+                                    <form method="GET" action="{{ route('UserTable') }}">
+                                        <select name="per_page" class="form-select form-select-sm w-auto" onchange="this.form.submit()" id="perPageSelect">
+                                            <option value="" disabled {{ !request('per_page') ? 'selected' : '' }}>Select per page</option>
                                             <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10 per page</option>
                                             <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20 per page</option>
                                             <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 per page</option>
@@ -238,18 +263,44 @@
     @endif
 
     <script>
-        $(document).ready(function () {
-    $('#searchInput').on('keyup', function () {
-        let query = $(this).val();
-        fetchUsers(query);
+         // first option disabled in select per page
+        document.getElementById('perPageSelect').addEventListener('mousedown', function () {
+        const blankOption = this.querySelector('option[value=""]');
+        if (blankOption) blankOption.style.display = 'none';
     });
+       $(document).ready(function () {
+       
 
-    $(document).on('click', '#paginationLinks a', function (e) {
-        e.preventDefault();
-        let page = $(this).attr('href').split('page=')[1];
-        let query = $('#searchInput').val();
-        fetchUsers(query, page);
-    });
+        $('#searchInput').on('keyup', function () {
+            let query = $(this).val();
+            fetchUsers(query);
+        });
+
+        $(document).on('click', '#paginationLinks a', function (e) {
+            e.preventDefault();
+            let page = $(this).attr('href').split('page=')[1];
+            let query = $('#searchInput').val();
+            fetchUsers(query, page);
+        });
+
+        $(document).on('click', '.sort-column', function (e) {
+            e.preventDefault();
+            let column = $(this).data('column');
+
+            if (sortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = column;
+                sortDirection = 'asc';
+            }
+
+            $('.sort-icon').removeClass('asc desc');
+            $(`.sort-icon[data-column="${sortColumn}"]`).addClass(sortDirection);
+
+            let query = $('#searchInput').val();
+            fetchUsers(query, 1);
+        });
+
 
     // Add User Validations
     $("#name").on('input', ValidateName);
@@ -483,22 +534,31 @@
         }
     }
 });
-
-function fetchUsers(query = '', page = 1) {
-    $.ajax({
-        url: "{{ route('usertable.search') }}",
-        type: "GET",
-        data: { query: query, page: page },
-        success: function (response) {
-            $('#userTableBody').html(response.html);
-            $('#paginationLinks').html(response.pagination);
-            $('#userCountText').text('Total Users: ' + response.count);
-        },
-        error: function () {
-            alert('Error fetching data.');
+        let sortColumn = 'name';
+        let sortDirection = 'asc';
+    function fetchUsers(query = '', page = 1) {
+            $.ajax({
+                url: "{{ route('usertable.search') }}",
+                type: "GET",
+                data: {
+                    query: query,
+                    page: page,
+                    sort_column: sortColumn,
+                    sort_direction: sortDirection
+                },
+                success: function (response) {
+                    $('#userTableBody').html(response.html);
+                    $('#paginationLinks').html(response.pagination);
+                    $('#userCountText').text('Total Users: ' + response.count);
+                },
+                error: function () {
+                    alert('Error fetching data.');
+                }
+            });
         }
-    });
-}
+
+        // Set default sort icon
+        $('.sort-icon[data-column="name"]').addClass('asc');
     </script>
 @endsection
 

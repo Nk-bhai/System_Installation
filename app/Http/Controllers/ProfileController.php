@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\UserModel;
+use DB;
 use Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -86,10 +87,13 @@ class ProfileController extends Controller
             if (!$user) {
                 return back()->withErrors(['avatar' => 'User not found.']);
             }
-            if ($request->input('password')) {
-                // dd($request->input('password'));
-                $user->password = Hash::make($request->input('password'));
-                $user->save();
+            if ($request->filled('password')) {
+                $password = trim($request->input('password'));
+                if (!empty($password)) {
+                    $user->password = Hash::make($password);
+                    $user->save();
+                    session()->flash('success', 'Password updated successfully!');
+                }
             }
 
             // Handle avatar removal
@@ -124,7 +128,17 @@ class ProfileController extends Controller
 
         // For super admins (API-based logic)
         $ip_address = $request->ip();
-
+        if (session('superadmin_email')) {
+            
+            if ($request->filled('password')) {
+                $password = trim($request->input('password'));
+                if (!empty($password)) {
+                    DB::table('users')
+                        ->where('email', session('superadmin_email'))
+                        ->update(['password' => Hash::make($password)]);
+                }
+            }
+        }
         // Handle avatar removal
         if ($request->input('avatar_remove') == 1) {
             try {
@@ -142,6 +156,7 @@ class ProfileController extends Controller
         // Handle avatar upload
         if ($request->hasFile('avatar')) {
             $file = $request->file('avatar');
+            // dd($file);
             $filePath = $file->getPathname();
             $fileName = $file->getClientOriginalName();
 
@@ -163,7 +178,12 @@ class ProfileController extends Controller
             }
         }
 
-        return back()->with('info', 'No avatar uploaded.');
+        if ($request->filled('password') && !$request->hasFile('avatar') && $request->input('avatar_remove') != 1) {
+            return redirect()->route('profile.show')->with('success', 'Password updated successfully!');
+        }
+
+        // If nothing was done
+        return back()->with('info', 'No changes made.');
     }
 
 
@@ -173,100 +193,101 @@ class ProfileController extends Controller
         return view('site_control');
     }
 
-   public function SiteControl(Request $request)
-{
-    $request->validate([
-        'Favicon' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
-        'sidebar_logo' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
-        'Favicon_remove' => 'nullable|in:0,1',
-        'sidebar_logo_remove' => 'nullable|in:0,1',
-    ]);
+    public function SiteControl(Request $request)
+    {
+        $request->validate([
+            'Favicon' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
+            'sidebar_logo' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
+            'Favicon_remove' => 'nullable|in:0,1',
+            'sidebar_logo_remove' => 'nullable|in:0,1',
+        ]);
 
-    $ip_address = $request->ip();
+        $ip_address = $request->ip();
 
-    // Handle Favicon Upload
-    if ($request->hasFile('Favicon')) {
-        $favicon = $request->file('Favicon');
-        $faviconPath = $favicon->getPathname();
-        $faviconName = $favicon->getClientOriginalName();
+        // Handle Favicon Upload
+        if ($request->hasFile('Favicon')) {
+            $favicon = $request->file('Favicon');
+            $faviconPath = $favicon->getPathname();
+            $faviconName = $favicon->getClientOriginalName();
 
-        try {
-            $faviconResponse = Http::attach(
-                'Favicon',
-                file_get_contents($faviconPath),
-                $faviconName
-            )->post("http://192.168.1.4:8005/api/superadmin/favicon/{$ip_address}");
+            try {
+                $faviconResponse = Http::attach(
+                    'Favicon',
+                    file_get_contents($faviconPath),
+                    $faviconName
+                )->post("http://192.168.1.4:8005/api/superadmin/favicon/{$ip_address}");
 
-            if ($faviconResponse->successful()) {
-                $favicon->storeAs('favicons', $faviconName , 'public');
-                session(['favicon' => $faviconName]);
-            } else {
-                $error = $faviconResponse->json()['error'] ?? 'Favicon update failed';
-                return back()->withErrors(['favicon' => $error]);
+                if ($faviconResponse->successful()) {
+                    dd("hello");
+                    $favicon->storeAs('favicons', $faviconName, 'public');
+                    session(['favicon' => $faviconName]);
+                } else {
+                    $error = $faviconResponse->json()['error'] ?? 'Favicon update failed';
+                    return back()->withErrors(['favicon' => $error]);
+                }
+            } catch (\Exception $e) {
+                return back()->withErrors(['favicon' => 'Favicon upload error: ' . $e->getMessage()]);
             }
-        } catch (\Exception $e) {
-            return back()->withErrors(['favicon' => 'Favicon upload error: ' . $e->getMessage()]);
         }
-    }
 
-    // Handle Sidebar Logo Upload
-    if ($request->hasFile('sidebar_logo')) {
-        $sidebarLogo = $request->file('sidebar_logo');
-        $sidebarLogoPath = $sidebarLogo->getPathname();
-        $sidebarLogoName = $sidebarLogo->getClientOriginalName();
+        // Handle Sidebar Logo Upload
+        if ($request->hasFile('sidebar_logo')) {
+            $sidebarLogo = $request->file('sidebar_logo');
+            $sidebarLogoPath = $sidebarLogo->getPathname();
+            $sidebarLogoName = $sidebarLogo->getClientOriginalName();
 
-        try {
-            $sidebarResponse = Http::attach(
-                'sidebar_logo',
-                file_get_contents($sidebarLogoPath),
-                $sidebarLogoName
-            )->post("http://192.168.1.4:8005/api/superadmin/sidebar_logo/{$ip_address}");
+            try {
+                $sidebarResponse = Http::attach(
+                    'sidebar_logo',
+                    file_get_contents($sidebarLogoPath),
+                    $sidebarLogoName
+                )->post("http://192.168.1.4:8005/api/superadmin/sidebar_logo/{$ip_address}");
 
-            if ($sidebarResponse->successful()) {
-                $sidebarLogo->storeAs('sidebar_logos', $sidebarLogoName , 'public');
-                session(['sidebar_logo' => $sidebarLogoName]);
-            } else {
-                $error = $sidebarResponse->json()['error'] ?? 'Sidebar logo update failed';
-                return back()->withErrors(['sidebar_logo' => $error]);
+                if ($sidebarResponse->successful()) {
+                    $sidebarLogo->storeAs('sidebar_logos', $sidebarLogoName, 'public');
+                    session(['sidebar_logo' => $sidebarLogoName]);
+                } else {
+                    $error = $sidebarResponse->json()['error'] ?? 'Sidebar logo update failed';
+                    return back()->withErrors(['sidebar_logo' => $error]);
+                }
+            } catch (\Exception $e) {
+                return back()->withErrors(['sidebar_logo' => 'Sidebar logo upload error: ' . $e->getMessage()]);
             }
-        } catch (\Exception $e) {
-            return back()->withErrors(['sidebar_logo' => 'Sidebar logo upload error: ' . $e->getMessage()]);
         }
-    }
 
-    // Handle Favicon Removal
-    if ($request->input('Favicon_remove') == 1) {
-        try {
-            $response = Http::post("http://192.168.1.4:8005/api/superadmin/remove_favicon/{$ip_address}");
-            if ($response->successful()) {
-                // dd("hello");
-                session(['favicon' => null]);
-            } else {
-                $error = $response->json()['error'] ?? 'Failed to remove favicon';
-                return back()->withErrors(['favicon' => $error]);
+        // Handle Favicon Removal
+        if ($request->input('Favicon_remove') == 1) {
+            try {
+                $response = Http::post("http://192.168.1.4:8005/api/superadmin/remove_favicon/{$ip_address}");
+                if ($response->successful()) {
+                    // dd("hello");
+                    session(['favicon' => null]);
+                } else {
+                    $error = $response->json()['error'] ?? 'Failed to remove favicon';
+                    return back()->withErrors(['favicon' => $error]);
+                }
+            } catch (\Exception $e) {
+                return back()->withErrors(['favicon' => 'Favicon remove error: ' . $e->getMessage()]);
             }
-        } catch (\Exception $e) {
-            return back()->withErrors(['favicon' => 'Favicon remove error: ' . $e->getMessage()]);
         }
-    }
 
-    // Handle Sidebar Logo Removal
-    if ($request->input('sidebar_logo_remove') == 1) {
-        try {
-            $response = Http::post("http://192.168.1.4:8005/api/superadmin/remove_sidebar_logo/{$ip_address}");
-            if ($response->successful()) {
-                
-                session(['sidebar_logo' => null]);
-            } else {
-                $error = $response->json()['error'] ?? 'Failed to remove sidebar logo';
-                return back()->withErrors(['sidebar_logo' => $error]);
+        // Handle Sidebar Logo Removal
+        if ($request->input('sidebar_logo_remove') == 1) {
+            try {
+                $response = Http::post("http://192.168.1.4:8005/api/superadmin/remove_sidebar_logo/{$ip_address}");
+                if ($response->successful()) {
+
+                    session(['sidebar_logo' => null]);
+                } else {
+                    $error = $response->json()['error'] ?? 'Failed to remove sidebar logo';
+                    return back()->withErrors(['sidebar_logo' => $error]);
+                }
+            } catch (\Exception $e) {
+                return back()->withErrors(['sidebar_logo' => 'Sidebar logo remove error: ' . $e->getMessage()]);
             }
-        } catch (\Exception $e) {
-            return back()->withErrors(['sidebar_logo' => 'Sidebar logo remove error: ' . $e->getMessage()]);
         }
-    }
 
-    return redirect()->route('SiteControlPage')->with('success', 'Profile updated successfully!');
-}
+        return redirect()->route('SiteControlPage')->with('success', 'Profile updated successfully!');
+    }
 
 }

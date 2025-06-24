@@ -16,7 +16,9 @@
 	<meta property="og:url" content="https://keenthemes.com/metronic" />
 	<meta property="og:site_name" content="Keenthemes | Metronic" />
 	<link rel="canonical" href="https://preview.keenthemes.com/metronic8" />
-	<link rel="icon" href="{{ session('favicon') ? asset('storage/favicons/'.session('favicon')): asset('elsner_favicon.svg') }}" type="image/x-icon">
+	<link rel="icon"
+		href="{{ session('favicon') ? asset('storage/favicons/' . session('favicon')) : asset('elsner_favicon.svg') }}"
+		type="image/x-icon">
 	<!--begin::Fonts-->
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
 	<!--end::Fonts-->
@@ -164,7 +166,8 @@
 				<div class="aside-logo flex-column-auto" id="kt_aside_logo">
 					<!--begin::Logo-->
 					<a href="/dashboard">
-						<img alt="Logo" src="{{ session('sidebar_logo') ? asset('storage/sidebar_logos/'. session('sidebar_logo')) : asset('dist/assets/media/logos/elsner-logo.svg') }}"
+						<img alt="Logo"
+							src="{{ session('sidebar_logo') ? asset('storage/sidebar_logos/' . session('sidebar_logo')) : asset('dist/assets/media/logos/elsner-logo.svg') }}"
 							class="h-25px logo" />
 					</a>
 					<!--end::Logo-->
@@ -252,7 +255,8 @@
 										</a>
 								</div>
 							@endunless
-							<div class="menu-item">
+							@unless(session('login_email'))
+								<div class="menu-item">
 									{{-- <a class="menu-link {{ Request::is('user') ? 'active' : '' }}" href="/user"> --}}
 										<a class="menu-link {{ Request::is('site_control') ? 'active' : '' }}"
 											href="{{ route('SiteControlPage') }}">
@@ -266,9 +270,10 @@
 											<span class="menu-title">Site Control</span>
 										</a>
 								</div>
+							@endunless
 						</div>
 						<!--end::Menu-->
-						
+
 					</div>
 					<!--end::Aside Menu-->
 				</div>
@@ -325,17 +330,18 @@
 											<!--begin::Avatar-->
 											<div class="symbol symbol-50px me-5">
 												{{-- <img alt="Logo"
-													src="{{ asset('storage/avatars/' . session('profile_logo') ?? 'dist/assets/media/avatars/blank.png') }}" /> --}}
+													src="{{ asset('storage/avatars/' . session('profile_logo') ?? 'dist/assets/media/avatars/blank.png') }}" />
+												--}}
 												<img alt="Logo"
 													src="{{ asset($profileLogo ?? 'dist/assets/media/avatars/blank.png') }}" />
 											</div>
 											<!--end::Avatar-->
 											<!--begin::Username-->
 											<div class="d-flex flex-column">
-												<div class="fw-bolder d-flex align-items-center fs-5">Super Admin
-												</div>
-												<a href="#"
-													class="fw-bold text-muted text-hover-primary fs-7">{{ session('superadmin_email') ?? 'Super Admin' }}</a>
+												<div class="fw-bolder d-flex align-items-center fs-5">{{ session('login_name') ?? 'Super Admin' }}</div>
+												<a href="#" class="fw-bold text-muted text-hover-primary fs-7">
+													{{ session('login_email') ?? session('superadmin_email') ?? 'Super Admin' }}
+												</a>
 											</div>
 											<!--end::Username-->
 										</div>
