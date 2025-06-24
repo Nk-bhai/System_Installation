@@ -8,14 +8,13 @@ use Config;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Contracts\Encryption\DecryptException;
 
 class RoleController extends Controller
 {
     public function __construct()
     {
-        // dd(session('dynamic_db'));
         $dynamicDb = session('dynamic_db');
-        // dd($dynamicDb);
         if ($dynamicDb) {
             Config::set('database.connections.' . $dynamicDb, [
                 'driver' => 'mysql',
@@ -31,135 +30,134 @@ class RoleController extends Controller
                 'engine' => null,
             ]);
             DB::setDefaultConnection($dynamicDb);
-
         }
     }
+
+    /**
+     * Decrypt the encrypted ID
+     */
+    protected function decryptId($encryptedId)
+    {
+        try {
+            return decrypt($encryptedId); // Fixed: Use $encryptedId directly
+        } catch (DecryptException $e) {
+            abort(404, 'Invalid ID');
+            return false;
+        }
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
-{
-    $perPage = $request->input('per_page', 5); // Default to 5 if not provided
-    $allowed = [10, 20, 50];
-    if (!in_array($perPage, $allowed)) {
-        $perPage = 5;
-    }
-
-    // Get sort parameters
-    $sortColumn = $request->input('sort_column', 'role_name'); // Default to role_name
-    $sortDirection = $request->input('sort_direction', 'asc'); // Default to ascending
-
-    // Validate sort column to prevent SQL injection
-    $allowedColumns = ['role_name', 'permissions'];
-    if (!in_array($sortColumn, $allowedColumns)) {
-        $sortColumn = 'role_name';
-    }
-
-    // Validate sort direction
-    if (!in_array($sortDirection, ['asc', 'desc'])) {
-        $sortDirection = 'asc';
-    }
-
-    // Query with sorting
-    $roleData = RoleModel::orderBy($sortColumn, $sortDirection)->paginate($perPage);
-
-    // Eager load users only if table exists
-    if (Schema::hasTable('user')) {
-        $roleData->load('users');
-    }
-
-    $roleCount = RoleModel::count();
-
-    return view('Role', ['roleData' => $roleData, 'roleCount' => $roleCount]);
-}
-
-  public function search(Request $request)
-{
-    $query = $request->get('query', '');
-
-    $sortColumn = $request->get('sort_column', 'role_name');
-    $sortDirection = $request->get('sort_direction', 'asc');
-
-    // Validate columns
-    $allowedColumns = ['role_name', 'permissions'];
-    if (!in_array($sortColumn, $allowedColumns)) {
-        $sortColumn = 'role_name';
-    }
-
-    // Validate direction
-    if (!in_array($sortDirection, ['asc', 'desc'])) {
-        $sortDirection = 'asc';
-    }
-
-    $roles = RoleModel::where(function ($q) use ($query) {
-        $q->where('role_name', 'like', "%{$query}%")
-          ->orWhere('permissions', 'like', "%{$query}%");
-    })
-    ->orderBy($sortColumn, $sortDirection)
-    ->paginate(5);
-
-    $html = '';
-
-    foreach ($roles as $rd) {
-        $permissions = is_array($rd->permissions) ? implode(',', $rd->permissions) : $rd->permissions;
-
-        $hasUsers = !Schema::hasTable('user') || (isset($rd->users) && $rd->users->isEmpty());
-
-        $deleteButton = '';
-        if ($hasUsers) {
-            $deleteButton = '
-                <button type="button" class="btn btn-sm btn-light-danger deleteRoleButton"
-                    data-bs-toggle="modal" data-bs-target="#deleteRoleModal"
-                    data-id="' . $rd->id . '"
-                    data-role-name="' . $rd->role_name . '"
-                    data-url="' . route('role.destroy', $rd->id) . '">Delete</button>';
+    {
+        $perPage = $request->input('per_page', 5);
+        $allowed = [10, 20, 50];
+        if (!in_array($perPage, $allowed)) {
+            $perPage = 5;
         }
 
-        $html .= '
-            <tr>
-                <td><span class="text-dark fw-bold d-block fs-6">' . $rd->role_name . '</span></td>
-                <td><span class="text-dark fw-bold d-block">' . $permissions . '</span></td>
-                <td>
-                    <div class="d-flex gap-3 align-items-center">
-                        <button type="button" class="btn btn-sm btn-light-primary editRoleButton"
-                            data-bs-toggle="modal" data-bs-target="#editRoleModal"
-                            data-id="' . $rd->id . '"
-                            data-role-name="' . $rd->role_name . '"
-                            data-permissions="' . $permissions . '"
-                            data-url="' . route('role.update', $rd->id) . '">Edit</button>
-                        ' . $deleteButton . '
-                    </div>
-                </td>
-            </tr>';
+        $sortColumn = $request->input('sort_column', 'role_name');
+        $sortDirection = $request->input('sort_direction', 'asc');
+
+        $allowedColumns = ['role_name', 'permissions'];
+        if (!in_array($sortColumn, $allowedColumns)) {
+            $sortColumn = 'role_name';
+        }
+
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'asc';
+        }
+
+        $roleData = RoleModel::orderBy($sortColumn, $sortDirection)->paginate($perPage);
+
+        if (Schema::hasTable('user')) {
+            $roleData->load('users');
+        }
+
+        $roleCount = RoleModel::count();
+
+        return view('Role', ['roleData' => $roleData, 'roleCount' => $roleCount]);
     }
-
-    if ($roles->isEmpty()) {
-        $html = '<tr><td colspan="3" class="text-center text-muted">No search result found</td></tr>';
-    }
-
-    return response()->json([
-        'html' => $html,
-        'pagination' => $roles->appends([
-            'query' => $query,
-            'sort_column' => $sortColumn,
-            'sort_direction' => $sortDirection
-        ])->links()->render(),
-        'count' => $roles->total(),
-    ]);
-}
-
-
 
     /**
-     * Show the form for creating a new resource.
+     * Search roles with pagination and sorting
      */
-    public function create()
+    public function search(Request $request)
     {
-        //
+        $query = $request->get('query', '');
+
+        $sortColumn = $request->get('sort_column', 'role_name');
+        $sortDirection = $request->get('sort_direction', 'asc');
+
+        $allowedColumns = ['role_name', 'permissions'];
+        if (!in_array($sortColumn, $allowedColumns)) {
+            $sortColumn = 'role_name';
+        }
+
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'asc';
+        }
+
+        $roles = RoleModel::where(function ($q) use ($query) {
+            $q->where('role_name', 'like', "%{$query}%")
+              ->orWhere('permissions', 'like', "%{$query}%");
+        })
+        ->orderBy($sortColumn, $sortDirection)
+        ->paginate(5);
+
+        $html = '';
+
+        foreach ($roles as $rd) {
+            $permissions = is_array($rd->permissions) ? implode(',', $rd->permissions) : $rd->permissions;
+
+            $hasUsers = !Schema::hasTable('user') || (isset($rd->users) && $rd->users->isEmpty());
+
+            $deleteButton = '';
+            if ($hasUsers) {
+                $deleteButton = '
+                    <button type="button" class="btn btn-sm btn-light-danger deleteRoleButton"
+                        data-bs-toggle="modal" data-bs-target="#deleteRoleModal"
+                        data-id="' . encrypt($rd->id) . '"
+                        data-role-name="' . $rd->role_name . '"
+                        data-url="' . route('role.destroy', encrypt($rd->id)) . '">Delete</button>';
+            }
+
+            $html .= '
+                <tr>
+                    <td><span class="text-dark fw-bold d-block fs-6">' . $rd->role_name . '</span></td>
+                    <td><span class="text-dark fw-bold d-block fs-6">' . $permissions . '</span></td>
+                    <td>
+                        <div class="d-flex gap-3 align-items-center">
+                            <button type="button" class="btn btn-sm btn-light-primary editRoleButton"
+                                data-bs-toggle="modal" data-bs-target="#editRoleModal"
+                                data-id="' . encrypt($rd->id) . '"
+                                data-role-name="' . $rd->role_name . '"
+                                data-permissions="' . $permissions . '"
+                                data-url="' . route('role.update', encrypt($rd->id)) . '">Edit</button>
+                            ' . $deleteButton . '
+                        </div>
+                    </td>
+                </tr>';
+        }
+
+        if ($roles->isEmpty()) {
+            $html = '<tr><td colspan="3" class="text-center text-muted">No search results found</td></tr>';
+        }
+
+        return response()->json([
+            'html' => $html,
+            'pagination' => $roles->appends([
+                'query' => $query,
+                'sort_column' => $sortColumn,
+                'sort_direction' => $sortDirection
+            ])->links()->render(),
+            'count' => $roles->total(),
+        ]);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created role
      */
     public function store(Request $request)
     {
@@ -168,28 +166,36 @@ class RoleController extends Controller
             'permissions' => ['required', 'array', 'min:1'],
             'permissions.*' => ['in:View,Create,Delete,Update'],
         ]);
-        // dd($request->all());
+
         $role_name = $request->input('role_name');
         $permissions = $request->input('permissions');
-
         $permissions_string = implode(',', $permissions);
 
         RoleModel::insert([
             'role_name' => $role_name,
             'permissions' => $permissions_string
         ]);
+
         return redirect()->route('role.index')->with(['add_message' => "Role Added Successfully"]);
     }
 
+    /**
+     * Check if role name exists
+     */
     public function checkRoleName(Request $request)
     {
         $roleName = $request->input('role_name');
-        $roleId = $request->input('role_id'); // for edit
+        $roleId = $request->input('id');
 
         $query = DB::table('role')->where('role_name', $roleName);
 
         if ($roleId) {
-            $query->where('id', '!=', $roleId); // exclude current role from check
+            $decryptedId = $this->decryptId($roleId);
+            if ($decryptedId) {
+                $query->where('id', '!=', $decryptedId);
+            } else {
+                return response()->json(['exists' => false]);
+            }
         }
 
         $exists = $query->exists();
@@ -197,28 +203,25 @@ class RoleController extends Controller
         return response()->json(['exists' => $exists]);
     }
 
-
     /**
-     * Display the specified resource.
+     * Update the specified role
      */
-    public function show(string $id)
-    {
-        //
-    }
-
-
     public function update(Request $request, string $id)
     {
-        $role = RoleModel::find($id);
+        $id = $this->decryptId($id);
+        if (!$id) {
+            abort(404, 'Invalid ID');
+        }
+
+        $request->validate([
+            'role_name' => ['required', 'string', 'max:100', 'regex:/^[A-Za-z ]+$/', 'unique:role,role_name,' . $id],
+            'permissions' => ['required', 'array', 'min:1'],
+            'permissions.*' => ['in:View,Create,Delete,Update'],
+        ]);
+
+        $role = RoleModel::findOrFail($id);
         $permissions = $request->input('permissions');
         $permissions_string = implode(',', $permissions);
-
-        // $encryptedId = encrypt($id);
-
-        // var_dump($id);
-        // echo "<br>";
-        // var_dump($encryptedId);
-        // exit;
 
         $role->update([
             'role_name' => $request->input('role_name'),
@@ -229,14 +232,19 @@ class RoleController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified role
      */
     public function destroy(string $id)
     {
-        RoleModel::where('id', '=', $id)->delete();
-        // return redirect()->route('role.index')->with(['delete_message' => "role Deleted Successfully"]);
-        session()->flash('delete_message', 'role Deleted Successfully');
+        $id = $this->decryptId($id);
+        if (!$id) {
+            abort(404, 'Invalid ID');
+        }
+
+        RoleModel::destroy($id);
+
+        session()->flash('delete_message', 'Role deleted successfully');
         return redirect()->route('role.index');
     }
 }
-
+?>

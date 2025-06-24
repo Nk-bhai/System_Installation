@@ -6,7 +6,6 @@
 
     <div class="container-fluid py-1">
         <div class="d-flex justify-content-end mb-5 gap-5">
-            {{-- <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a> --}}
             <button type="button" class="btn btn-primary" id="addRoleButton" data-bs-toggle="modal"
                 data-bs-target="#addRoleModal">Add</button>
         </div>
@@ -51,19 +50,19 @@
                                                     <div class="d-flex gap-3 align-items-center">
                                                         <button type="button" class="btn btn-sm btn-light-primary editRoleButton"
                                                             data-bs-toggle="modal" data-bs-target="#editRoleModal"
-                                                            data-id="{{ $rd->id }}" data-role-name="{{ $rd->role_name }}"
+                                                            data-id="{{ encrypt($rd->id) }}" data-role-name="{{ $rd->role_name }}"
                                                             data-permissions="{{ is_array($rd->permissions) ? implode(',', $rd->permissions) : $rd->permissions }}"
-                                                            data-url="{{ route('role.update', $rd->id) }}">
+                                                            data-url="{{ route('role.update', encrypt($rd->id)) }}">
                                                             Edit
                                                         </button>
                                                         @php
                                                             $hasUsers = !Schema::hasTable('user') || (isset($rd->users) && $rd->users->isEmpty());
                                                         @endphp
-                                                        @if($hasUsers)                                                        
+                                                        @if($hasUsers)
                                                             <button type="button" class="btn btn-sm btn-light-danger deleteRoleButton"
                                                                 data-bs-toggle="modal" data-bs-target="#deleteRoleModal"
-                                                                data-id="{{ $rd->id }}" data-role-name="{{ $rd->role_name }}"
-                                                                data-url="{{ route('role.destroy', $rd->id) }}">
+                                                                data-id="{{ encrypt($rd->id) }}" data-role-name="{{ $rd->role_name }}"
+                                                                data-url="{{ route('role.destroy', encrypt($rd->id)) }}">
                                                                 Delete
                                                             </button>
                                                         @endif
@@ -76,7 +75,7 @@
                                 <div class="d-flex justify-content-between align-items-center mt-4">
                                     <div id="roleCountText">Total Roles: {{ $roleCount ?? '0' }}</div>
                                     <div id="paginationLinks">{{ $roleData->links() }}</div>
-                                      <form method="GET" action="{{ route('role.index') }}">
+                                    <form method="GET" action="{{ route('role.index') }}">
                                         <select name="per_page" class="form-select form-select-sm w-auto" onchange="this.form.submit()" id="perPageSelect">
                                             <option value="" disabled {{ !request('per_page') ? 'selected' : '' }}>Select per page</option>
                                             <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10 per page</option>
@@ -151,7 +150,6 @@
         </div>
     </div>
 
-
     <!-- Edit Role Modal -->
     <div class="modal fade" id="editRoleModal" tabindex="-1" aria-labelledby="editRoleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -211,6 +209,7 @@
             </div>
         </div>
     </div>
+
     <!-- Delete Role Modal -->
     <div class="modal fade" id="deleteRoleModal" tabindex="-1" aria-labelledby="deleteRoleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -233,6 +232,7 @@
             </div>
         </div>
     </div>
+
     <style>
         .sort-column {
             color: inherit;
@@ -248,46 +248,46 @@
             content: ' ↓';
         }
     </style>
+
     <script>
-        // first option disabled in select per page
+        // Disable first option in select per page
         document.getElementById('perPageSelect').addEventListener('mousedown', function () {
-        const blankOption = this.querySelector('option[value=""]');
-        if (blankOption) blankOption.style.display = 'none';
-    });
+            const blankOption = this.querySelector('option[value=""]');
+            if (blankOption) blankOption.style.display = 'none';
+        });
+
         $(document).ready(function () {
             $('#searchInput').on('keyup', function () {
-            let query = $(this).val();
-            fetchUsers(query);
-        });
+                let query = $(this).val();
+                fetchUsers(query);
+            });
 
-        $(document).on('click', '#paginationLinks a', function (e) {
-            e.preventDefault();
-            let page = $(this).attr('href').split('page=')[1];
-            let query = $('#searchInput').val();
-            fetchUsers(query, page);
-        });
+            $(document).on('click', '#paginationLinks a', function (e) {
+                e.preventDefault();
+                let page = $(this).attr('href').split('page=')[1];
+                let query = $('#searchInput').val();
+                fetchUsers(query, page);
+            });
 
-        $(document).on('click', '.sort-column', function (e) {
-            e.preventDefault();
-            const column = $(this).data('column');
+            $(document).on('click', '.sort-column', function (e) {
+                e.preventDefault();
+                const column = $(this).data('column');
 
-            if (sortColumn === column) {
-                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-            } else {
-                sortColumn = column;
-                sortDirection = 'asc';
-            }
+                if (sortColumn === column) {
+                    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    sortColumn = column;
+                    sortDirection = 'asc';
+                }
 
-            $('.sort-icon').removeClass('asc desc');
-            $(`.sort-icon[data-column="${column}"]`).addClass(sortDirection);
+                $('.sort-icon').removeClass('asc desc');
+                $(`.sort-icon[data-column="${column}"]`).addClass(sortDirection);
 
-            const query = $('#searchInput').val();
-            fetchUsers(query, 1);
-        });
+                const query = $('#searchInput').val();
+                fetchUsers(query, 1);
+            });
 
-        // Optional: Default sort icon on first load
-        $('.sort-icon[data-column="role_name"]').addClass('asc');
-    
+            $('.sort-icon[data-column="role_name"]').addClass('asc');
 
             // Add Role Validations
             $("input[name='permissions[]']").on("change", Validate_Permissions);
@@ -343,6 +343,7 @@
                 }
             });
 
+            // Populate Delete Modal
             $(document).on('click', '.deleteRoleButton', function () {
                 let id = $(this).data('id');
                 let role_name = $(this).data('role-name');
@@ -365,7 +366,7 @@
                 }
             });
 
-            // Fallback to manually trigger add modal if Bootstrap JS is not loaded
+            // Fallback for add modal
             $("#addRoleButton").on("click", function () {
                 try {
                     if (typeof bootstrap === 'undefined' || !bootstrap.Modal) {
@@ -386,7 +387,7 @@
                 $("body").removeClass("modal-open");
                 $(".modal-backdrop").remove();
                 $('#submitRoleForm').prop('disabled', false).text('Submit');
-                $('.editRoleButton').blur(); // Remove focus from Edit button
+                $('.editRoleButton').blur();
             });
 
             // Add Role Validation Functions
@@ -399,6 +400,7 @@
                 if (role_name === "") {
                     roleError.text("Role name cannot be empty");
                     return false;
+
                 } else if (!/^[A-Za-z ]{1,100}$/.test(role_name)) {
                     roleError.text("Role name must contain only letters and spaces");
                     return false;
@@ -416,7 +418,7 @@
                     async: false,
                     success: function (response) {
                         if (response.exists) {
-                            roleError.text("This role name is already taken.");
+                            roleError.text("This role name already exists.");
                             isValid = false;
                         } else {
                             roleError.text("");
@@ -424,7 +426,7 @@
                         }
                     },
                     error: function () {
-                        roleError.text("Server error while checking role name.");
+                        roleError.text("Server error checking role name.");
                         isValid = false;
                     }
                 });
@@ -454,7 +456,7 @@
                     roleError.text("Role name cannot be empty");
                     return false;
                 } else if (!/^[A-Za-z ]{1,100}$/.test(role_name)) {
-                    roleError.text("Role name must contain only letters and spaces");
+                    roleError.text("Role name must only contain letters and spaces");
                     return false;
                 }
 
@@ -465,13 +467,13 @@
                     type: "POST",
                     data: {
                         role_name: role_name,
-                        role_id: roleId,
+                        id: roleId,
                         _token: "{{ csrf_token() }}"
                     },
                     async: false,
                     success: function (response) {
                         if (response.exists) {
-                            roleError.text("This role name is already taken.");
+                            roleError.text("This role name already exists.");
                             isValid = false;
                         } else {
                             roleError.text("");

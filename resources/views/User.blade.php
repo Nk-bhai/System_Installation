@@ -2,7 +2,7 @@
 
 @section('contents')
 @section('title', 'User Management')
-    {{-- @dump(session('errorss')); --}}
+
     <style>
         .sort-column {
             color: inherit;
@@ -24,13 +24,11 @@
 
     <div class="container-fluid py-1">
         <div class="d-flex justify-content-end mb-5 gap-5">
-            {{-- <a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a> --}}
             <button type="button" class="btn btn-primary" id="addUserButton" data-bs-toggle="modal"
                 data-bs-target="#addUserModal">Add</button>
         </div>
         <div class="row">
             <div class="col-lg-12">
-
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h3 class="card-title">Users List</h3>
@@ -69,7 +67,6 @@
                                             <th class="min-w-150px">Actions</th>
                                         </tr>
                                     </thead>
-
                                     <tbody id="userTableBody">
                                         @forelse ($data as $dt)
                                             <tr>
@@ -88,25 +85,22 @@
                                                     <div class="d-flex gap-3 align-items-center">
                                                         <button type="button" class="btn btn-sm btn-light-primary editUserButton"
                                                             data-bs-toggle="modal" data-bs-target="#editUserModal"
-                                                            data-id="{{ $dt->id }}" data-name="{{ $dt->name }}"
+                                                            data-id="{{ encrypt($dt->id) }}" data-name="{{ $dt->name }}"
                                                             data-email="{{ $dt->email }}" data-role="{{ $dt->role->id }}"
-                                                            data-url="{{ route('user.update', $dt->id) }}">Edit</button>
-
+                                                            data-url="{{ route('user.update', encrypt($dt->id)) }}">Edit</button>
                                                         <button type="button" class="btn btn-sm btn-light-danger deleteUserButton"
                                                             data-bs-toggle="modal" data-bs-target="#deleteUserModal"
-                                                            data-id="{{ $dt->id }}" data-name="{{ $dt->name }}"
-                                                            data-url="{{ route('user.destroy', $dt->id) }}">Delete</button>
+                                                            data-id="{{ encrypt($dt->id) }}" data-name="{{ $dt->name }}"
+                                                            data-url="{{ route('user.destroy', encrypt($dt->id)) }}">Delete</button>
                                                     </div>
                                                 </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="5" class="text-center text-muted">No Role assigned to user Yet.</td>
+                                                <td colspan="6" class="text-center text-muted">No Role assigned to user Yet.</td>
                                             </tr>
                                         @endforelse
                                     </tbody>
-
-
                                 </table>
                                 <div class="d-flex justify-content-between align-items-center mt-4">
                                     <div id="userCountText">Total Users: {{ $userCount ?? '0' }}</div>
@@ -185,7 +179,6 @@
                                 data-placeholder="Select a role">
                                 <option value="assign">--Assign Role--</option>
                                 @foreach ($role as $r)
-                                    {{-- <option value="{{ $r->role_name }}">{{ $r->role_name }}</option> --}}
                                     <option value="{{ $r->id }}">{{ $r->role_name }}</option>
                                 @endforeach
                             </select>
@@ -256,6 +249,7 @@
             </div>
         </div>
     </div>
+
     <!-- Delete User Modal -->
     <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -278,12 +272,8 @@
             </div>
         </div>
     </div>
+
     <script>
-        // first option disabled in select per page
-        // document.getElementById('perPageSelect').addEventListener('mousedown', function () {
-        //     const blankOption = this.querySelector('option[value=""]');
-        //     if (blankOption) blankOption.style.display = 'none';
-        // });
         $(document).ready(function () {
             $('#searchInput').on('keyup', function () {
                 let query = $(this).val();
@@ -315,7 +305,6 @@
                 fetchUsers(query, 1);
             });
 
-            // Set initial sort icon
             $('.sort-icon[data-column="name"]').addClass('asc');
 
             // Add User Validations
@@ -401,7 +390,6 @@
 
             // Add User Validation Functions
             function ValidateName() {
-                console.log("ValidateName triggered"); // Debug
                 let name = $("#name").val().trim();
                 if (name === "") {
                     $("#name_error").text("Name cannot be empty");
@@ -422,7 +410,7 @@
                 let email = $("#email").val().trim();
                 let emailError = $("#email_error");
 
-                emailError.text(""); // Clear previous errors
+                emailError.text("");
 
                 if (email === "") {
                     emailError.text("Email is required.");
@@ -511,7 +499,7 @@
                 let userId = $("#edit_user_id").val();
                 let emailError = $("#edit_email_error");
 
-                emailError.text(""); // Clear previous errors
+                emailError.text("");
 
                 if (email === "") {
                     emailError.text("Email is required.");
@@ -531,7 +519,7 @@
                     type: "POST",
                     data: {
                         email: email,
-                        user_id: userId,
+                        id: userId,
                         _token: "{{ csrf_token() }}"
                     },
                     async: false,
@@ -565,7 +553,6 @@
             }
         });
 
-        // Password show/hide function
         function Password_Show_hide() {
             var x = document.getElementById("password");
             let icon = document.querySelector(".password-toggle-icon i");
@@ -606,5 +593,5 @@
 @endsection
 
 @php
-    $pageTitle = 'User Management';
+    $pageTitle = 'Users';
 @endphp

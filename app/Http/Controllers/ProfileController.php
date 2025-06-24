@@ -26,7 +26,7 @@ class ProfileController extends Controller
             }
         }
         $ip_address = $request->ip();
-        $response = Http::get("http://192.168.1.4:8005/api/superadmin/get/{$ip_address}");
+        $response = Http::get("http://192.168.12.79:8005/api/superadmin/get/{$ip_address}");
         $keyData = $response->json();
         session(['superadmin_email' => $keyData['email']]);
         session(['profile_logo' => $keyData['profile_logo']]);
@@ -142,7 +142,7 @@ class ProfileController extends Controller
         // Handle avatar removal
         if ($request->input('avatar_remove') == 1) {
             try {
-                $response = Http::post("http://192.168.1.4:8005/api/superadmin/remove_profile_logo/{$ip_address}");
+                $response = Http::post("http://192.168.12.79:8005/api/superadmin/remove_profile_logo/{$ip_address}");
                 if ($response->successful()) {
                     session(['profile_logo' => 'blank.png']);
                     return redirect()->route('profile.show')->with('success', 'Avatar removed successfully!');
@@ -165,7 +165,7 @@ class ProfileController extends Controller
                     'avatar',
                     file_get_contents($filePath),
                     $fileName
-                )->post("http://192.168.1.4:8005/api/superadmin/profile_logo/{$ip_address}");
+                )->post("http://192.168.12.79:8005/api/superadmin/profile_logo/{$ip_address}");
 
                 if ($response->successful()) {
                     $path = $file->storeAs('public/avatars', $fileName);
@@ -209,15 +209,15 @@ class ProfileController extends Controller
             $favicon = $request->file('Favicon');
             $faviconPath = $favicon->getPathname();
             $faviconName = $favicon->getClientOriginalName();
-
+            
             try {
                 $faviconResponse = Http::attach(
                     'Favicon',
                     file_get_contents($faviconPath),
                     $faviconName
-                )->post("http://192.168.1.4:8005/api/superadmin/favicon/{$ip_address}");
-
-                if ($faviconResponse->successful()) {
+                    )->post("http://192.168.12.79:8005/api/superadmin/favicon/{$ip_address}");
+                    
+                    if ($faviconResponse->successful()) {
                     dd("hello");
                     $favicon->storeAs('favicons', $faviconName, 'public');
                     session(['favicon' => $faviconName]);
@@ -241,7 +241,7 @@ class ProfileController extends Controller
                     'sidebar_logo',
                     file_get_contents($sidebarLogoPath),
                     $sidebarLogoName
-                )->post("http://192.168.1.4:8005/api/superadmin/sidebar_logo/{$ip_address}");
+                )->post("http://192.168.12.79:8005/api/superadmin/sidebar_logo/{$ip_address}");
 
                 if ($sidebarResponse->successful()) {
                     $sidebarLogo->storeAs('sidebar_logos', $sidebarLogoName, 'public');
@@ -258,7 +258,7 @@ class ProfileController extends Controller
         // Handle Favicon Removal
         if ($request->input('Favicon_remove') == 1) {
             try {
-                $response = Http::post("http://192.168.1.4:8005/api/superadmin/remove_favicon/{$ip_address}");
+                $response = Http::post("http://192.168.12.79:8005/api/superadmin/remove_favicon/{$ip_address}");
                 if ($response->successful()) {
                     // dd("hello");
                     session(['favicon' => null]);
@@ -274,7 +274,7 @@ class ProfileController extends Controller
         // Handle Sidebar Logo Removal
         if ($request->input('sidebar_logo_remove') == 1) {
             try {
-                $response = Http::post("http://192.168.1.4:8005/api/superadmin/remove_sidebar_logo/{$ip_address}");
+                $response = Http::post("http://192.168.12.79:8005/api/superadmin/remove_sidebar_logo/{$ip_address}");
                 if ($response->successful()) {
 
                     session(['sidebar_logo' => null]);
