@@ -25,9 +25,11 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/usertable/search', [AdminController::class, 'search'])->name('usertable.search');
 
 
+
     Route::resource('role', RoleController::class)->middleware('restrict.login');
     Route::get('/roles/search', [RoleController::class, 'search'])->name('role.search');
     Route::post('/role/check-role-name', [RoleController::class, 'checkRoleName'])->name('role.checkRoleName');
+    Route::get('roles/data', [RoleController::class, 'getData'])->name('roles.data');
 
 
     Route::resource('user', UserController::class);

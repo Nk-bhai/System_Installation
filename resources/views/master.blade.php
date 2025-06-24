@@ -34,7 +34,6 @@
 	<link href="{{ asset('dist/assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
 	<!--end::Global Stylesheets Bundle-->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 	<style>
 		.password-wrapper {
@@ -338,7 +337,9 @@
 											<!--end::Avatar-->
 											<!--begin::Username-->
 											<div class="d-flex flex-column">
-												<div class="fw-bolder d-flex align-items-center fs-5">{{ session('login_name') ?? 'Super Admin' }}</div>
+												<div class="fw-bolder d-flex align-items-center fs-5">
+													{{ session('login_name') ?? 'Super Admin' }}
+												</div>
 												<a href="#" class="fw-bold text-muted text-hover-primary fs-7">
 													{{ session('login_email') ?? session('superadmin_email') ?? 'Super Admin' }}
 												</a>
@@ -405,9 +406,14 @@
 
 	<script>var hostUrl = "assets/";</script>
 	<!--begin::Javascript-->
-	<!--begin::Global Javascript Bundle(used by all pages)-->
+	<!-- Global Metronic JS Bundle -->
 	<script src="{{ asset('dist/assets/plugins/global/plugins.bundle.js') }}"></script>
 	<script src="{{ asset('dist/assets/js/scripts.bundle.js') }}"></script>
+
+	<!-- ✅ DataTables (AFTER jQuery from Metronic) -->
+	<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+	<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
 	<!--end::Global Javascript Bundle-->
 	<!--begin::Page Vendors Javascript(used by this page)-->
 	<script src="{{ asset('dist/assets/plugins/custom/fullcalendar/fullcalendar.bundle.js') }}"></script>

@@ -14,17 +14,17 @@
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h3 class="card-title">Roles List</h3>
-                        <div class="search-bar">
+                        {{-- <div class="search-bar">
                             <input type="text" id="searchInput" class="form-control form-control-solid"
                                 placeholder="Search by role name or permissions..." style="width: 300px;">
-                        </div>
+                        </div> --}}
                     </div>
                     <div class="card-body">
-                        @if ($roleData->isEmpty())
+                        {{-- @if ($roleData->isEmpty())
                             <div class="alert alert-warning">No roles assigned yet.</div>
-                        @else
+                        @else --}}
                             <div class="table-responsive">
-                                <table class="table table-row-bordered table-row-black-100 align-middle gs-0 gy-3"
+                                {{-- <table class="table table-row-bordered table-row-black-100 align-middle gs-0 gy-3"
                                     id="roleTable">
                                     <thead>
                                         <tr class="fw-bold text-muted">
@@ -71,8 +71,18 @@
                                             </tr>
                                         @endforeach
                                     </tbody>
+                                </table> --}}
+
+                                <table class="table table-bordered" id="roleTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Role Name</th>
+                                            <th>Permissions</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
                                 </table>
-                                <div class="d-flex justify-content-between align-items-center mt-4">
+                                {{-- <div class="d-flex justify-content-between align-items-center mt-4">
                                     <div id="roleCountText">Total Roles: {{ $roleCount ?? '0' }}</div>
                                     <div id="paginationLinks">{{ $roleData->links() }}</div>
                                     <form method="GET" action="{{ route('role.index') }}">
@@ -83,9 +93,9 @@
                                             <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50 per page</option>
                                         </select>
                                     </form>
-                                </div>
+                                </div> --}}
                             </div>
-                        @endif
+                        {{-- @endif --}}
                     </div>
                 </div>
             </div>
@@ -250,11 +260,23 @@
     </style>
 
     <script>
-        // Disable first option in select per page
-        document.getElementById('perPageSelect').addEventListener('mousedown', function () {
-            const blankOption = this.querySelector('option[value=""]');
-            if (blankOption) blankOption.style.display = 'none';
+       $(document).ready(function () {
+        $('#roleTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: '{{ route('roles.data') }}', // adjust to your route
+            columns: [
+                { data: 'role_name', name: 'role_name' },
+                { data: 'permissions', name: 'permissions' },
+                { data: 'actions', name: 'actions', orderable: false, searchable: false }
+            ]
         });
+    }); 
+        // Disable first option in select per page
+        // document.getElementById('perPageSelect').addEventListener('mousedown', function () {
+        //     const blankOption = this.querySelector('option[value=""]');
+        //     if (blankOption) blankOption.style.display = 'none';
+        // });
 
         $(document).ready(function () {
             $('#searchInput').on('keyup', function () {

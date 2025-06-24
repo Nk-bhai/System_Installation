@@ -9,6 +9,7 @@ use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Yajra\DataTables\DataTables;
 
 class RoleController extends Controller
 {
@@ -49,36 +50,78 @@ class RoleController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
-    {
-        $perPage = $request->input('per_page', 5);
-        $allowed = [10, 20, 50];
-        if (!in_array($perPage, $allowed)) {
-            $perPage = 5;
-        }
+    // public function index(Request $request)
+    // {
+    //     $perPage = $request->input('per_page', 5);
+    //     $allowed = [10, 20, 50];
+    //     if (!in_array($perPage, $allowed)) {
+    //         $perPage = 5;
+    //     }
 
-        $sortColumn = $request->input('sort_column', 'role_name');
-        $sortDirection = $request->input('sort_direction', 'asc');
+    //     $sortColumn = $request->input('sort_column', 'role_name');
+    //     $sortDirection = $request->input('sort_direction', 'asc');
 
-        $allowedColumns = ['role_name', 'permissions'];
-        if (!in_array($sortColumn, $allowedColumns)) {
-            $sortColumn = 'role_name';
-        }
+    //     $allowedColumns = ['role_name', 'permissions'];
+    //     if (!in_array($sortColumn, $allowedColumns)) {
+    //         $sortColumn = 'role_name';
+    //     }
 
-        if (!in_array($sortDirection, ['asc', 'desc'])) {
-            $sortDirection = 'asc';
-        }
+    //     if (!in_array($sortDirection, ['asc', 'desc'])) {
+    //         $sortDirection = 'asc';
+    //     }
 
-        $roleData = RoleModel::orderBy($sortColumn, $sortDirection)->paginate($perPage);
+    //     $roleData = RoleModel::orderBy($sortColumn, $sortDirection)->paginate($perPage);
 
-        if (Schema::hasTable('user')) {
-            $roleData->load('users');
-        }
+    //     if (Schema::hasTable('user')) {
+    //         $roleData->load('users');
+    //     }
 
-        $roleCount = RoleModel::count();
+    //     $roleCount = RoleModel::count();
 
-        return view('Role', ['roleData' => $roleData, 'roleCount' => $roleCount]);
+    //     return view('Role', ['roleData' => $roleData, 'roleCount' => $roleCount]);
+    // }
+
+    public function index()
+{
+    return view('Role'); // the Blade file will now use AJAX
+}
+
+public function getData(Request $request)
+{
+    $query = RoleModel::query();
+
+    if (Schema::hasTable('user')) {
+        $query->with('users');
     }
+
+    return DataTables::of($query)
+        ->addColumn('permissions', function ($row) {
+            return is_array($row->permissions) ? implode(', ', $row->permissions) : $row->permissions;
+        })
+        ->addColumn('actions', function ($row) {
+            $id = encrypt($row->id);
+            $hasUsers = !Schema::hasTable('user') || ($row->users && $row->users->isEmpty());
+
+            $editBtn = "<button type='button' class='btn btn-sm btn-light-primary editRoleButton'
+                            data-bs-toggle='modal' data-bs-target='#editRoleModal'
+                            data-id='{$id}' data-role-name='{$row->role_name}'
+                            data-permissions='{$row->permissions}'
+                            data-url='" . route('role.update', $id) . "'>
+                            Edit
+                        </button>";
+
+            $deleteBtn = $hasUsers ? "<button type='button' class='btn btn-sm btn-light-danger deleteRoleButton'
+                            data-bs-toggle='modal' data-bs-target='#deleteRoleModal'
+                            data-id='{$id}' data-role-name='{$row->role_name}'
+                            data-url='" . route('role.destroy', $id) . "'>
+                            Delete
+                        </button>" : '';
+
+            return "<div class='d-flex gap-3 align-items-center'>{$editBtn}{$deleteBtn}</div>";
+        })
+        ->rawColumns(['actions']) // allow HTML
+        ->make(true);
+}
 
     /**
      * Search roles with pagination and sorting

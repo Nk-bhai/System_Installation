@@ -218,7 +218,7 @@ class ProfileController extends Controller
                     )->post("http://192.168.12.79:8005/api/superadmin/favicon/{$ip_address}");
                     
                     if ($faviconResponse->successful()) {
-                    dd("hello");
+                    // dd("hello");
                     $favicon->storeAs('favicons', $faviconName, 'public');
                     session(['favicon' => $faviconName]);
                 } else {
