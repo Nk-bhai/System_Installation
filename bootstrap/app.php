@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\CheckLogin;
+use App\Http\Middleware\MinifyHtml;
 use App\Http\Middleware\RestrictLoggedIn;
 use App\Http\Middleware\VerifyAccessKey;
 use App\Http\Middleware\XssSanitization;
@@ -22,9 +23,6 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->append(StartSession::class);
         $middleware->append(ShareErrorsFromSession::class);
-        $middleware->append(XssSanitization::class);
-        $middleware->append(EnsurePackagePresent::class);
-        $middleware->append(EnsureKeyVerified::class);
         $middleware->alias([
             'restrict.login' => RestrictLoggedIn::class,
         ]);

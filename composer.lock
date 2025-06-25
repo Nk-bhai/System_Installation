@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "155c2e69921633861fab2173bc415b37",
+    "content-hash": "77ef362f88c0226b3d8084dd04d2c87a",
     "packages": [
         {
             "name": "brick/math",
@@ -2487,16 +2487,10 @@
         {
             "name": "nk/system-auth",
             "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Nk-bhai/Laravel-Authentication-Package.git",
-                "reference": "3504cc7ca0bd5067ce5f84fff1abc21e60e560e9"
-            },
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Nk-bhai/Laravel-Authentication-Package/zipball/3504cc7ca0bd5067ce5f84fff1abc21e60e560e9",
-                "reference": "3504cc7ca0bd5067ce5f84fff1abc21e60e560e9",
-                "shasum": ""
+                "type": "path",
+                "url": "C:/nk-system-auth",
+                "reference": "84a8ea6e85f6c1aedec36bfe7d2b8d5cafe5bb7a"
             },
             "require": {
                 "illuminate/database": "^9.0|^10.0|^11.0|^12.0",
@@ -2505,15 +2499,10 @@
                 "illuminate/support": "^9.0|^10.0|^11.0|^12.0",
                 "php": "^8.0"
             },
-            "default-branch": true,
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Nk\\SystemAuth\\SystemAuthServiceProvider"
-                    ]
-                }
+            "require-dev": {
+                "ph-7/obfuscator": "^2.0"
             },
+            "type": "library",
             "autoload": {
                 "psr-4": {
                     "Nk\\SystemAuth\\": "src/"
@@ -2532,11 +2521,9 @@
                 }
             ],
             "description": "A Laravel package for key-based authentication and license verification",
-            "support": {
-                "source": "https://github.com/Nk-bhai/Laravel-Authentication-Package/tree/master",
-                "issues": "https://github.com/Nk-bhai/Laravel-Authentication-Package/issues"
-            },
-            "time": "2025-06-23T08:32:04+00:00"
+            "transport-options": {
+                "relative": false
+            }
         },
         {
             "name": "nunomaduro/termwind",
@@ -8287,9 +8274,7 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "nk/system-auth": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
