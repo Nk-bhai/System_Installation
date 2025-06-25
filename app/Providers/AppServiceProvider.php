@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-           Paginator::useBootstrap();
+        //    Paginator::useBootstrap();
         // // Check for a core class of your package
         // if (!class_exists(\Nk\SystemAuth\SystemAuthServiceProvider::class)) {
         //     die('Critical system-auth package is missing. Contact system administrator.');

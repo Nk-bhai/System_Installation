@@ -97,15 +97,15 @@ class ProfileController extends Controller
             }
 
             // Handle avatar removal
-            if ($request->input('avatar_remove') == 1) {
-                if ($user->profile_logo && $user->profile_logo !== 'blank.png') {
-                    Storage::delete('public' . $user->profile_logo);
-                    $user->profile_logo = 'blank.png';
-                    $user->save();
+                if ($request->input('avatar_remove') == 1) {
+                    if ($user->profile_logo && $user->profile_logo !== 'blank.png') {
+                        Storage::delete('public' . $user->profile_logo);
+                        $user->profile_logo = 'blank.png';
+                        $user->save();
+                    }
+                    session(['profile_logo' => 'blank.png']);
+                    return redirect()->route('profile.show')->with('success', 'Avatar removed successfully!');
                 }
-                session(['profile_logo' => 'blank.png']);
-                return redirect()->route('profile.show')->with('success', 'Avatar removed successfully!');
-            }
 
             // Handle avatar upload
             if ($request->hasFile('avatar')) {
@@ -129,7 +129,7 @@ class ProfileController extends Controller
         // For super admins (API-based logic)
         $ip_address = $request->ip();
         if (session('superadmin_email')) {
-            
+
             if ($request->filled('password')) {
                 $password = trim($request->input('password'));
                 if (!empty($password)) {
@@ -200,6 +200,7 @@ class ProfileController extends Controller
             'sidebar_logo' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
             'Favicon_remove' => 'nullable|in:0,1',
             'sidebar_logo_remove' => 'nullable|in:0,1',
+            'copyright' => 'nullable',
         ]);
 
         $ip_address = $request->ip();
@@ -209,15 +210,15 @@ class ProfileController extends Controller
             $favicon = $request->file('Favicon');
             $faviconPath = $favicon->getPathname();
             $faviconName = $favicon->getClientOriginalName();
-            
+
             try {
                 $faviconResponse = Http::attach(
                     'Favicon',
                     file_get_contents($faviconPath),
                     $faviconName
-                    )->post("http://192.168.12.79:8005/api/superadmin/favicon/{$ip_address}");
-                    
-                    if ($faviconResponse->successful()) {
+                )->post("http://192.168.12.79:8005/api/superadmin/favicon/{$ip_address}");
+
+                if ($faviconResponse->successful()) {
                     // dd("hello");
                     $favicon->storeAs('favicons', $faviconName, 'public');
                     session(['favicon' => $faviconName]);
@@ -286,6 +287,25 @@ class ProfileController extends Controller
                 return back()->withErrors(['sidebar_logo' => 'Sidebar logo remove error: ' . $e->getMessage()]);
             }
         }
+
+        if ($request->filled('copyright')) {
+            $copyright = trim($request->input('copyright'));
+            if (!empty($copyright)) {
+                try {
+                    $response = Http::retry(3, 200)->post("http://192.168.12.79:8005/api/superadmin/save_copyright/{$ip_address}", [
+                        'copyright' => $copyright,
+                    ]);
+
+                    if (!$response->successful()) {
+                        $error = $response->json()['error'] ?? 'Failed to save copyright';
+                        return back()->withErrors(['copyright' => $error]);
+                    }
+                } catch (\Exception $e) {
+                    return back()->withErrors(['copyright' => 'Copyright save error: ' . $e->getMessage()]);
+                }
+            }
+        }
+
 
         return redirect()->route('SiteControlPage')->with('success', 'Profile updated successfully!');
     }

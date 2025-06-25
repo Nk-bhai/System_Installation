@@ -32,6 +32,9 @@
 		crossorigin="anonymous" referrerpolicy="no-referrer" />
 	<link href="{{ asset('dist/assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
 	<link href="{{ asset('dist/assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
+	<!-- DataTables CSS -->
+	<link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+
 	<!--end::Global Stylesheets Bundle-->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -387,8 +390,9 @@
 					<div class="container-fluid d-flex flex-column align-items-center justify-content-center">
 						<!--begin::Copyright-->
 						<div class="text-dark text-center">
-							<span class="text-muted fw-bold me-1">© {{ date('Y') }} Elsner Technologies Pvt. Ltd.</span>
-							All rights reserved.
+							{{-- <span class="text-muted fw-bold me-1">© {{ date('Y') }} Elsner Technologies Pvt. Ltd.</span> --}}
+							<span class="text-muted fw-bold me-1">© {{ session('copyright') ?? " Elsner Technologies Pvt. Ltd." }}</span>
+							{{-- All rights reserved. --}}
 						</div>
 						<!--end::Copyright-->
 					</div>
@@ -410,7 +414,7 @@
 	<script src="{{ asset('dist/assets/plugins/global/plugins.bundle.js') }}"></script>
 	<script src="{{ asset('dist/assets/js/scripts.bundle.js') }}"></script>
 
-	<!-- ✅ DataTables (AFTER jQuery from Metronic) -->
+	<!--  DataTables (AFTER jQuery from Metronic) -->
 	<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
 	<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 

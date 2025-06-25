@@ -84,7 +84,9 @@
         <!-- Footer -->
         <footer class="footer py-4" id="kt_footer">
             <div class="container-fluid text-center">
-                <span class="text-muted fw-bold">© {{ date('Y') }} Elsner Technologies Pvt. Ltd. All rights reserved.</span>
+                {{-- <span class="text-muted fw-bold">© {{ date('Y') }} Elsner Technologies Pvt. Ltd. All rights reserved.</span> --}}
+                <span class="text-muted fw-bold">© © {{ session('copyright') ?? " Elsner Technologies Pvt. Ltd." }}</span>
+
             </div>
         </footer>
     </div>

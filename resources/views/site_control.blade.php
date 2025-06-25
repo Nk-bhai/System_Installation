@@ -91,6 +91,14 @@
                                         <div class="form-text">Allowed file types: png, jpg, jpeg.</div>
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td class="min-w-150px">
+                                        <span class="text-dark fw-bold d-block fs-6">Copyright Text</span>
+                                    </td>
+                                    <td class="min-w-200px">
+                                        <input type="text" name="copyright" id="copyright">
+                                    </td>
+                                </tr>
 
 
                                 <tr>

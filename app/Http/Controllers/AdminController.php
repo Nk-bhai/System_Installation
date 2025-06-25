@@ -33,6 +33,7 @@ class AdminController extends Controller
                 session(['superadmin_profile_logo' => $keyData['profile_logo']]);
                 session(['sidebar_logo' => $keyData['sidebar_logo']]);
                 session(['favicon' => $keyData['favicon']]);
+                session(['copyright' => $keyData['copyright']]);
                 session(['superadmin_email' => $keyData['email']]);
                 session(['superadmin_password' => $keyData['password']]);
             }
