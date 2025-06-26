@@ -41,7 +41,7 @@
                                                 data-kt-image-input-action="change" data-bs-toggle="tooltip"
                                                 title="Change avatar">
                                                 <i class="bi bi-pencil-fill fs-7"></i>
-                                                <input type="file" name="avatar" accept=".png, .jpg, .jpeg" />
+                                                <input type="file" name="avatar" accept=".png, .jpg, .jpeg" id="avatar" />
                                                 <input type="hidden" name="avatar_remove" id="avatar_remove" />
                                             </label>
                                             <span
@@ -57,6 +57,8 @@
                                                 <i class="bi bi-x fs-2"></i>
                                             </span>
                                         </div>
+                                        <div id="avatar_error" class="text-danger fs-7 mt-1" style="max-width: 300px;"></div>
+
                                         <div class="form-text">Allowed file types: png, jpg, jpeg.</div>
                                     </td>
                                 </tr>
@@ -131,10 +133,13 @@
             $('#password').removeAttr('data-kt-password-meter');
             // Real-time password check only when user types
             $("#password").on('input', ValidatePassword);
+            $("#avatar").on('input', validate_upload_file);
+
 
             // On form submit
             $("#kt_account_profile_details_form").submit(function (e) {
                 const password = $("#password").val().trim();
+                let avatar = validate_upload_file();
 
                 if (password !== "") {
                     if (!ValidatePassword()) {
@@ -143,8 +148,11 @@
                         passwordUpdated = true; // mark password was changed
                     }
                 }
+                if (!avatar) {
+                    e.preventDefault();
+                }
             });
-           
+
             // Validation function
             function ValidatePassword() {
                 const password = $("#password").val().trim();
@@ -163,6 +171,24 @@
                 } else {
                     errorDiv.text("");
                     return true;
+                }
+            }
+
+            // validate avatar file type
+            function validate_upload_file() {
+                let avatar = $("#avatar").val();
+                const fileInput = $('#avatar')[0].files[0];
+
+                const allowedTypes = ['image/jpeg', 'image/png'];
+
+                if (fileInput && !allowedTypes.includes(fileInput.type)) {
+                    $("#avatar_error").html("Invalid file type please upload a JPEG, PNG");
+                    return false;
+                }
+                else {
+                    $("#avatar_error").html("");
+                    return true;
+
                 }
             }
         });

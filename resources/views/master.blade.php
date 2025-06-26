@@ -16,10 +16,12 @@
 	<meta property="og:url" content="https://keenthemes.com/metronic" />
 	<meta property="og:site_name" content="Keenthemes | Metronic" />
 	<link rel="canonical" href="https://preview.keenthemes.com/metronic8" />
+	{{--
 	<link rel="icon"
 		href="{{ session('favicon') ? asset('storage/favicons/' . session('favicon')) : asset('elsner_favicon.svg') }}"
-		type="image/x-icon">
-	<!--begin::Fonts-->
+		type="image/x-icon"> --}}
+	<link id="favicon" rel="icon" href="{{ asset('storage/favicons/' . session('favicon')) }}" type="image/x-icon">
+
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
 	<!--end::Fonts-->
 	<!--begin::Page Vendor Stylesheets(used by this page)-->
@@ -168,9 +170,14 @@
 				<div class="aside-logo flex-column-auto" id="kt_aside_logo">
 					<!--begin::Logo-->
 					<a href="/dashboard">
-						<img alt="Logo"
+						{{-- <img alt="Logo"
 							src="{{ session('sidebar_logo') ? asset('storage/sidebar_logos/' . session('sidebar_logo')) : asset('dist/assets/media/logos/elsner-logo.svg') }}"
-							class="h-25px logo" />
+							class="h-25px logo" /> --}}
+						<img alt="Logo" src="{{ asset('storage/sidebar_logos/' . session('sidebar_logo')) }}"
+							class="h-25px logo"
+							onerror="this.onerror=null;this.src='{{ asset('dist/assets/media/logos/elsner-logo.svg') }}';" />
+						{{-- <img alt="Logo" src="{{ asset('dist/assets/media/logos/elsner-logo.svg')  }}"
+							class="h-25px logo" /> --}}
 					</a>
 					<!--end::Logo-->
 					<!--begin::Aside toggler-->
@@ -390,8 +397,10 @@
 					<div class="container-fluid d-flex flex-column align-items-center justify-content-center">
 						<!--begin::Copyright-->
 						<div class="text-dark text-center">
-							{{-- <span class="text-muted fw-bold me-1">© {{ date('Y') }} Elsner Technologies Pvt. Ltd.</span> --}}
-							<span class="text-muted fw-bold me-1">© {{ session('copyright') ?? " Elsner Technologies Pvt. Ltd." }}</span>
+							{{-- <span class="text-muted fw-bold me-1">© {{ date('Y') }} Elsner Technologies Pvt.
+								Ltd.</span> --}}
+							<span class="text-muted fw-bold me-1">©
+								{{ session('copyright') ?? " Elsner Technologies Pvt. Ltd." }}</span>
 							{{-- All rights reserved. --}}
 						</div>
 						<!--end::Copyright-->
@@ -427,6 +436,17 @@
 	<script src="{{ asset('dist/assets/js/custom/apps/chat/chat.js') }}"></script>
 	<script src="{{ asset('dist/assets/js/custom/modals/create-app.js') }}"></script>
 	<script src="{{ asset('dist/assets/js/custom/modals/upgrade-plan.js') }}"></script>
+	<script>
+		const testFavicon = document.createElement('img');
+		testFavicon.src = document.getElementById('favicon').href;
+		testFavicon.onload = () => {
+			// favicon loaded successfully, do nothing
+		};
+		testFavicon.onerror = () => {
+			// favicon failed to load, set fallback
+			document.getElementById('favicon').href = '{{ asset('elsner_favicon.svg') }}';
+		};
+	</script>
 	<!--end::Page Custom Javascript-->
 	<!--end::Javascript-->
 </body>

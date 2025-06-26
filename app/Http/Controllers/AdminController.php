@@ -28,6 +28,7 @@ class AdminController extends Controller
             $ip_address = $request->ip();
             $response = Http::get("http://192.168.12.79:8005/api/superadmin/get/{$ip_address}");
             $keyData = $response->json();
+            // dd($keyData['ip_address']);
             if ($keyData['ip_address'] == $ip_address && $keyData['verified'] == 1) {
                 $databasename = $keyData['database'];
                 session(['superadmin_profile_logo' => $keyData['profile_logo']]);
@@ -238,5 +239,3 @@ class AdminController extends Controller
         return redirect()->route('system.auth.login')->with('message', 'Logged out successfully');
     }
 }
-
-

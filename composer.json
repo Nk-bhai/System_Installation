@@ -12,7 +12,7 @@
     "repositories": [
     {
        "type": "path",
-        "url": "C:\\nk-system-auth"
+        "url": "C:\nk-system-auth"
     }
 ],
     "require": {
