@@ -16,7 +16,6 @@
                     data-bs-target="#addUserModal">Create User</button>
             </div>
         @endif
-
         <div class="row">
             <div class="col-lg-12">
                 <div class="card">
@@ -47,7 +46,7 @@
 
     <!-- Add User Modal -->
     @if (in_array('Create', $permissions))
-        <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -113,7 +112,7 @@
 
     <!-- Edit User Modal -->
     @if (in_array('Update', $permissions))
-        <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+        <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -167,7 +166,7 @@
 
     <!-- Delete User Modal -->
     @if (in_array('Delete', $permissions))
-        <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+        <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">

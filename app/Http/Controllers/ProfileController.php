@@ -37,37 +37,6 @@ class ProfileController extends Controller
         ]);
     }
 
-    public function PasswordUpdate(Request $request)
-    {
-        // $validator = Validator::make($request->all(), [
-        //     'avatar' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
-        //     'current_password' => 'required',
-        //     'new_password' => 'required|min:8|confirmed',
-        // ]);
-
-        // if ($validator->fails()) {
-        //     return redirect()->back()->withErrors($validator)->withInput();
-        // }
-
-        dd("reach");
-        $user = UserModel::where('email', session('login_email'))->first();
-
-        if (!$user || !Hash::check($request->input('password'), $user->password)) {
-            dd("hello");
-            return redirect()->back()->withErrors(['current_password' => 'Current password is incorrect'])->withInput();
-        }
-        dd($request->input('password'));
-
-        // Update password
-        $user->password = Hash::make($request->input('password'));
-        $user->save();
-
-        return redirect()->back()->with('success', 'Password updated successfully');
-    }
-
-
-
-
     public function update(Request $request)
     {
 

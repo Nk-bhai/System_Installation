@@ -33,7 +33,6 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('users/data', [UserController::class, 'getData'])->name('users.data');
     
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::post('/change_password', [ProfileController::class, 'PasswordUpdate'])->name('user.changepassword');
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
 
 

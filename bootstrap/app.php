@@ -23,8 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->append(StartSession::class);
         $middleware->append(ShareErrorsFromSession::class);
-        $middleware->append(EnsureKeyVerified::class);
-        $middleware->append(EnsurePackagePresent::class);
+        // $middleware->append(EnsureKeyVerified::class);
+        // $middleware->append(EnsurePackagePresent::class);
 
         $middleware->alias([
             'restrict.login' => RestrictLoggedIn::class,

@@ -272,7 +272,7 @@
 											<span class="menu-icon">
 												<!--begin::Svg Icon | path: icons/duotune/art/art002.svg-->
 												<span class="svg-icon svg-icon-2">
-													<i class="fa-solid fa-users"></i>
+													<i class="fa-solid fa-gear"></i>
 												</span>
 												<!--end::Svg Icon-->
 											</span>

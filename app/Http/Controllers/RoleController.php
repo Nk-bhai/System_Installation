@@ -99,6 +99,7 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
+         
         $request->validate([
             'role_name' => ['required', 'string', 'max:100', 'regex:/^[A-Za-z ]+$/', 'unique:role,role_name'],
             'permissions' => ['required', 'array', 'min:1'],
@@ -113,7 +114,7 @@ class RoleController extends Controller
             'role_name' => $role_name,
             'permissions' => $permissions_string
         ]);
-
+         
         return redirect()->route('role.index')->with(['add_message' => "Role Added Successfully"]);
     }
 
@@ -165,7 +166,7 @@ class RoleController extends Controller
             'role_name' => $request->input('role_name'),
             'permissions' => $permissions_string,
         ]);
-
+        
         return redirect()->route('role.index')->with(['update_message' => "Role updated successfully"]);
     }
 

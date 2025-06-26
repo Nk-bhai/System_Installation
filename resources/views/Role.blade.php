@@ -3,6 +3,7 @@
 @section('title', 'Role Management')
 
 @section('contents')
+{{-- @dump(session('duration')); --}}
     <div class="container-fluid py-1">
         <div class="d-flex justify-content-end mb-5">
             <button type="button" class="btn btn-primary" id="addRoleButton" data-bs-toggle="modal"
@@ -35,7 +36,7 @@
     </div>
 
     <!-- Add Role Modal -->
-    <div class="modal fade" id="addRoleModal" tabindex="-1" aria-labelledby="addRoleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="addRoleModal" tabindex="-1" aria-labelledby="addRoleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -93,7 +94,7 @@
     </div>
 
     <!-- Edit Role Modal -->
-    <div class="modal fade" id="editRoleModal" tabindex="-1" aria-labelledby="editRoleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="editRoleModal" tabindex="-1" aria-labelledby="editRoleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -153,7 +154,7 @@
     </div>
 
     <!-- Delete Role Modal -->
-    <div class="modal fade" id="deleteRoleModal" tabindex="-1" aria-labelledby="deleteRoleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="deleteRoleModal" tabindex="-1" aria-labelledby="deleteRoleModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -441,3 +442,4 @@
     @endphp
 @endsection
 
+        
